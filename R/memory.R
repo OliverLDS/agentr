@@ -8,5 +8,6 @@ add_message <- function(memory, role, content) {
 }
 
 get_recent_messages <- function(memory, n = 5) {
+  if (length(memory$messages) == 0) return(list())
   tail(memory$messages, n)
 }
