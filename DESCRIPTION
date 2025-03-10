@@ -1,7 +1,7 @@
 Package: XAgent
 Title: Functional AI Agent with Multi-LLM Support
 Version: 0.1.0
-Authors@R: c(person("Your Name", email = "your.email@example.com", role = c("aut", "cre")))
+Authors@R: c(person("Oliver", email = "olee7149@gmail.com", role = c("aut", "cre")))
 Description: A functional AI agent that supports multiple LLM APIs (Gemini, OpenAI, Claude) while maintaining stateless memory transformation.
 License: MIT
 Encoding: UTF-8
