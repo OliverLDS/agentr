@@ -1,5 +1,11 @@
 export(LlmConfig)
 export(call_llm)
 export(run_xagent)
+export(run_flow)
 export(create_memory)
 export(add_message)
+export(get_recent_messages)
+export(example_tool_terminate)
+export(example_tool_uppercase)
+export(TOOL_COLLECTION)
+
