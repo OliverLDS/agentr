@@ -14,3 +14,13 @@ test_that("LlmConfig works as expected", {
   expect_equal(conf$provider, "openai")
   expect_equal(conf$model, "gpt-4-turbo")
 })
+
+test_that("Tools work correctly", {
+  mem <- create_memory()
+  result <- example_tool_uppercase(mem, "hello")
+  expect_equal(result$output, "HELLO")
+
+  result <- example_tool_terminate(mem)
+  expect_equal(result$output, "Terminating flow.")
+})
+
