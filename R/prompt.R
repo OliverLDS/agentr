@@ -1,21 +1,31 @@
-# Formats the message history into a structured prompt
-format_prompt <- function(memory) {
-  messages <- get_recent_messages(memory, 5)
-  
+# Format the LLM-style chat messages into a readable prompt string
+format_llm_prompt <- function(memory, n = 5) {
+  messages <- get_recent_llm_messages(memory, n)
   if (length(messages) == 0) return("User: ")
 
-  formatted_prompt <- paste(
-    sapply(messages, function(msg) paste0(msg$role, ": ", msg$content)),
-    collapse = "\n"
-  )
-  
-  paste0(formatted_prompt, "\nUser: ")
+  format_role <- function(role) {
+    switch(tolower(role),
+           user = "User",
+           assistant = "Assistant",
+           system = "System",
+           tool = "Tool",
+           role)  # fallback if unknown
+  }
+
+  formatted <- sapply(messages, function(msg) {
+    paste0(format_role(msg$role), ": ", msg$content)
+  })
+
+  paste0(paste(formatted, collapse = "\n"), "\nUser: ")
 }
 
-# Adds system instructions at the beginning of the prompt (if needed)
-add_system_instruction <- function(memory, instruction) {
-  if (length(memory$messages) == 0 || memory$messages[[1]]$role != "system") {
-    memory <- add_message(memory, "system", instruction)
+
+# Add system instruction if one does not already exist
+add_system_instruction_if_missing <- function(memory, instruction) {
+  if (length(memory$messages) == 0 || tolower(memory$messages[[1]]$role) != "system") {
+    memory <- add_llm_message(memory, "system", instruction)
   }
-  memory
+  return(memory)
 }
+
+
