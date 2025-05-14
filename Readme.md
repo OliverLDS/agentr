@@ -82,6 +82,31 @@ cat(result)
 agent1 <- get_agent("data_collector")
 result <- run_agent(agent1)
 str(result$output)
+
+# Optional: update agent's memory after run
+agent1$memory <- result$memory
+
+# Inspect specific memory fields
+str(agent1$memory$raw_data$ticker)
+```
+
+## ✏️ Custom Agent Example
+
+Users can define and register their own agent using `create_agent()`:
+
+``` r
+my_agent <- create_agent(
+  name = "MyTester",
+  goal = list(task = "Summarize ETH and FRED rate"),
+  memory = create_memory(),
+  policy = policy_insight_seeker,
+  tools = list(
+    llm = function(prompt) tool_llm(prompt, config = get_tool_config("llm"))
+  )
+)
+
+result <- run_agent(my_agent)
+cat(result$output)
 ```
 
 ## 🛠 Tools You Can Use

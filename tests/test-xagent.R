@@ -17,6 +17,12 @@ cat(response)
 agent1 <- get_agent("data_collector")
 result <- run_agent(agent1)
 str(result$output)
+str(result$memory)
 
+
+agent2 <- get_agent("data_reviewer")
+agent3 <- get_agent("insight_seeker")
+agent4 <- get_agent("content_generator")
+agent5 <- get_agent("content_poster")
 
 
