@@ -1,2 +1,4 @@
 upload.sh
 Readme.qmd
+.gitignore
+.DS_Store
