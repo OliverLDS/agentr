@@ -1,4 +1,17 @@
-upload.sh
-Readme.qmd
-.gitignore
+# R
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# OS
 .DS_Store
+
+# Dev
+README.Rmd
+*.tar.gz
+
+# Cache
+.Rcheck/
+memory/

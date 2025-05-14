@@ -1,50 +1,49 @@
-# XAgent: A Modular Multi-Agent Framework in R
-
+---
+title: "XAgent: A Modular Multi-Agent Framework in R"
+format: gfm
+---
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 ## 📦 Overview
 
-`XAgent` is a composable multi-agent framework in R that lets you create
-autonomous agents with tools, memory, goals, and optional LLM access.
-Agents can fetch data, analyze it, generate insights and content, post
-to channels, or interact with APIs (like OKX, FRED, or Telegram).
+`XAgent` is a composable multi-agent framework in R that lets you create autonomous agents with tools, memory, goals, and optional LLM access. Agents can fetch data, analyze it, generate insights and content, post to channels, or interact with APIs (like OKX, FRED, or Telegram).
 
 ## 🔧 Installation
 
 Clone the repo and install locally:
 
-``` r
+```r
 # From your R console
 devtools::install_local("path/to/XAgent")
 ```
 
 Or load it directly in development mode:
 
-``` r
+```r
 devtools::load_all()
 ```
 
 ## 🧠 Environment Variables
 
-XAgent reads API keys from your `~/.Renviron` file using `Sys.getenv()`.
-RStudio **automatically loads `~/.Renviron` on startup**, so there’s no
-need to set the path manually.
+XAgent reads API keys from your `~/.Renviron` file using `Sys.getenv()`. RStudio **automatically loads `~/.Renviron` on startup**, so there's no need to set the path manually.
 
 Example `.Renviron`:
-
-    GEMINI_API_KEY=your-gemini-api-key
-    OKX_API_KEY=your-okx-api-key
-    OKX_SECRET_KEY=your-okx-secret
-    OKX_PASSPHRASE=your-okx-passphrase
-    FRED_API_KEY=your-fred-api-key
-    TELEGRAM_BOT_TOKEN=your-telegram-bot-token
-    TELEGRAM_CHAT_ID=@yourchannel
+```
+GEMINI_API_KEY=your-gemini-api-key
+OKX_API_KEY=your-okx-api-key
+OKX_SECRET_KEY=your-okx-secret
+OKX_PASSPHRASE=your-okx-passphrase
+FRED_API_KEY=your-fred-api-key
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+TELEGRAM_CHAT_ID=@yourchannel
+```
 
 ## 🧪 Example: Call LLM directly
 
-``` r
+```r
 conf <- create_llm_config(
   api_key = Sys.getenv("GEMINI_API_KEY"),
   provider = "gemini",
@@ -56,7 +55,7 @@ cat(response)
 
 ## 🤖 Example: Run a Full Agent Pipeline
 
-``` r
+```r
 # Load your agent registry
 agent1 <- get_agent("data_collector")
 agent2 <- get_agent("data_reviewer")
@@ -78,7 +77,7 @@ cat(result)
 
 ### ▶️ Example: Just run `agent1` to collect data
 
-``` r
+```r
 agent1 <- get_agent("data_collector")
 result <- run_agent(agent1)
 str(result$output)
@@ -94,11 +93,13 @@ str(result$output)
 
 ## 📂 Agent Anatomy
 
-Each agent has: - `goal`: A task description or parameters - `memory`:
-State or past results - `policy`: A function that defines what the agent
-does - `tools`: A named list of functions it can use
+Each agent has:
+- `goal`: A task description or parameters
+- `memory`: State or past results
+- `policy`: A function that defines what the agent does
+- `tools`: A named list of functions it can use
 
-``` r
+```r
 agent <- create_agent(
   name = "example_agent",
   goal = list(task = "Analyze market"),
@@ -110,5 +111,4 @@ agent <- create_agent(
 
 ## 📫 Contact
 
-Maintained by Oliver. Reach out via
-[LinkedIn](https://www.linkedin.com/in/oliver-lee-28b32b176/).
+Maintained by Oliver. Reach out via [LinkedIn](https://www.linkedin.com/in/oliver-lee-28b32b176/).
