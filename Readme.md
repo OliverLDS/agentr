@@ -11,6 +11,10 @@ autonomous agents with tools, memory, goals, and optional LLM access.
 Agents can fetch data, analyze it, generate insights and content, post
 to channels, or interact with APIs (like OKX, FRED, or Telegram).
 
+**Note:** XAgent is a “headless” framework, meaning it provides no
+scheduler or loop by default — *you* control when and how often each
+agent runs.
+
 ## 🔧 Installation
 
 Clone the repo and install locally:
@@ -52,6 +56,51 @@ conf <- create_llm_config(
 )
 response <- tool_llm("List 5 unicorn startup ideas", config = conf)
 cat(response)
+```
+
+## ⏱️ Scheduling Agents (High-Frequency or Periodic Execution)
+
+XAgent doesn’t schedule agents itself — you can choose how to run agents
+on a loop:
+
+### 🔁 Option 1: Zsh/Bash script loop (Unix)
+
+``` zsh
+#!/bin/zsh
+while true; do
+  Rscript run_agent.R data_collector
+  sleep 300  # every 5 minutes
+done
+```
+
+### ⏰ Option 2: Cron job
+
+Edit your crontab (`crontab -e`):
+
+    */5 * * * * Rscript /path/to/run_agent.R data_collector
+
+### 🔄 Option 3: R orchestrator loop (built into package)
+
+You can create an orchestrator in R. Suggested file:
+`agent_orchestrator.R`
+
+``` r
+#' Run one agent every N seconds indefinitely
+#' @export
+run_forever <- function(agent_name, every = 300) {
+  while (TRUE) {
+    agent <- get_agent(agent_name)
+    result <- run_agent(agent)
+    memory_store(agent_name, result$memory)
+    Sys.sleep(every)
+  }
+}
+```
+
+Usage:
+
+``` r
+run_forever("data_collector", every = 300)
 ```
 
 ## 🤖 Example: Run a Full Agent Pipeline
@@ -132,6 +181,70 @@ agent <- create_agent(
   tools = list(llm = tool_llm, okx_ticker = tool_okx_ticker)
 )
 ```
+
+In future versions, agent policies may also be trained or optimized
+using deep learning models. This could allow agents to learn behaviors
+from historical memory traces or performance outcomes.
+
+## 🧭 Roadmap
+
+### 🔁 FSM Example
+
+Finite State Machines (FSMs) allow agents to progress through states
+like “waiting”, “fetching”, “analyzing”, and “reporting” based on logic.
+
+``` r
+agent_state_machine <- function(agent) {
+  if (agent$state == "waiting") {
+    agent <- run_agent(agent)
+    agent$state <- "fetched"
+  } else if (agent$state == "fetched") {
+    cat("Already fetched data. Proceed to analysis...
+")
+  }
+  return(agent)
+}
+```
+
+FSMs enable sequential logic, retry handling, and event-driven flows.
+
+### 📦 Dockerfile Example
+
+A basic Dockerfile to run XAgent in a reproducible environment:
+
+``` dockerfile
+FROM rocker/r-ver:4.3.1
+
+RUN apt-get update && apt-get install -y \
+    libcurl4-openssl-dev libssl-dev libxml2-dev git
+
+RUN R -e "install.packages(c('devtools', 'httr', 'jsonlite', 'xml2'))"
+
+COPY . /XAgent
+WORKDIR /XAgent
+
+RUN R -e "devtools::install_local('.')"
+CMD ["Rscript", "run_agent.R", "data_collector"]
+```
+
+This allows you to run agents from a container:
+
+``` bash
+docker build -t xagent .
+docker run xagent
+```
+
+- Add logging and structured output formats per agent run
+- Create agent scheduling helpers and `run_agent_cli()` for command-line
+  use
+- Build a Shiny dashboard to visualize agent memory and state
+- Integrate `targets`-based dependency pipelines between agents
+- Support external triggers (file changes, API calls) as agent
+  activators
+- Enable deep learning-based agent policy training via collected
+  memory + goal-result pairs
+- Add optional lightweight FSMs or rule-based policy augmentation
+- Add Dockerfile for containerized deployment of agent workflows
 
 ## 📫 Contact
 
