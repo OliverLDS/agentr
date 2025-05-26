@@ -70,3 +70,14 @@ get_tool_config <- function(name) {
     stop("Unknown config name: ", name)
   )
 }
+
+#' @title Load YAML config
+#' @description Loads global or agent-specific configuration file.
+#' @param path Path to YAML file (default = global agent config).
+#' @return Named list.
+#' @export
+load_config <- function(path = "inst/extdata/xagent_config.yaml") {
+  if (!file.exists(path)) stop("❌ Config not found: ", path)
+  yaml::read_yaml(path)
+}
+

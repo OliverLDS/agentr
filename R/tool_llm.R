@@ -119,4 +119,35 @@ request_openai <- function(prompt,
   parsed$choices[[1]]$message$content
 }
 
+#' @title Format prompt for LLM summary
+#' @description Wraps text with clear instruction separators.
+#' @param context The text to summarize.
+#' @param mode Output format (e.g., "json", "text").
+#' @return Formatted prompt string.
+#' @export
+format_summary_prompt <- function(context, mode = "json") {
+  prompt <- paste0(
+    "### Instruction\nSummarize the following article in ", mode, " format:\n\n",
+    "### Context\n", context, "\n\n",
+    "### Response"
+  )
+  return(prompt)
+}
+
+#' @title Log LLM interaction
+#' @description Appends LLM prompt & output to memory.
+#' @param memory The memory list.
+#' @param prompt Input prompt.
+#' @param response Output string.
+#' @return Updated memory.
+#' @export
+log_llm_prompt <- function(memory, prompt, response) {
+  memory$llm_log <- c(memory$llm_log %||% list(), list(list(
+    ts = Sys.time(),
+    prompt = prompt,
+    response = response
+  )))
+  memory
+}
+
 
