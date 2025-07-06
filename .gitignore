@@ -9,12 +9,10 @@
 .DS_Store
 
 # Dev
-Readme.qmd
 *.tar.gz
 
 # Cache
 .Rcheck/
-memory/
 
 # Upload
 upload.sh

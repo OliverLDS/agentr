@@ -1,9 +1,27 @@
 Package: XAgent
-Title: Functional AI Agent with Multi-LLM Support
+Type: Package
+Title: Modular AI Agent Framework for News, Data, and Interaction
 Version: 0.1.0
-Authors@R: c(person("Oliver", email = "olee7149@gmail.com", role = c("aut", "cre")))
-Description: A functional AI agent that supports multiple LLM APIs (Gemini, OpenAI, Claude) while maintaining stateless memory transformation.
+Authors@R: 
+    person(given = "Oliver", 
+           email = "olee7149@gmail.com", 
+           role = c("aut", "cre"))
+Description: 
+    XAgent is a modular R framework for building intelligent agents that can read RSS feeds, 
+    analyze financial and macroeconomic data, and interact with users through Telegram, local chat files, or email. 
+    It includes components for state management, emotional modeling, LLM prompt composition, and data API integration.
 License: MIT
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+Depends: R (>= 4.1.0)
+Imports: 
+    R6,
+    httr,
+    jsonlite,
+    xml2,
+    rvest,
+    emayili,
+    stats
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+
