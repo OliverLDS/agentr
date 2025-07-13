@@ -56,7 +56,6 @@ The following functions are loaded dynamically via \code{load_okxr()}:
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-CryptoTraderAgent-rename_ohlcv_from_okx}{\code{CryptoTraderAgent$rename_ohlcv_from_okx()}}
 \item \href{#method-CryptoTraderAgent-detect_time_gaps}{\code{CryptoTraderAgent$detect_time_gaps()}}
 \item \href{#method-CryptoTraderAgent-run}{\code{CryptoTraderAgent$run()}}
 \item \href{#method-CryptoTraderAgent-new}{\code{CryptoTraderAgent$new()}}
@@ -67,6 +66,7 @@ The following functions are loaded dynamically via \code{load_okxr()}:
 \item \href{#method-CryptoTraderAgent-get_cdd_bt_dir}{\code{CryptoTraderAgent$get_cdd_bt_dir()}}
 \item \href{#method-CryptoTraderAgent-load_candles}{\code{CryptoTraderAgent$load_candles()}}
 \item \href{#method-CryptoTraderAgent-sync_and_save_candles}{\code{CryptoTraderAgent$sync_and_save_candles()}}
+\item \href{#method-CryptoTraderAgent-rename_ohlcv_from_okx}{\code{CryptoTraderAgent$rename_ohlcv_from_okx()}}
 \item \href{#method-CryptoTraderAgent-load_bt_summary}{\code{CryptoTraderAgent$load_bt_summary()}}
 \item \href{#method-CryptoTraderAgent-view_bt_equity_curve}{\code{CryptoTraderAgent$view_bt_equity_curve()}}
 \item \href{#method-CryptoTraderAgent-view_bt_monthly_chart}{\code{CryptoTraderAgent$view_bt_monthly_chart()}}
@@ -105,15 +105,6 @@ The following functions are loaded dynamically via \code{load_okxr()}:
 </ul>
 </details>
 }}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CryptoTraderAgent-rename_ohlcv_from_okx"></a>}}
-\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-rename_ohlcv_from_okx}{}}}
-\subsection{Method \code{rename_ohlcv_from_okx()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$rename_ohlcv_from_okx(df)}\if{html}{\out{</div>}}
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-detect_time_gaps"></a>}}
 \if{latex}{\out{\hypertarget{method-CryptoTraderAgent-detect_time_gaps}{}}}
@@ -272,6 +263,15 @@ Load CDD backtest summary and sort by performance}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-rename_ohlcv_from_okx"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-rename_ohlcv_from_okx}{}}}
+\subsection{Method \code{rename_ohlcv_from_okx()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$rename_ohlcv_from_okx(...)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-load_bt_summary"></a>}}

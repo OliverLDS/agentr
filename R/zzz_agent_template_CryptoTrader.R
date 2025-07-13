@@ -37,7 +37,6 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
   inherit = XAgent,
   public = list(
 
-    #' Run agent behavior
     run = function() {
       self$local_check_and_reply()
     },
@@ -134,7 +133,7 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
     },
 
     #' Rename OHLCV columns from OKX format
-    rename_ohlcv_from_okx = okxr::standardize_ohlcv_names,
+    rename_ohlcv_from_okx = function(...) okxr::standardize_ohlcv_names(...),
 
     #' Detect time gaps in OHLCV data
     detect_time_gaps = detect_time_gaps,
