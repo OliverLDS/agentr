@@ -26,7 +26,8 @@ Available keys include:
 \item \code{"tg"}: Telegram bot configuration
 \item \code{"localchat"}: Local text-based chat (file + editor)
 \item \code{"email"}: SMTP email config
-\item \code{"okx"}: OKX trading API
+\item \code{"okx1"}: OKX trading API (first account)
+\item \code{"okx2"}: OKX trading API (second account)
 }
 }
 \examples{

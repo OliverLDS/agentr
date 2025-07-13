@@ -50,7 +50,7 @@ popout_local <- function(config) {
 #' }
 #'
 #' @export
-sync_local_user_input = function(chat_file_path) {
+sync_local_user_input <- function(chat_file_path) {
     lines <- readLines(chat_file_path, warn = FALSE)
     updated_lines <- character(length(lines))
     has_new <- FALSE

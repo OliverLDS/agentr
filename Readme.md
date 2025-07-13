@@ -108,6 +108,13 @@ Created by Oliver Lee
 
 ---
 
+## 📌 Version History
+
+- **v0.1.1** (2025-07-13): Added `CryptoTraderAgent` template; integrated [`okxr`](https://github.com/OliverLDS/okxr); memory I/O tools; imported `%||%` from `rlang`.
+- **v0.1.0** (Initial Release): Core structure for general-purpose AI agents with R6-based modular design.
+
+---
+
 ## 📜 License
 
 MIT License

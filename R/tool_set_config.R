@@ -11,7 +11,8 @@
 #' - \code{"tg"}: Telegram bot configuration
 #' - \code{"localchat"}: Local text-based chat (file + editor)
 #' - \code{"email"}: SMTP email config
-#' - \code{"okx"}: OKX trading API
+#' - \code{"okx1"}: OKX trading API (first account)
+#' - \code{"okx2"}: OKX trading API (second account)
 #'
 #' @param key A character string (case-insensitive) representing the config type.
 #'

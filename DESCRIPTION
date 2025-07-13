@@ -1,7 +1,7 @@
 Package: XAgent
 Type: Package
 Title: Modular AI Agent Framework for News, Data, and Interaction
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     person(given = "Oliver", 
            email = "olee7149@gmail.com", 
@@ -21,7 +21,8 @@ Imports:
     xml2,
     rvest,
     emayili,
-    stats
+    stats,
+    rlang
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 
