@@ -131,15 +131,6 @@ The following functions are loaded dynamically via \code{load_okxr()}:
 \if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$new(...)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to parent \code{XAgent}
-Load OKX wrapper functions into agent methods
-Set local path for OKX candle data}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-load_okxr"></a>}}
@@ -158,14 +149,6 @@ Set local path for OKX candle data}
 \if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$set_okx_candle_dir(dir)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{dir}}{Directory path
-Get full RDS path for specific instrument and timeframe}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-get_okx_candle_rds_path"></a>}}
@@ -175,19 +158,6 @@ Get full RDS path for specific instrument and timeframe}
 \if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$get_okx_candle_rds_path(inst_id, bar)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{inst_id}}{Instrument ID (e.g., ETH-USDT-SWAP)}
-
-\item{\code{bar}}{Timeframe (e.g., 1m, 4H)}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Full path to the RDS file
-Set CDD backtest directory
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-set_cdd_bt_dir"></a>}}
@@ -197,14 +167,6 @@ Set CDD backtest directory
 \if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$set_cdd_bt_dir(dir)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{dir}}{Path to backtest directory
-Get CDD backtest directory}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-get_cdd_bt_dir"></a>}}
@@ -214,10 +176,6 @@ Get CDD backtest directory}
 \if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$get_cdd_bt_dir()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-Directory path as string
-Load OHLCV data from local RDS file
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-load_candles"></a>}}
@@ -227,19 +185,6 @@ Load OHLCV data from local RDS file
 \if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$load_candles(inst_id, bar)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{inst_id}}{Instrument ID}
-
-\item{\code{bar}}{Timeframe}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.frame of OHLCV data
-Sync new OHLCV data and save to RDS
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-sync_and_save_candles"></a>}}
@@ -249,20 +194,6 @@ Sync new OHLCV data and save to RDS
 \if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$sync_and_save_candles(df_new, inst_id, bar)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{df_new}}{New OHLCV data}
-
-\item{\code{inst_id}}{Instrument ID}
-
-\item{\code{bar}}{Timeframe
-Rename OHLCV columns from OKX format
-Detect time gaps in OHLCV data
-Load CDD backtest summary and sort by performance}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-rename_ohlcv_from_okx"></a>}}
@@ -281,13 +212,6 @@ Load CDD backtest summary and sort by performance}
 \if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$load_bt_summary()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A sorted data.frame with backtest results
-Open equity curve plot from backtest result
-Open monthly return chart from backtest result
-Open text-based stats from backtest result
-Internal wrapper for OKX functions with optional pre- and post-processing
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-view_bt_equity_curve"></a>}}

@@ -41,14 +41,13 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
       self$local_check_and_reply()
     },
 
-    #' Constructor
-    #' @param ... Arguments passed to parent `XAgent`
+    # ... Arguments passed to parent `XAgent`
     initialize = function(...) {
       super$initialize(...)
       self$mind_state$order_ids <- character(0)
     },
 
-    #' Load OKX wrapper functions into agent methods
+    # Load OKX wrapper functions into agent methods
     get_mark_price = NULL,
     get_candles_okx = NULL,
     get_history_candles_okx = NULL,
@@ -90,76 +89,60 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
       self$check_order_pending <- private$wrap_okx(okxr::gets_trade_orders_pending)
     },
 
-    #' Set local path for OKX candle data
-    #' @param dir Directory path
+    # Set local path for OKX candle data
     set_okx_candle_dir = function(dir) {
       self$mind_state$okx_candle_dir <- dir
     },
 
-    #' Get full RDS path for specific instrument and timeframe
-    #' @param inst_id Instrument ID (e.g., ETH-USDT-SWAP)
-    #' @param bar Timeframe (e.g., 1m, 4H)
-    #' @return Full path to the RDS file
+    # Get full RDS path for specific instrument and timeframe
     get_okx_candle_rds_path = function(inst_id, bar) {
       sprintf("%s/%s_%s.rds", self$mind_state$okx_candle_dir, inst_id, bar)
     },
 
-    #' Set CDD backtest directory
-    #' @param dir Path to backtest directory
+    # Set CDD backtest directory
     set_cdd_bt_dir = function(dir) {
       self$mind_state$cdd_bt_dir <- dir
     },
 
-    #' Get CDD backtest directory
-    #' @return Directory path as string
+    # Get CDD backtest directory
     get_cdd_bt_dir = function() {
       self$mind_state$cdd_bt_dir
     },
 
-    #' Load OHLCV data from local RDS file
-    #' @param inst_id Instrument ID
-    #' @param bar Timeframe
-    #' @return A data.frame of OHLCV data
+    # Load OHLCV data from local RDS file
     load_candles = function(inst_id, bar) {
       .safe_read_rds(self$get_okx_candle_rds_path(inst_id, bar))
     },
 
-    #' Sync new OHLCV data and save to RDS
-    #' @param df_new New OHLCV data
-    #' @param inst_id Instrument ID
-    #' @param bar Timeframe
+    # Sync new OHLCV data and save to RDS
     sync_and_save_candles = function(df_new, inst_id, bar) {
       sync_and_save_candles(df_new, self$get_okx_candle_rds_path(inst_id, bar))
     },
 
-    #' Rename OHLCV columns from OKX format
+    # Rename OHLCV columns from OKX format
     rename_ohlcv_from_okx = function(...) okxr::standardize_ohlcv_names(...),
 
-    #' Detect time gaps in OHLCV data
+    # Detect time gaps in OHLCV data
     detect_time_gaps = detect_time_gaps,
 
-    #' Load CDD backtest summary and sort by performance
-    #' @return A sorted data.frame with backtest results
+    # Load CDD backtest summary and sort by performance
     load_bt_summary = function() {
       log_data <- read.delim(paste0(self$get_cdd_bt_dir(), "/run_log.tsv"), sep = "\t", header = TRUE, stringsAsFactors = FALSE)
       log_data <- log_data[order(-log_data$ann_ret, log_data$max_drawdown), ]
       log_data
     },
 
-    #' Open equity curve plot from backtest result
+    # Open equity curve plot from backtest result
     view_bt_equity_curve = function(inst_id, strategy) system(sprintf("open %s/equity_curve_%s_%s.png", self$get_cdd_bt_dir(), inst_id, strategy)),
 
-    #' Open monthly return chart from backtest result
+    # Open monthly return chart from backtest result
     view_bt_monthly_chart = function(inst_id, strategy) system(sprintf("open %s/monthly_return_chart_%s_%s.png", self$get_cdd_bt_dir(), inst_id, strategy)),
 
-    #' Open text-based stats from backtest result
+    # Open text-based stats from backtest result
     view_bt_stats = function(inst_id, strategy) system(sprintf("open %s/stats_%s_%s.txt", self$get_cdd_bt_dir(), inst_id, strategy))
   ),
   private = list(
-    #' Internal wrapper for OKX functions with optional pre- and post-processing
-    #' @param f The function to wrap
-    #' @param pre Optional function to run before `f(...)`
-    #' @param post Optional function to run on result
+    # Internal wrapper for OKX functions with optional pre- and post-processing
     wrap_okx = function(f, pre = NULL, post = NULL) {
       force(f)
       function(..., tz = self$mind_state$timezone, config = self$mind_state$tool_config$okx) {
