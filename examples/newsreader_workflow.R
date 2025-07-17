@@ -17,7 +17,11 @@ agent <- NewsReaderAgent$new(name, mind_state)
 # 3. Set timezone and FRED config
 agent$mind_state$timezone <- "Asia/Hong_Kong"
 agent$set_config("fred")   # Ensure tool_set_config("fred") provides a valid FRED API key
+agent$set_config("groq")
 
 # 4. Fetch FRED time series (e.g., U.S. GDP)
 df <- agent$fetch_fred_series("GDP")
-head(df)
+
+# 5. Summarize GDP
+json_text <- jsonlite::toJSON(df, pretty = TRUE)
+agent$query_groq(sprintf('Give me only two sentences to summarize this GDP Data: %s', json_text))

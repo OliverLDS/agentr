@@ -4,7 +4,16 @@
 \alias{query_groq}
 \title{Query the Groq API with a Prompt}
 \usage{
-query_groq(prompt, config)
+query_groq(
+  prompt,
+  config,
+  model = c("llama-3.1-8b-instant", "llama3-8b-8192", "llama3-70b-8192",
+    "deepseek-r1-distill-llama-70b"),
+  temperature = 1,
+  top_p = 1,
+  max_tokens = 1024,
+  stream = FALSE
+)
 }
 \arguments{
 \item{prompt}{A character string containing the prompt text for the model.}
@@ -20,7 +29,7 @@ query_groq(prompt, config)
 A character string with the model's generated response.
 }
 \description{
-Sends a prompt to the Groq-hosted LLM (e.g., LLaMA 3) using the OpenAI-compatible API format.
+Sends a prompt to the Groq-hosted LLM (e.g., llama3-70b-8192) using the OpenAI-compatible API format.
 This function assumes a standard completion interface similar to OpenAI’s chat completion endpoint.
 }
 \examples{

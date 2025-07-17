@@ -57,16 +57,27 @@ The following functions are loaded dynamically via \code{load_okxr()}:
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-CryptoTraderAgent-detect_time_gaps}{\code{CryptoTraderAgent$detect_time_gaps()}}
+\item \href{#method-CryptoTraderAgent-init_values}{\code{CryptoTraderAgent$init_values()}}
 \item \href{#method-CryptoTraderAgent-run}{\code{CryptoTraderAgent$run()}}
 \item \href{#method-CryptoTraderAgent-new}{\code{CryptoTraderAgent$new()}}
-\item \href{#method-CryptoTraderAgent-load_okxr}{\code{CryptoTraderAgent$load_okxr()}}
 \item \href{#method-CryptoTraderAgent-set_okx_candle_dir}{\code{CryptoTraderAgent$set_okx_candle_dir()}}
 \item \href{#method-CryptoTraderAgent-get_okx_candle_rds_path}{\code{CryptoTraderAgent$get_okx_candle_rds_path()}}
-\item \href{#method-CryptoTraderAgent-set_cdd_bt_dir}{\code{CryptoTraderAgent$set_cdd_bt_dir()}}
-\item \href{#method-CryptoTraderAgent-get_cdd_bt_dir}{\code{CryptoTraderAgent$get_cdd_bt_dir()}}
 \item \href{#method-CryptoTraderAgent-load_candles}{\code{CryptoTraderAgent$load_candles()}}
 \item \href{#method-CryptoTraderAgent-sync_and_save_candles}{\code{CryptoTraderAgent$sync_and_save_candles()}}
-\item \href{#method-CryptoTraderAgent-rename_ohlcv_from_okx}{\code{CryptoTraderAgent$rename_ohlcv_from_okx()}}
+\item \href{#method-CryptoTraderAgent-set_update_time}{\code{CryptoTraderAgent$set_update_time()}}
+\item \href{#method-CryptoTraderAgent-get_update_time}{\code{CryptoTraderAgent$get_update_time()}}
+\item \href{#method-CryptoTraderAgent-update_new_candles}{\code{CryptoTraderAgent$update_new_candles()}}
+\item \href{#method-CryptoTraderAgent-update_historical_candles}{\code{CryptoTraderAgent$update_historical_candles()}}
+\item \href{#method-CryptoTraderAgent-repair_missing_candles}{\code{CryptoTraderAgent$repair_missing_candles()}}
+\item \href{#method-CryptoTraderAgent-backfill_candles}{\code{CryptoTraderAgent$backfill_candles()}}
+\item \href{#method-CryptoTraderAgent-set_trading_strategy}{\code{CryptoTraderAgent$set_trading_strategy()}}
+\item \href{#method-CryptoTraderAgent-cancel_orders}{\code{CryptoTraderAgent$cancel_orders()}}
+\item \href{#method-CryptoTraderAgent-init_trade_state}{\code{CryptoTraderAgent$init_trade_state()}}
+\item \href{#method-CryptoTraderAgent-update_trade_state}{\code{CryptoTraderAgent$update_trade_state()}}
+\item \href{#method-CryptoTraderAgent-update_price_info}{\code{CryptoTraderAgent$update_price_info()}}
+\item \href{#method-CryptoTraderAgent-update_public_info}{\code{CryptoTraderAgent$update_public_info()}}
+\item \href{#method-CryptoTraderAgent-set_cdd_bt_dir}{\code{CryptoTraderAgent$set_cdd_bt_dir()}}
+\item \href{#method-CryptoTraderAgent-get_cdd_bt_dir}{\code{CryptoTraderAgent$get_cdd_bt_dir()}}
 \item \href{#method-CryptoTraderAgent-load_bt_summary}{\code{CryptoTraderAgent$load_bt_summary()}}
 \item \href{#method-CryptoTraderAgent-view_bt_equity_curve}{\code{CryptoTraderAgent$view_bt_equity_curve()}}
 \item \href{#method-CryptoTraderAgent-view_bt_monthly_chart}{\code{CryptoTraderAgent$view_bt_monthly_chart()}}
@@ -115,6 +126,15 @@ The following functions are loaded dynamically via \code{load_okxr()}:
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-init_values"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-init_values}{}}}
+\subsection{Method \code{init_values()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$init_values()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-run"></a>}}
 \if{latex}{\out{\hypertarget{method-CryptoTraderAgent-run}{}}}
 \subsection{Method \code{run()}}{
@@ -129,15 +149,6 @@ The following functions are loaded dynamically via \code{load_okxr()}:
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$new(...)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CryptoTraderAgent-load_okxr"></a>}}
-\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-load_okxr}{}}}
-\subsection{Method \code{load_okxr()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$load_okxr()}\if{html}{\out{</div>}}
 }
 
 }
@@ -160,24 +171,6 @@ The following functions are loaded dynamically via \code{load_okxr()}:
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CryptoTraderAgent-set_cdd_bt_dir"></a>}}
-\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-set_cdd_bt_dir}{}}}
-\subsection{Method \code{set_cdd_bt_dir()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$set_cdd_bt_dir(dir)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CryptoTraderAgent-get_cdd_bt_dir"></a>}}
-\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-get_cdd_bt_dir}{}}}
-\subsection{Method \code{get_cdd_bt_dir()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$get_cdd_bt_dir()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CryptoTraderAgent-load_candles"></a>}}
 \if{latex}{\out{\hypertarget{method-CryptoTraderAgent-load_candles}{}}}
 \subsection{Method \code{load_candles()}}{
@@ -196,11 +189,133 @@ The following functions are loaded dynamically via \code{load_okxr()}:
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CryptoTraderAgent-rename_ohlcv_from_okx"></a>}}
-\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-rename_ohlcv_from_okx}{}}}
-\subsection{Method \code{rename_ohlcv_from_okx()}}{
+\if{html}{\out{<a id="method-CryptoTraderAgent-set_update_time"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-set_update_time}{}}}
+\subsection{Method \code{set_update_time()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$rename_ohlcv_from_okx(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$set_update_time(inst_id, bar, update_time)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-get_update_time"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-get_update_time}{}}}
+\subsection{Method \code{get_update_time()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$get_update_time(inst_id, bar)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-update_new_candles"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-update_new_candles}{}}}
+\subsection{Method \code{update_new_candles()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$update_new_candles(inst_id, bar)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-update_historical_candles"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-update_historical_candles}{}}}
+\subsection{Method \code{update_historical_candles()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$update_historical_candles(inst_id, bar, before_time)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-repair_missing_candles"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-repair_missing_candles}{}}}
+\subsection{Method \code{repair_missing_candles()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$repair_missing_candles(
+  inst_id,
+  bar,
+  candle_gaps,
+  max_iter = 3
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-backfill_candles"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-backfill_candles}{}}}
+\subsection{Method \code{backfill_candles()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$backfill_candles(inst_id, bar)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-set_trading_strategy"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-set_trading_strategy}{}}}
+\subsection{Method \code{set_trading_strategy()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$set_trading_strategy(pars)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-cancel_orders"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-cancel_orders}{}}}
+\subsection{Method \code{cancel_orders()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$cancel_orders(inst_id)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-init_trade_state"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-init_trade_state}{}}}
+\subsection{Method \code{init_trade_state()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$init_trade_state()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-update_trade_state"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-update_trade_state}{}}}
+\subsection{Method \code{update_trade_state()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$update_trade_state()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-update_price_info"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-update_price_info}{}}}
+\subsection{Method \code{update_price_info()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$update_price_info(inst_id)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-update_public_info"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-update_public_info}{}}}
+\subsection{Method \code{update_public_info()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$update_public_info(inst_id, bar, ...)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-set_cdd_bt_dir"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-set_cdd_bt_dir}{}}}
+\subsection{Method \code{set_cdd_bt_dir()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$set_cdd_bt_dir(dir)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CryptoTraderAgent-get_cdd_bt_dir"></a>}}
+\if{latex}{\out{\hypertarget{method-CryptoTraderAgent-get_cdd_bt_dir}{}}}
+\subsection{Method \code{get_cdd_bt_dir()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CryptoTraderAgent$get_cdd_bt_dir()}\if{html}{\out{</div>}}
 }
 
 }

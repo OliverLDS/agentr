@@ -1,6 +1,6 @@
 #' Query the Groq API with a Prompt
 #'
-#' Sends a prompt to the Groq-hosted LLM (e.g., LLaMA 3) using the OpenAI-compatible API format.
+#' Sends a prompt to the Groq-hosted LLM (e.g., llama3-70b-8192) using the OpenAI-compatible API format.
 #' This function assumes a standard completion interface similar to OpenAI’s chat completion endpoint.
 #'
 #' @param prompt A character string containing the prompt text for the model.
@@ -18,15 +18,22 @@
 #' query_groq("Write a haiku about LLMs.", config)
 #'
 #' @export
-query_groq <- function(prompt, config) {
+query_groq <- function(prompt, config, 
+  model = c("llama-3.1-8b-instant", "llama3-8b-8192", "llama3-70b-8192", "deepseek-r1-distill-llama-70b"),
+  temperature = 1.0, top_p = 1.0, max_tokens = 1024, 
+  stream = FALSE) {
 
+  model <- match.arg(model)
   api_key <- config$api_key
   url <- config$url
-  model <- config$model
 
   body <- list(
     messages = list(list(role = "user", content = prompt)),
-    model = model
+    model = model,
+    temperature = temperature,
+    top_p = top_p,
+    stream = stream,
+    max_tokens = max_tokens
   )
 
   response <- httr::POST(

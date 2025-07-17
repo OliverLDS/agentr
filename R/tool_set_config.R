@@ -38,8 +38,7 @@ tool_set_config <- function(key) {
     ),
     groq = list(
       api_key = Sys.getenv("GROQ_API_KEY"),
-      url = "https://api.groq.com/openai/v1/chat/completions",
-      model = "llama3-70b-8192"
+      url = "https://api.groq.com/openai/v1/chat/completions"
     ),
 
     # DataSources

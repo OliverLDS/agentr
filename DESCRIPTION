@@ -22,7 +22,8 @@ Imports:
     rvest,
     emayili,
     stats,
-    rlang
+    rlang,
+    okxr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 
