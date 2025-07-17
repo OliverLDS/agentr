@@ -110,7 +110,7 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
             self$mind_state$trade_pars$risk_SL <- -0.015
           }
           
-          print(list(
+          self$place_order(list(
             inst_id = inst_id,
             td_mode = "cross",
             side = ifelse(order$type == 'OPEN', 'buy', 'sell'),
