@@ -203,7 +203,7 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
     
     update_new_candles = function(inst_id, bar) {
       new_candles <- self$get_candles_okx(inst_id, bar)
-      new_update_time <- max(new_candles$timestamp)
+      new_update_time <- max(new_candles[new_candles$confirm==1L,]$timestamp)
       old_update_time <- self$get_update_time(inst_id, bar)
       has_new <- self$sync_and_save_candles(new_candles, inst_id, bar)
       if (has_new || !identical(old_update_time, new_update_time)) {
