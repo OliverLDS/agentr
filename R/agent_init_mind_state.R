@@ -11,7 +11,6 @@
 #' - \code{history}: Logs, chat history, summary, and Telegram chat IDs
 #' - \code{current_context}: Contains finite state machine (FSM) state
 #' - \code{tool_config}: Configuration list for external tools (LLMs, TG, etc.)
-#' - \code{timezone}: Default timezone for time-aware operations
 #'
 #' @param mind_state A list optionally containing some or all fields to override the defaults.
 #'
@@ -24,13 +23,11 @@ init_mind_state <- function(mind_state = NULL) {
     tone_guideline = NA_character_,
     knowledge = list(),
     beliefs = list(),
-    values = list(risk_aversion = 0.5, verbosity = 0.7),
+    values = list(risk_aversion = NA_real_, verbosity = NA_real_),
     emotion_state = default_emotion_state(),
     goals = list(),
     history = list(logs = list(), chats = list(), summary = NA_character_, TG_chat_ids = integer(0)),
-    current_context = list(state = "idle"),
-    tool_config = list(),
-    timezone = "Asia/Singapore"
+    current_context = list(state = NA_character_)
   )
 
   if (!is.null(mind_state)) {

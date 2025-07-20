@@ -31,33 +31,54 @@
 XAgent <- R6::R6Class("XAgent",
   public = list(
     name = NULL,
-    mind_state  = NULL,
+    timezone = NULL,
+    mind_state = NULL,
+    tool_config = list(),
 
-    initialize = function(name = "agent", mind_state = NULL) {
+    initialize = function(name = "agent", tz = "Asia/Hong_Kong", mind_state = NULL) {
       self$name <- name
+      self$timezone <- tz
       self$mind_state <- init_mind_state(mind_state)
       self$log(sprintf("Agent %s initialized.", self$name))
     },
     
+    #---- Time zone ----
+    
+    set_tz = function(tz) {
+      old <- self$timezone
+      if (!identical(old, tz)) {
+        self$timezone <- tz
+        self$log(sprintf("Timezone changed from %s to %s.", old, tz))
+      }
+    },
+    
+    get_tz = function(tz) {
+      self$timezone
+    },
+    
     # FSM
     
-    get_state = function() self$mind_state$current_context$state,
+    get_state = function() {
+      self$mind_state$current_context$state
+    },
     set_state = function(state) {
       old <- self$mind_state$current_context$state
       if (!identical(old, state)) {
         self$mind_state$current_context$state <- state
-        self$log(paste("State changed from", old, "to", state))
+        self$log(sprintf("State changed from %s to %s.", old, state))
       }
     },
     
     # action logging
     
     log = function(msg) {
-      df_log_entry <- data.frame(time = convert_time_to_tz(Sys.time(), tz = self$mind_state$timezone), msg = msg)
+      df_log_entry <- data.frame(time = convert_time_to_tz(Sys.time(), tz = self$get_tz()), msg = msg)
       new_logs <- rbind(df_log_entry, self$mind_state$history$logs)
       self$mind_state$history$logs <- new_logs[order(new_logs$time, decreasing = TRUE), ]
     },
-    get_logs = function() self$mind_state$history$logs,
+    get_logs = function() {
+      self$mind_state$history$logs
+    },
 
     # workflow should be overridden by other child agents
     
@@ -85,20 +106,24 @@ XAgent <- R6::R6Class("XAgent",
     # chatting
     
     add_chat_message = function(role, msg, channel = "internal") {
-      df_chat_entry <- data.frame(time = convert_time_to_tz(Sys.time(), tz = self$mind_state$timezone), 
+      df_chat_entry <- data.frame(time = convert_time_to_tz(Sys.time(), tz = self$get_tz()), 
         role = role, msg = msg, channel = channel)
       new_chats <- rbind(df_chat_entry, self$mind_state$history$chats)
       self$mind_state$history$chats <- new_chats[order(new_chats$time, decreasing = TRUE), ]
     },
-    get_chats = function() self$mind_state$history$chats,
+    get_chats = function() {
+      self$mind_state$history$chats
+    },
     
     # get configs
     
     set_config = function(key) {
-      self$mind_state$tool_config[[key]] <- tool_set_config(key)
+      self$tool_config[[key]] <- tool_set_config(key)
       self$log(sprintf("Tool config for '%s' set.", key))
     },
-    get_config = function(key) self$mind_state$tool_config[[key]],
+    get_config = function(key) {
+      self$tool_config[[key]]
+    },
     
     # conversation_TG, which is necessary for all the agents.
     
@@ -116,7 +141,7 @@ XAgent <- R6::R6Class("XAgent",
       res <- sync_TG_chats(old_update_ids = old_update_ids, config = self$mind_state$tool_config$tg)
       if (res$has_new) {
         self$mind_state$history$TG_chat_ids <- unique(c(old_update_ids, res$new_ids))
-        res$df$time <- convert_time_to_tz(res$df$time, tz = self$mind_state$timezone)
+        res$df$time <- convert_time_to_tz(res$df$time, tz = self$get_tz())
         new_chats <- rbind(old_chats, res$df[, !(names(res$df) %in% "update_id")])
         self$mind_state$history$chats <- new_chats[order(new_chats$time, decreasing = TRUE), ]
       }
@@ -136,7 +161,9 @@ XAgent <- R6::R6Class("XAgent",
       file.create(self$mind_state$tool_config$localchat$chat_file)
       invisible(NULL)
     },
-    popout_local = function(...) popout_local(self$mind_state$tool_config$localchat, ...),
+    popout_local = function(...) {
+      popout_local(self$mind_state$tool_config$localchat, ...)
+    },
     send_text_local = function(txt) {
       send_text_local(txt, self$name, self$mind_state$tool_config$localchat$chat_file)
       self$add_chat_message(self$name, txt, channel = "internal")
@@ -145,7 +172,7 @@ XAgent <- R6::R6Class("XAgent",
       res <- sync_local_user_input(self$mind_state$tool_config$localchat$chat_file)
       if (res$has_new) {
         old_chats <- self$mind_state$history$chats
-        res$df$time <- convert_time_to_tz(res$df$time, tz = self$mind_state$timezone)
+        res$df$time <- convert_time_to_tz(res$df$time, tz = self$get_tz())
         new_chats <- rbind(old_chats, res$df)
         self$mind_state$history$chats <- new_chats[order(new_chats$time, decreasing = TRUE), ]
       }
@@ -161,8 +188,12 @@ XAgent <- R6::R6Class("XAgent",
     
     # llms
     
-    query_groq = function(prompt, ...) query_groq(prompt, config = self$mind_state$tool_config$groq, ...),
-    query_gemini = function(prompt, ...) query_gemini(prompt, config = self$mind_state$tool_config$gemini, ...),
+    query_groq = function(prompt, ...) {
+      query_groq(prompt, config = self$mind_state$tool_config$groq, ...)
+    },
+    query_gemini = function(prompt, ...) {
+      query_gemini(prompt, config = self$mind_state$tool_config$gemini, ...)
+    },
     
     # prompt
     
@@ -186,7 +217,9 @@ XAgent <- R6::R6Class("XAgent",
       self$mind_state$emotion_state <- decay_emotion_state(self$mind_state$emotion_state, ...)
       self$log("Emotion state decayed.")
     },
-    describe_emotion = function(...) describe_emotional_state(self$mind_state$emotion_state, ...)
+    describe_emotion = function(...) {
+      describe_emotional_state(self$mind_state$emotion_state, ...)
+    }
   )
 )
 

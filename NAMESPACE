@@ -3,6 +3,7 @@
 export(CryptoTraderAgent)
 export(NewsReaderAgent)
 export(RSSlist)
+export(StratBacktester)
 export(XAgent)
 export(backup_agent)
 export(combine_emotions)
