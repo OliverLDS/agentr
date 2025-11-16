@@ -1,6 +1,6 @@
 #' @export
 StratBacktester <- R6::R6Class("StratBacktester",
-  inherit = XAgent,
+  inherit = Agent,
   public = list(
     #---- OKX backtesting ----
     

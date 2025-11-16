@@ -1,3 +1,18 @@
+#' @export
+get_groq_models <- function(api_key = Sys.getenv("GROQ_API_KEY")) {
+  url <- "https://api.groq.com/openai/v1/models"
+  
+  response <- httr2::request(url) |>
+    httr2::req_headers(
+      Authorization = paste("Bearer", api_key),
+      `Content-Type` = "application/json"
+    ) |>
+    httr2::req_perform()
+  
+  model_id_list <- sapply(httr2::resp_body_json(response)$data, function(x) x$id)
+  return(invisible(model_id_list))
+}
+
 #' Query the Groq API with a Prompt
 #'
 #' Sends a prompt to the Groq-hosted LLM (e.g., llama3-70b-8192) using the OpenAI-compatible API format.
@@ -19,11 +34,10 @@
 #'
 #' @export
 query_groq <- function(prompt, config, 
-  model = c("llama-3.1-8b-instant", "llama3-8b-8192", "llama3-70b-8192", "deepseek-r1-distill-llama-70b"),
+  model = "llama-3.1-8b-instant",
   temperature = 1.0, top_p = 1.0, max_tokens = 1024, 
   stream = FALSE) {
 
-  model <- match.arg(model)
   api_key <- config$api_key
   url <- config$url
 

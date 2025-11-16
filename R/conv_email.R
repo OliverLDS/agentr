@@ -31,15 +31,20 @@
 #' }
 #'
 #' @export
-send_email <- function(input, config) {
+send_email <- function(input, html = FALSE, config) {
   if (any(c("to", "subject", "body") %in% names(input)) == FALSE)
     stop("input must include 'to', 'subject', and 'body'")
 
   email <- emayili::envelope() |>
     emayili::from(config$from) |>
     emayili::to(input$to) |>
-    emayili::subject(input$subject) |>
-    emayili::text(input$body)
+    emayili::subject(input$subject)
+  
+  email <- if (html) {
+    email |> emayili::html(input$body)
+  } else {
+    email |> emayili::text(input$body)
+  }
 
   smtp <- emayili::server(
     host = "smtp.gmail.com",
@@ -49,12 +54,14 @@ send_email <- function(input, config) {
   )
 
   smtp(email)
-  return(TRUE)
+  return(invisible(TRUE))
 }
+
+
 
 # input <- list(
 #   to = "olee7149@gmail.com",
 #   subject = "Weekly Summary",
-#   body = "Hi, here's your update!"
+#   body = "<a href='https://cognaptus.com/blog/2025-09-06-cheap-thrills-hard-guarantees-bargaining-with-llm-cascades'>link</a>"
 # )
-# send_email(input)
+# send_email(input, html = TRUE, config = agentr:::.set_tool_config('email'))

@@ -28,18 +28,46 @@
 #'
 #' @format An R6 class object.
 #' @export
-XAgent <- R6::R6Class("XAgent",
+Agent <- R6::R6Class("Agent",
   public = list(
+    user_name = NULL,
     name = NULL,
     timezone = NULL,
-    mind_state = NULL,
     tool_config = list(),
-
-    initialize = function(name = "agent", tz = "Asia/Hong_Kong", mind_state = NULL) {
+    mind_state = list(
+      # Slow-changing attributes
+      identity = NA_character_,
+      personality = NA_character_,
+      tone_guideline = NA_character_,
+      values = list(risk_aversion = NA_real_, verbosity = NA_real_),
+      # Fast-changing cognitive state
+      emotion_state = default_emotion_state(),
+      knowledge = list(),
+      beliefs = list(),
+      goals = list(),
+      current_context = list(state = NA_character_),
+      workflow_fsm = NA_character_,
+      # Memory about the *user*
+      memory_user_short = list(),
+      memory_user_long = list(),
+      # Conversation + internal trace
+      history = list(
+        logs = data.table::data.table(timestamp = as.POSIXct(character(0L)), msg = character(0L)), 
+        chats = data.table::data.table(timestamp = as.POSIXct(character(0L)), role = character(0L), msg = character(0L), type = character(0L), channel = character(0L)),
+        TG_chat_ids = integer(0))
+    ),
+    
+    initialize = function(user_name = "your name", name = "agent’s name", tz = "Asia/Hong_Kong", mind_state = NULL) {
+      self$user_name <- user_name
       self$name <- name
       self$timezone <- tz
-      self$mind_state <- init_mind_state(mind_state)
-      self$log(sprintf("Agent %s initialized.", self$name))
+      if (!is.null(mind_state)) {
+        for (k in names(mind_state)) {
+          self$mind_state[[k]] <- mind_state[[k]]
+        }
+      }
+      self$log(sprintf("Initialized agent '%s' for user '%s'[timezone: %s].", self$name, self$user_name, self$timezone))
+      invisible(NULL)
     },
     
     #---- Time zone ----
@@ -50,41 +78,56 @@ XAgent <- R6::R6Class("XAgent",
         self$timezone <- tz
         self$log(sprintf("Timezone changed from %s to %s.", old, tz))
       }
+      invisible(NULL)
     },
-    
     get_tz = function(tz) {
       self$timezone
     },
     
-    # FSM
-    
-    get_state = function() {
-      self$mind_state$current_context$state
+    #---- Memory ----
+    export_memory = function(path) {
+      .safe_save_rds(self$mind_state, path)
+      invisible(NULL)
     },
-    set_state = function(state) {
-      old <- self$mind_state$current_context$state
-      if (!identical(old, state)) {
-        self$mind_state$current_context$state <- state
-        self$log(sprintf("State changed from %s to %s.", old, state))
+    import_memory = function(path) {
+      self$mind_state <- .safe_read_rds(path)  
+      self$log(sprintf("Memory state successfully imported from '%s'.", path))
+      invisible(NULL)
+    },
+    
+    #---- mind state i/o ----
+    
+    set_mind_state = function(key, new_value) {
+      old_value <- self$mind_state[[key]]
+      if (!identical(old_value, new_value)) {
+        self$mind_state[[key]] <- new_value
+        self$log(sprintf("State changed from %s to %s.", old_value, new_value))
       }
+      invisible(NULL)
+    },
+    get_mind_state = function(key) {
+      self$mind_state[[key]]
     },
     
     # action logging
     
     log = function(msg) {
-      df_log_entry <- data.frame(time = convert_time_to_tz(Sys.time(), tz = self$get_tz()), msg = msg)
-      new_logs <- rbind(df_log_entry, self$mind_state$history$logs)
-      self$mind_state$history$logs <- new_logs[order(new_logs$time, decreasing = TRUE), ]
+      df_log_entry <- data.table::data.table(timestamp = .to_tz(Sys.time(), tz = self$get_tz()), msg = msg)
+      self$mind_state$history$logs <- data.table::rbindlist(list(self$get_logs(), df_log_entry), fill = TRUE)
+      invisible(NULL)
     },
-    get_logs = function() {
-      self$mind_state$history$logs
+    get_logs = function(recent_n = NULL, newest_first = FALSE) {
+      logs <- self$mind_state$history$logs
+      if (!is.null(recent_n)) logs <- tail(logs, recent_n)
+      if (newest_first) data.table::setorder(logs, -timestamp)
+      logs
     },
 
     # workflow should be overridden by other child agents
     
     run = function() {
       self$tg_check_and_reply()
-      # self$local_check_and_reply()
+      invisible(NULL)
     },
     
     tg_check_and_reply = function() {
@@ -93,52 +136,48 @@ XAgent <- R6::R6Class("XAgent",
       }
     },
     
-    # mind_state
-
-    update_mind_state = function(path, value) {
-      self$log(sprintf("mind state updated: %s", paste(path, collapse = "$")))
-      self$mind_state <- set_nested_path(self$mind_state, path, value)
+    # chat loging
+    add_chat_message = function(role, msg, type = "dialog", channel = "internal") {
+      dt_chat_entry <- data.table::data.table(timestamp = .to_tz(Sys.time(), tz = self$get_tz()), 
+        role = role, msg = msg, type = type, channel = channel)
+      self$mind_state$history$chats <- data.table::rbindlist(list(self$get_chats(), dt_chat_entry), fill = TRUE)
+      invisible(NULL)
     },
-    
-    # About interactions with human, some possible methods
-    # handle_user_input = function(text), something human's NLP will change agent's 
-    # summarize_chat = function(), something to summerize long term chatting history to a hidden summary so a markov model is feasible
-    # chatting
-    
-    add_chat_message = function(role, msg, channel = "internal") {
-      df_chat_entry <- data.frame(time = convert_time_to_tz(Sys.time(), tz = self$get_tz()), 
-        role = role, msg = msg, channel = channel)
-      new_chats <- rbind(df_chat_entry, self$mind_state$history$chats)
-      self$mind_state$history$chats <- new_chats[order(new_chats$time, decreasing = TRUE), ]
-    },
-    get_chats = function() {
-      self$mind_state$history$chats
+    get_chats = function(recent_n = NULL, newest_first = FALSE) {
+      chats <- self$mind_state$history$chats
+      if (!is.null(recent_n)) chats <- tail(chats, recent_n)
+      if (newest_first) data.table::setorder(chats, -timestamp)
+      chats
     },
     
     # get configs
     
-    set_config = function(key) {
-      self$tool_config[[key]] <- tool_set_config(key)
+    set_config = function(key, value = NULL) {
+      if (is.null(value)) value <- .set_tool_config(key)
+      self$tool_config[[key]] <- value
       self$log(sprintf("Tool config for '%s' set.", key))
+      invisible(NULL)
     },
     get_config = function(key) {
       self$tool_config[[key]]
     },
     
-    # conversation_TG, which is necessary for all the agents.
+    # conversation through Telegram
     
-    send_text_TG = function(txt, ...) {
-      send_text_TG(txt, config = self$mind_state$tool_config$tg, ...)
+    send_TG_text_to_user= function(txt, ...) {
+      send_text_TG(txt, config = self$get_config('tg'), ...)
       self$add_chat_message(self$name, txt, channel = "TG")
+      invisible(NULL)
     },
-    send_image_TG = function(image_path, caption_text, ...) {
-      send_image_TG(image_path, caption_text, config = self$mind_state$tool_config$tg, ...)
+    send_TG_image_to_user = function(image_path, caption_text, ...) {
+      send_image_TG(image_path, caption_text, config = self$get_config('tg'), ...)
       self$add_chat_message(self$name, sprintf("%s | %s", caption_text, image_path), channel = "TG")
+      invisible(NULL)
     },
-    sync_TG_chats = function() {
+    sync_TG_chats = function() { #----- we need to replace the TG chat name with self$user_name here -----
       old_update_ids <- self$mind_state$history$TG_chat_ids
-      old_chats <- self$mind_state$history$chats
-      res <- sync_TG_chats(old_update_ids = old_update_ids, config = self$mind_state$tool_config$tg)
+      old_chats <- self$get_chats()
+      res <- sync_TG_chats(old_update_ids = old_update_ids, config = self$get_config('tg'))
       if (res$has_new) {
         self$mind_state$history$TG_chat_ids <- unique(c(old_update_ids, res$new_ids))
         res$df$time <- convert_time_to_tz(res$df$time, tz = self$get_tz())
@@ -148,57 +187,67 @@ XAgent <- R6::R6Class("XAgent",
       return(res$has_new)
     },
     
-    # conversation_email,
+    # conversation through email
     
-    send_email = function(to, subject, body, ...) {
-      send_email(input = list(to = to, subject =subject, body = body), config = self$mind_state$tool_config$email, ...)
+    send_email_to_user = function(to, subject, body, html = FALSE) {
+      send_email(input = list(to = to, subject =subject, body = body), html = html, config = self$get_config('email'))
       self$log(sprintf("Send an email titled %s to %s.", subject, to))
     },
     
-    # conversation_local,
+    # conversation through terminal
     
-    initial_chat_local = function() {
-      file.create(self$mind_state$tool_config$localchat$chat_file)
+    send_msg_to_user_terminal = function(msg, type = 'dialog') {
+      cat(self$name, ': ', .render_markdown_terminal(msg), "\n")
+      self$add_chat_message(self$name, msg, type = type, channel = "internal")  
       invisible(NULL)
     },
-    popout_local = function(...) {
-      popout_local(self$mind_state$tool_config$localchat, ...)
+    receive_msg_from_user_terminal = function(msg) {
+      self$add_chat_message(self$user_name, msg, channel = "internal")
     },
-    send_text_local = function(txt) {
-      send_text_local(txt, self$name, self$mind_state$tool_config$localchat$chat_file)
-      self$add_chat_message(self$name, txt, channel = "internal")
+    show_logs_terminal = function(recent_n = NULL) {
+      dt <- self$get_logs(recent_n = recent_n)
+      for (i in 1:nrow(dt)) cat(sprintf("%s: %s\n", .fmt_ts(dt[i, 1]), dt[i, 2]))
     },
-    sync_local_user_input = function() {
-      res <- sync_local_user_input(self$mind_state$tool_config$localchat$chat_file)
-      if (res$has_new) {
-        old_chats <- self$mind_state$history$chats
-        res$df$time <- convert_time_to_tz(res$df$time, tz = self$get_tz())
-        new_chats <- rbind(old_chats, res$df)
-        self$mind_state$history$chats <- new_chats[order(new_chats$time, decreasing = TRUE), ]
-      }
-      return(res$has_new)
-    },
-    local_check_and_reply = function() {
-      if(self$sync_local_user_input()) {
-        # system("pkill -x TextMate") # it is better to be rolled down by user
-        self$send_text_local(self$query_groq(self$compose_prompt_plain()))
-        self$popout_local()
-      }
+    show_chats_terminal = function(recent_n = NULL, dialog_only = TRUE) {
+      dt <- self$get_chats(recent_n = recent_n)
+      if (dialog_only) dt <- dt[type == 'dialog', ]
+      for (i in 1:nrow(dt)) cat(sprintf("%s | %s: %s\n\n", .fmt_ts(dt[i, 1]), dt[i, 2], dt[i, 3]))
     },
     
     # llms
     
     query_groq = function(prompt, ...) {
-      query_groq(prompt, config = self$mind_state$tool_config$groq, ...)
+      query_groq(prompt, config = self$get_config('groq'), ...)
     },
     query_gemini = function(prompt, ...) {
-      query_gemini(prompt, config = self$mind_state$tool_config$gemini, ...)
+      query_gemini(prompt, config = self$get_config('gemini'), ...)
     },
     
-    # prompt
+    # prompt templates
+    # ---- prompt templates should be very enriched; data collecter should mainly be run in VM; a local data collecter downloaded/sync from VM ----
     
+    render_prompt = function(template_file_name, args) {
+      path <- system.file("prompts", paste0(template_file_name, '.txt'), package = "agentr")
+      template <- readChar(path, file.info(path)$size, useBytes = TRUE)
+      .render_prompt(template, args)
+    },
+    render_prompt_head = function() {
+      self$render_prompt('head1', list(name = self$name, identity = self$mind_state$identity, personality = self$mind_state$personality, tone_guideline = self$mind_state$tone_guideline, user_name = self$user_name))
+    },
+    render_prompt_reply = function() {
+      separted_chats <- .separate_chats(self$name, self$get_chats())
+      if (separted_chats$unreplied_msg != '[]') {
+        separted_chats$user_name <- self$user_name
+        separted_chats$agent_name <- self$name
+        return(self$render_prompt('reply1', separted_chats))
+      } else {
+        return(NA_character_)  
+      }
+    },
+    
+    # below need to be revised so we can separate historical and new chats
     compose_prompt_plain = function() {
-      chats <- self$mind_state$history$chats
+      chats <- self$get_chats()
       if ("channel" %in% names(chats)) {
         chats$channel <- NULL
       }
@@ -210,15 +259,17 @@ XAgent <- R6::R6Class("XAgent",
     # emotion functions
     
     randomize_emotion = function(...) {
-      self$mind_state$emotion_state <- define_random_emotion_state(...)
+      self$set_mind_state('emotion_state', define_random_emotion_state(...))
       self$log("Emotion state randomized.")
+      invisible(NULL)
     },
     decay_emotion = function(...) {
       self$mind_state$emotion_state <- decay_emotion_state(self$mind_state$emotion_state, ...)
       self$log("Emotion state decayed.")
+      invisible(NULL)
     },
     describe_emotion = function(...) {
-      describe_emotional_state(self$mind_state$emotion_state, ...)
+      describe_emotional_state(self$get_mind_state('emotion_state'), ...)
     }
   )
 )

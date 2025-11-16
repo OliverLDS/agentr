@@ -34,7 +34,7 @@
 #'
 #' @export
 CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
-  inherit = XAgent,
+  inherit = Agent,
   public = list(
     crypto_trader  = NULL,
 
@@ -66,14 +66,17 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
     },
     
     init_values = function(LEVERAGE = 10) {
-      self$set_config('okx')
-      self$set_okx_candle_dir("~/Documents/2025/_2025-06-17_Crypto_Data/okx")
-      self$crypto_trader$inst_ids <- c('SOL-USDT-SWAP', 'ETH-USDT-SWAP', 'BNB-USDT-SWAP')
+      self$set_okx_candle_dir(Sys.getenv('OKX_Candle_Data_Path'))
+      self$crypto_trader$inst_info <- list(
+        "BNB-USDT-SWAP" = list(unit_per_contract = 0.01, min_digit = 0L, eq_portion = 0.25),
+        "ETH-USDT-SWAP" = list(unit_per_contract = 0.1, min_digit = 2L, eq_portion = 0.5),
+        "SOL-USDT-SWAP" = list(unit_per_contract = 1, min_digit = 2L, eq_portion = 0.25)
+      )
       self$crypto_trader$bar <- '4H'
       durations <- c('4H' = 240*60, '15m' = 15*60)
       self$crypto_trader$bar_duration <- durations[self$crypto_trader$bar]
       
-      inst_ids <- self$crypto_trader$inst_ids
+      inst_ids <- names(self$crypto_trader$inst_info)
       bar <- self$crypto_trader$bar
       
       self$update_eq()
@@ -102,22 +105,6 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
       orders
     },
     
-    adjust_risk_level = function(inst_id, trade_reason) {
-      if (trade_reason %in% c('breakout_layer1_long', 'breakout_layer1_short')) {
-        self$set_trade_pars_tpsl(inst_id, 0.15, -0.065)
-      } else if (trade_reason %in% c('breakout_layer2_long', 'breakout_layer2_short')) {
-        self$set_trade_pars_tpsl(inst_id, 0.1, -0.04)
-      } else if (trade_reason %in% c('breakout_layer3_long', 'breakout_layer3_short')) {
-        self$set_trade_pars_tpsl(inst_id, 0.04, -0.02)
-      } else if (trade_reason %in% c('breakout_layer4_long', 'breakout_layer4_short')) {
-        self$set_trade_pars_tpsl(inst_id, 0.03, -0.02)
-      } else if (trade_reason %in% c('zone_sniper_long', 'zone_sniper_short')) {
-        self$set_trade_pars_tpsl(inst_id, 0.03, -0.015)
-      } else if (trade_reason %in% c('zone_sniper_long_pivot', 'zone_sniper_short_pivot')) {
-        self$set_trade_pars_tpsl(inst_id, 0.03, -0.015)
-      }
-    },
-    
     append_order_record = function(order_record) {
       self$crypto_trader$order_df <- rbind(self$crypto_trader$order_df, order_record)
     },
@@ -141,23 +128,73 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
       }
     },
     
-    # run logic: 
-    # cancel all pedning orders
-    # update price info
-    # check tp/sl (execute if meet)
-    # update tech info (check time first to reduce computing efforts)
-    # place order
-    # change tp/sl based on last order type
+    execute_order_market = function(inst_id, order) {
+        
+      res <- self$place_order(
+        inst_id = inst_id,
+        td_mode = "cross",
+        side = ifelse((order$type == 'OPEN' && order$pos == 'long') || (order$type == 'CLOSE' && order$pos == 'short'), 'buy', 'sell'),
+        pos_side = order$pos,
+        ord_type = "market",
+        sz = order$size
+      )
+      
+      ord_id <- res$ordId
+      
+      if (is.null(ord_id)) {
+        self$log("Order failed to place.")
+        return(res)
+      } else {
+        self$log(sprintf("Order %s placed.", ord_id))
+      }
+      order$order_id <- ord_id
+      order$order_status <- 'live'
+      order$inst_id <- inst_id
+      self$append_order_record(order)
+      
+      filled <- self$wait_fill(inst_id, ord_id)
+      if (filled) {
+        self$modify_order_record_status(ord_id, 'filled')
+      } else {
+        self$log(sprintf("Order %s not filled within timeout.", ord_id))
+      }
+      
+      return(res)
+
+    },
+    
+    adjust_risk_level = function(inst_id, trade_reason) {
+      if (trade_reason %in% c('breakout_layer1_long', 'breakout_layer1_short')) {
+        self$set_trade_pars_tpsl(inst_id, 4, -2)
+      } else if (trade_reason %in% c('breakout_layer2_long', 'breakout_layer2_short')) {
+        self$set_trade_pars_tpsl(inst_id, 3, -1.5)
+      } else if (trade_reason %in% c('breakout_layer3_long', 'breakout_layer3_short')) {
+        self$set_trade_pars_tpsl(inst_id, 2, -1)
+      } else if (trade_reason %in% c('breakout_layer4_long', 'breakout_layer4_short')) {
+        self$set_trade_pars_tpsl(inst_id, 1.5, -1)
+      } else if (trade_reason %in% c('zone_sniper_long', 'zone_sniper_short')) {
+        self$set_trade_pars_tpsl(inst_id, 1.5, -1)
+      } else if (trade_reason %in% c('zone_sniper_long_pivot', 'zone_sniper_short_pivot')) {
+        self$set_trade_pars_tpsl(inst_id, 1.5, -1)
+      }
+    },
     
     run = function() {
       
-      inst_ids <- self$crypto_trader$inst_ids
+      inst_ids <- names(self$crypto_trader$inst_info)
       bar <- self$crypto_trader$bar
       bar_duration <- self$crypto_trader$bar_duration
       
+      self$update_eq()
+      self$update_pos()
+      
       for (inst_id in inst_ids) {
         
+        unit_per_contract <- self$crypto_trader$inst_info[[inst_id]]$unit_per_contract
+        min_digit <- self$crypto_trader$inst_info[[inst_id]]$min_digit
+        
         #---- update trade state and pars ----
+        self$update_trade_state(inst_id)
         trade_state <- self$get_trade_state(inst_id)
         trade_pars <- self$get_trade_pars(inst_id)
         trade_strategy <- trade_pars$strategy
@@ -168,106 +205,43 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
         if (seconds_since_update >= 2 * bar_duration) {
           self$update_new_candles(inst_id, bar)
           self$update_public_info_tech(inst_id, bar, if_calculate_pivote_zone = TRUE, if_calculate_arima = FALSE)
-        }
+        } 
+        # bug here if meet the deadline; don't know why
+        # else if (min(self$load_candles(inst_id, bar)$timestamp) > as.POSIXct("2022-01-01 00:00:00")) {
+        #   self$backfill_candles(inst_id, bar)
+        # }
         public_info <- self$fetch_public_info(inst_id)
         
         #---- cancel pending orders ---- 
         self$cancel_orders(inst_id)
         
         # ---- check tp/sl (execute if meet) ----
-        orders <- strategyr::generate_tp_sl_orders(trade_state, public_info, trade_pars)
+        orders <- strategyr::generate_tp_sl_orders(trade_state, public_info, trade_pars, unit_per_contract, min_digit)
     
         if (nrow(orders) > 0) {
           for (i in 1:nrow(orders)) { # can not use 'for order in orders' here
             order <- orders[i, ]
-            
-            res <- self$place_order(
-              inst_id = inst_id,
-              td_mode = "cross",
-              side = ifelse(order$type == 'OPEN', 'buy', 'sell'),
-              pos_side = order$pos,
-              ord_type = "market",
-              sz = size
-            )
-            
-            ord_id <- res$ordId
-            
-            if (is.null(ord_id)) {
-              self$log("Order failed to place.")
+            if (order$size<=0) {
+              message("Order size is not positive.")
               next
-            } else {
-              self$log(sprintf("Order %s placed.", ord_id))
             }
-            order$order_id <- ord_id
-            order$order_status <- 'live'
-            order$inst_id <- inst_id
-            self$append_order_record(order)
-            
-            filled <- self$wait_fill(inst_id, ord_id)
-            if (filled) {
-              self$modify_order_record_status(ord_id, 'filled')
-            } else {
-              self$log(sprintf("Order %s not filled within timeout.", ord_id))
-            }
+            self$execute_order_market(inst_id, order)
           }
         } else {
-          orders <- trade_strategy(trade_state, public_info, trade_pars)
+          orders <- trade_strategy(trade_state, public_info, trade_pars, unit_per_contract, min_digit)
           
           if (nrow(orders) > 0) {
             for (i in 1:nrow(orders)) {
               order <- orders[i, ]
               
-              if (inst_id == 'SOL-USDT-SWAP') {
-                size <- round(order$size, 2)
-              } else if (inst_id == 'BNB-USDT-SWAP') {
-                size <- round(order$size*100, 2) # I don't know why, but for BNB, 1 is for 0.01
-              } else if (inst_id == 'ETH-USDT-SWAP') {
-                size <- round(order$size*10, 2) # and for ETH 1 is for 0.1 
-              }
-              
-              if (size<=0) next
-              
-              res <- self$place_order(
-                inst_id = inst_id,
-                td_mode = "cross",
-                side = ifelse(order$type == 'OPEN', 'buy', 'sell'),
-                pos_side = order$pos,
-                ord_type = "market",
-                sz = size
-              )
-              
-              print(list(
-                inst_id = inst_id,
-                td_mode = "cross",
-                side = ifelse(order$type == 'OPEN', 'buy', 'sell'),
-                pos_side = order$pos,
-                ord_type = "market",
-                sz = size
-              ))
-              
-              ord_id <- res$ordId
-              
-              if (is.null(ord_id)) {
-                self$log("Order failed to place.")
+              if (order$size<=0) {
+                message("Order size is not positive.")
                 next
-              } else {
-                self$log(sprintf("Order %s placed.", ord_id))
               }
-              order$order_id <- ord_id
-              order$order_status <- 'live'
-              order$inst_id <- inst_id
-              self$append_order_record(order)
+              self$execute_order_market(inst_id, order)
               
-              filled <- self$wait_fill(inst_id, ord_id)
-              if (filled) {
-                self$modify_order_record_status(ord_id, 'filled')
-              } else {
-                self$log(sprintf("Order %s not filled within timeout.", ord_id))
-              }
-              
-              # there should be a step to check whether the order is filled.
               # only filled orders will change risk level
-              # and the official tp/sl should be considered here
+              # and the tp/sl guard through algo order should be considered here
               
               trade_reason <- order$trade_reason
               self$adjust_risk_level(inst_id, trade_reason)
@@ -278,7 +252,7 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
     },
 
     # ... Arguments passed to parent `XAgent`
-    initialize = function(...) {
+    initialize = function(config, ...) {
       super$initialize(...)
       
       #---- fetch market data ----
@@ -304,23 +278,7 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
       self$check_order <- private$wrap_okx(okxr::get_trade_order)
       self$check_order_pending <- private$wrap_okx(okxr::gets_trade_orders_pending)
       
-      self$crypto_trader <- list(
-        okx_candle_dir = NA_character_,
-        order_df = data.frame(
-          order_id = character(0),
-          order_status = character(0),
-          inst_id = character(0),
-          type = character(0),
-          pos = character(0),
-          size = numeric(0),
-          price = numeric(0),
-          pricing_method = character(0),
-          trade_reason = character(0)
-        ),
-        inst_ids = character(0),
-        bar = NA_character_,
-        bar_duration = NA_integer_
-      )
+      self$tool_config$okx <- config
       
       self$init_values()
     },
@@ -368,17 +326,17 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
 
     # Sync new OHLCV data and save to RDS
     sync_and_save_candles = function(df_new, inst_id, bar) {
-      sync_and_save_candles(df_new, self$get_okx_candle_rds_path(inst_id, bar))
+      investdatar::sync_and_save_candles(df_new, self$get_okx_candle_rds_path(inst_id, bar))
     },
 
     # Detect time gaps in OHLCV data
-    detect_time_gaps = detect_time_gaps,
+    detect_time_gaps = function(...) investdatar::detect_time_gaps(...),
     
-    set_update_time = function(inst_id, bar, update_time) {
-      self$crypto_trader[[inst_id]]$update_time[[bar]] <- update_time
+    set_update_time = function(inst_id, feature, update_time) {
+      self$crypto_trader[[inst_id]]$update_time[[feature]] <- update_time
     },
-    get_update_time = function(inst_id, bar) {
-      self$crypto_trader[[inst_id]]$update_time[[bar]]
+    get_update_time = function(inst_id, feature) {
+      self$crypto_trader[[inst_id]]$update_time[[feature]]
     },
     
     update_new_candles = function(inst_id, bar) {
@@ -431,16 +389,17 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
     
     set_trade_pars = function(inst_id, pars) {
       self$crypto_trader[[inst_id]]$trade_pars <- pars
+      self$set_update_time(inst_id, 'trade_pars', Sys.time())
     },
     get_trade_pars = function(inst_id) {
       self$crypto_trader[[inst_id]]$trade_pars
     },
     
-    set_trade_pars_tpsl = function(inst_id, risk_TP, risk_SL) {
-      self$crypto_trader[[inst_id]]$trade_pars$risk_TP <- risk_TP
-      self$log(sprintf("Set TP threshold of %s to %f.", inst_id, risk_TP))
-      self$crypto_trader[[inst_id]]$trade_pars$risk_SL <- risk_SL
-      self$log(sprintf("Set SL threshold of %s to %f.", inst_id, risk_SL))
+    set_trade_pars_tpsl = function(inst_id, pos_TP_atr_mult, pos_SL_atr_mult) {
+      self$crypto_trader[[inst_id]]$trade_pars$pos_TP_atr_mult <- pos_TP_atr_mult
+      self$log(sprintf("Set pos_TP_atr_mult of %s to %f.", inst_id, pos_TP_atr_mult))
+      self$crypto_trader[[inst_id]]$trade_pars$pos_SL_atr_mult <- pos_SL_atr_mult
+      self$log(sprintf("Set pos_SL_atr_mult of %s to %f.", inst_id, pos_SL_atr_mult))
     },
     
     cancel_orders = function(inst_id) {
@@ -467,12 +426,13 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
     },
     
     init_trade_state = function(inst_id) {
-      self$crypto_trader[[inst_id]]$trade_state$wallet_balance <- self$get_eq()
+      eq_portion <- self$crypto_trader$inst_info[[inst_id]]$eq_portion
+      self$crypto_trader[[inst_id]]$trade_state$eq_budget <- self$get_eq() * eq_portion
       self$crypto_trader[[inst_id]]$trade_state$unrealized_pnl <- 0
-      self$crypto_trader[[inst_id]]$trade_state$long_size <- 0
-      self$crypto_trader[[inst_id]]$trade_state$avg_long_price <- 0
-      self$crypto_trader[[inst_id]]$trade_state$short_size <- 0
-      self$crypto_trader[[inst_id]]$trade_state$avg_short_price <- 0
+      self$crypto_trader[[inst_id]]$trade_state$long_contracts <- 0
+      self$crypto_trader[[inst_id]]$trade_state$long_avg_entry_price <- 0
+      self$crypto_trader[[inst_id]]$trade_state$short_contracts <- 0
+      self$crypto_trader[[inst_id]]$trade_state$short_avg_entry_price <- 0
     },
     
     update_trade_state = function(inst_id) {
@@ -483,12 +443,13 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
       if (nrow(pos_now) > 0) {
         self$crypto_trader[[inst_id]]$trade_state$unrealized_pnl <- pos_now$upl + pos_now$fee
         if(pos_now$posSide == 'long') {
-          self$crypto_trader[[inst_id]]$trade_state$long_size <- pos_now$pos
-          self$crypto_trader[[inst_id]]$trade_state$avg_long_price <- pos_now$avgPx
+          self$crypto_trader[[inst_id]]$trade_state$long_contracts <- pos_now$pos
+          self$crypto_trader[[inst_id]]$trade_state$long_avg_entry_price <- pos_now$avgPx
         } else if (pos_now$posSide == 'short') {
-          self$crypto_trader[[inst_id]]$trade_state$short_size <- pos_now$pos
-          self$crypto_trader[[inst_id]]$trade_state$avg_short_price <- pos_now$avgPx
+          self$crypto_trader[[inst_id]]$trade_state$short_contracts <- pos_now$pos
+          self$crypto_trader[[inst_id]]$trade_state$short_avg_entry_price <- pos_now$avgPx
         }
+        self$set_update_time(inst_id, 'trade_state', Sys.time())
       }
     },
     
@@ -498,12 +459,14 @@ CryptoTraderAgent <- R6::R6Class("CryptoTraderAgent",
     
     update_price = function(inst_id) {
       self$crypto_trader[[inst_id]]$latest_close <- self$get_mark_price(inst_id)$markPx
+      self$set_update_time(inst_id, 'price', Sys.time())
     },
     get_price = function(inst_id) {
       self$crypto_trader[[inst_id]]$latest_close
     },
     update_public_info_tech = function(inst_id, bar, ...) {
       self$crypto_trader[[inst_id]]$public_info_tech <- tail(strategyr::calculate_technical_indicators(tail(self$load_candles(inst_id, bar), 60), ...), 1L)
+      self$set_update_time(inst_id, 'public_info_tech', Sys.time())
     },
     get_public_info_tech = function(inst_id) {
       self$crypto_trader[[inst_id]]$public_info_tech
