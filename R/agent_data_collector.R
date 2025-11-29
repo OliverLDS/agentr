@@ -2,13 +2,23 @@
 load_DataCollectorAgent <- function() {
   rlang::check_installed(c("okxr", "investdatar", "strategyr"),
                          reason = "to enable trading features.")
+  config_fred_default <- list(
+    api_key = Sys.getenv("FRED_API_KEY"),
+    url = "https://api.stlouisfed.org/fred/series",
+    mode = 'json'
+  )
+  config_okx_default <- list(
+    api_key = Sys.getenv("OKX_API_KEY"),
+    secret_key = Sys.getenv("OKX_SECRET_KEY"),
+    passphrase = Sys.getenv("OKX_PASSPHRASE")
+  )
   DataCollectorAgent <- R6::R6Class("DataCollectorAgent",
     inherit = Agent,
     public = list(
       
       data_collector = list(),
       
-      initialize = function(..., config_fred, config_okx) {
+      initialize = function(..., config_fred = config_fred_default, config_okx = config_okx_default) {
         super$initialize(...)
         
         self$set_config('fred', config_fred)
@@ -46,6 +56,19 @@ load_DataCollectorAgent <- function() {
         self$get_source_data_okx_candle <- wrap_okx(investdatar::get_source_data_okx_candle)
         self$get_source_hist_data_okx_candle <- wrap_okx(investdatar::get_source_hist_data_okx_candle)
         self$get_public_instruments <- wrap_okx(okxr::get_public_instruments)
+        
+        self$data_collector$ishare$ticker_list <- c(
+          'DYNF', 'THRO', "BAI", "BDYN", "BDVL", # active ETFs
+          'ITOT', 'IEFA', 'IEMG', 'EWJ', 'INDA', 'EZU', 'MCHI', 'EWY', 'EWT', 'EWZ', 'EWC', 'EWU', 'EWW', 'EWG', 'EWP', 'EWL', 'EWA', 'ECH', 'EWS', 'EWH', 'KSA', 'EWI', 'EZA', 'EIS', 'EPOL', 'EWQ', 'EWD', 'EWN', 'EWM', 'THD', 'EDEN', 'TUR', 'UAE', 'EWO', 'EPHE', 'KWT', 'QAT', 'ENZL', 'EIRL', 'ENOR', 'EFNL', 'EWK', # equity by regions
+          'AGG', 'IAGG', # debt by regions
+          'IVV', 'IVW', 'IVE', 'IJH', 'IJR', 'IWF', 'IWD', 'IWM', 'IWV', 'MTUM', # equity by factors
+          'IBIT', 'ETHA', # crypto
+          'IAU', 'SLV', 'TMET', # commodity
+          'SGOV', 'IEF', 'SHY', 'TLT', 'IEI', 'TLH', # bond by duration
+          'GOVT', 'MUB', 'MBB', 'LQD', 'HYG', # bond by credit
+          'IYW', 'SOXX', 'ITA', 'IGF', 'IBB', 'IHI', 'IYF', 'IYR', 'IYH', 'IFRA', 'ITB', 'IDU', 'IYK', 'IYE', 'IHAK', 'IEO', 'IHF', 'IHE', 'IYT', 'IYZ', 'IAK', 'IEZ', 'VEGI', 'IBLC', 'IBAT', # equity by industry
+          'REET', 'USRT'  # real estate
+        )
       },
       
       run = function() {
@@ -91,16 +114,42 @@ load_DataCollectorAgent <- function() {
       
       #---- fred ----
       
-      update_metadata_fred = function() {
+      update_metadata_fred = function(series_id) {
+        res <- investdatar::get_source_metadata_fred(series_id, self$get_config('fred'))
+        self$data_collector$fred[[series_id]]$title <- res$title
+        self$data_collector$fred[[series_id]]$start <- as.Date(res$start)
+        self$data_collector$fred[[series_id]]$end <- as.Date(res$end)
+        self$data_collector$fred[[series_id]]$freq <- res$freq
+        self$data_collector$fred[[series_id]]$units <- res$units
+        self$data_collector$fred[[series_id]]$season <- res$season
+        invisible(NULL)
+      },
+      update_all_metadata_fred = function() {
         for (series_id in self$data_collector$fred$series_id_list) {
-          res <- investdatar::get_source_metadata_fred(series_id, self$get_config('fred'))
-          self$data_collector$fred[[series_id]]$title <- res$title
-          self$data_collector$fred[[series_id]]$start <- res$start
-          self$data_collector$fred[[series_id]]$end <- res$end
-          self$data_collector$fred[[series_id]]$freq <- res$freq
-          self$data_collector$fred[[series_id]]$units <- res$units
-          self$data_collector$fred[[series_id]]$season <- res$season
+          self$update_metadata_fred(series_id)
         }
+        invisible(NULL)
+      },
+      get_all_metadata_fred = function() {
+        data.table::rbindlist({
+          lapply(agent$data_collector$fred$series_id_list, function(id) {
+            out <- agent$data_collector$fred[[id]]
+            out$series_id <- id
+            out
+          })
+        })
+      },
+      add_fred_series = function(series_id) {
+        series_id_list <- self$data_collector$fred$series_id_list
+        if (series_id %in% series_id_list) stop('You already had this series in list.')
+        res <- investdatar::get_source_metadata_fred(series_id, self$get_config('fred'))
+        if (is.null(res$title)) stop('Wrong fred id.')
+        self$data_collector$fred$series_id_list <- c(series_id_list, series_id)
+        self$update_metadata_fred(series_id)
+        res <- self$sync_data_fred_timely(series_id)
+        if (is.null(res)) stop('Errors in getting data.')
+        self$data_collector$fred[[series_id]]$end <- max(self$get_local_data_fred(series_id)$date)
+        invisible(NULL)
       },
       fill_local_utime_fred = function() {
         for (series_id in self$data_collector$fred$series_id_list) {
@@ -108,6 +157,7 @@ load_DataCollectorAgent <- function() {
             self$data_collector$fred[[series_id]]$update_time <- as.POSIXct(max(self$get_local_data_fred(series_id)$date))
           }
         }
+        invisible(NULL)
       },
       
       get_source_data_fred = NULL,
@@ -142,13 +192,153 @@ load_DataCollectorAgent <- function() {
         }
         invisible(updated_series)
       },
-      get_recent_updated_fred = function() {
+      get_recent_updated_fred = function(detailed_mode = FALSE) {
         recent_series <- character(0L)
         for (series_id in self$data_collector$fred$series_id_list) {
           diff_days <- (difftime(Sys.time(), self$data_collector$fred[[series_id]]$end, 'days'))
           if (diff_days <=3) recent_series <- c(recent_series, series_id)
         }
-        invisible(recent_series)
+        if (detailed_mode) {
+          out <- data.table::rbindlist(
+            lapply(recent_series, function(series_id) {
+              list_out <- list()
+              mega_info <- self$data_collector$fred[[series_id]]
+              list_out$series_id <- series_id
+              list_out$title <- mega_info$title
+              list_out$units <- mega_info$units
+              dt <- self$get_local_data_fred(series_id)
+              list_out$previous_date <- dt[(.N-1), date]
+              list_out$previous_value <- dt[(.N-1), value]
+              list_out$latest_date <- dt[.N, date]
+              list_out$latest_value <- dt[.N, value]
+              list_out
+            })
+          )
+          print(out)
+          return(invisible(NULL))
+        } else {
+          return(invisible(recent_series))
+        }
+      },
+      
+      #---- ishare ----
+      
+      add_ishare_ticker = function(ticker) {
+        ticker_list <- self$data_collector$ishare$ticker_list
+        if (ticker %in% ticker_list) stop('You already had this ticker in list.')
+        stopifnot(ticker %in% self$get_mega_data_ishare()$Ticker)
+        self$data_collector$ishare$ticker_list <- c(ticker_list, ticker)
+        invisible(NULL)
+      },
+      
+      update_ishare_all_xls_file_names = function() {
+        ticker_list <- self$data_collector$ishare$ticker_list
+        mega_data_ishare <- self$get_mega_data_ishare()
+        for (ticker in ticker_list) {
+          prod_url <- mega_data_ishare[Ticker == ticker, etf_href]
+          self$data_collector$ishare[[ticker]]$file_name <- investdatar:::.get_ishare_xls_file_name(prod_url)
+        }
+        invisible(NULL)
+      },
+      get_xls_file_name_ishare = function(ticker) {
+        self$data_collector$ishare[[ticker]]$file_name
+      },
+      
+      set_folder_path_ishare = function(folder_path) {self$data_collector$ishare$data_path <- folder_path; invisible(NULL)},
+      get_folder_path_ishare = function() {self$data_collector$ishare$data_path},
+      get_file_path_ishare = function(ticker) {
+        stopifnot(ticker %in% self$data_collector$ishare$ticker_list)
+        file.path(self$get_folder_path_ishare(), paste0(ticker, '_historical.rds'))
+      },
+      get_cache_dir_ishare = function() {file.path(self$get_folder_path_ishare(), '_cache')},
+      get_file_path_mega_data_ishare = function() {file.path(self$get_folder_path_ishare(), 'mega_data.rds')},
+      
+      update_metadata_ishare = function(metadata_xls_path = file.path(self$get_cache_dir_ishare(), 'iShares-UnitedStates.xls')) {
+        .safe_save_rds(investdatar:::.wraggle_mega_data(metadata_xls_path), self$get_file_path_mega_data_ishare())
+        invisible(NULL)
+      },
+      get_mega_data_ishare = function() {.safe_read_rds(self$get_file_path_mega_data_ishare())},
+      
+      get_source_data_ishare = function(ticker) {
+        stopifnot(ticker %in% self$data_collector$ishare$ticker_list)
+        investdatar::get_source_data_ishare(ticker, 
+          ishare_mega_data = self$get_mega_data_ishare(),
+          cache_dir = self$get_cache_dir_ishare()
+        )
+      },
+      update_source_utime_ishare = function() {
+        source_utime <- investdatar::get_source_utime_ishare()
+        stopifnot(!is.null(source_utime))
+        self$data_collector$ishare$source_utime <- source_utime
+      }, # this one is to fetch utime from webpage and store it locally
+      get_source_utime_ishare = function() {self$data_collector$ishare$source_utime}, # this one is used for each ticker in a batch loop
+      
+      get_local_data_ishare = function(ticker) {
+        stopifnot(ticker %in% self$data_collector$ishare$ticker_list)
+        DT <- .safe_read_rds(self$get_file_path_ishare(ticker))
+        data.table::setattr(DT, "ticker", ticker)
+        data.table::setorder(DT, "date")
+        data.table::setDT(DT)
+        invisible(DT)
+      },
+      get_local_utime_ishare = function(ticker) {self$data_collector$ishare[[ticker]]$update_time},
+      set_local_utime_ishare = function(ticker) {self$data_collector$ishare[[ticker]]$update_time <- Sys.time(); invisible(NULL)},
+      
+      sync_data_ishare_timely = function(ticker) {
+        stopifnot(ticker %in% self$data_collector$ishare$ticker_list)
+        key_col_name <- 'date'
+        source_utime <- self$get_source_utime_ishare()
+        local_utime <- self$get_local_utime_ishare(ticker)
+        local_file_path <- self$get_file_path_ishare(ticker)
+        fetch_data_func <- self$get_source_data_ishare
+        fetch_data_pars <- list(ticker = ticker)
+        set_local_utime_func <- self$set_local_utime_ishare
+        set_local_utime_pars <- list(ticker = ticker)
+        res <- self$sync_data_with_source_timely(key_col_name, source_utime, local_utime, local_file_path,
+      fetch_data_func, fetch_data_pars, set_local_utime_func, set_local_utime_pars)
+        invisible(res)
+      },
+      sync_all_data_ishare_timely = function(ticker_list = NULL, holding_update_list = c('DYNF', 'THRO', "BAI", "BDYN", "BDVL")) {
+        self$update_source_utime_ishare()
+        if (is.null(ticker_list)) ticker_list <- self$data_collector$ishare$ticker_list
+        for (ticker in ticker_list) {
+          self$sync_data_ishare_timely(ticker)
+          # if (ticker %in% holding_update_list) self$sync_data_ishare_holdings(ticker)
+          xls_file_name <- self$get_xls_file_name_ishare(ticker)
+          cache_dir <- self$get_cache_dir_ishare()
+          xls_file_path <- file.path(cache_dir, xls_file_name)
+          file.remove(xls_file_path)
+        }
+        invisible(self)
+      },
+      
+      sync_data_ishare_holdings = function(ticker_list = c('DYNF', 'THRO', "BAI", "BDYN", "BDVL")) {
+        for (ticker in ticker_list) {
+          stopifnot(ticker %in% self$data_collector$ishare$ticker_list)
+          ishare_mega_data <- self$get_mega_data_ishare()
+          prod_url <- ishare_mega_data[Ticker == ticker, etf_href]
+          xls_file_name <- self$get_xls_file_name_ishare(ticker)
+          cache_dir <- self$get_cache_dir_ishare()
+          xls_file_path <- file.path(cache_dir, xls_file_name)
+          invisible(investdatar:::.download_ishare_xls_file(prod_url, cache_dir = cache_dir))
+          if (!file.exists(xls_file_path)) {message(sprintf('No file: %s', xls_file_path)); next}
+          out <- investdatar:::.wraggle_holding_data(xls_file_path ) 
+          holding_file_path <- file.path(self$get_folder_path_ishare(), paste0(ticker, '_holdings.rds'))
+          if (file.exists(holding_file_path)) {
+            holding_hist <- .safe_read_rds(holding_file_path)
+          } else {
+            holding_hist <- list()
+          }
+          holding_hist[[as.character(out$updated_date)]] <- out$holdings_dt
+          .safe_save_rds(holding_hist, holding_file_path)
+          file.remove(xls_file_path)
+        }
+        invisible(NULL)
+      },
+      get_local_data_ishare_holdings = function(ticker, date) {
+        holding_file_path <- file.path(self$get_folder_path_ishare(), paste0(ticker, '_holdings.rds'))
+        holding_hist <- .safe_read_rds(holding_file_path)
+        holding_hist[[as.character(date)]]
       },
   
       #---- okx_candle ----
@@ -157,8 +347,8 @@ load_DataCollectorAgent <- function() {
       get_source_hist_data_okx_candle = NULL,
       get_public_instruments = NULL,
       get_source_utime_okx_candle = function(bar) {investdatar::get_source_utime_okx_candle(bar, tz = self$get_tz())},
-      get_folder_path_okx_candle = function() self$data_collector$okx_candle$data_path,
-      get_file_path_okx_candle = function(inst_id, bar) sprintf("%s/%s_%s.rds", self$get_folder_path_okx_candle(), inst_id, bar),
+      get_folder_path_okx_candle = function() {self$data_collector$okx_candle$data_path},
+      get_file_path_okx_candle = function(inst_id, bar) {sprintf("%s/%s_%s.rds", self$get_folder_path_okx_candle(), inst_id, bar)},
       get_local_data_okx_candle = function(inst_id, bar) {
         DT <- .safe_read_rds(self$get_file_path_okx_candle(inst_id, bar))
         data.table::setattr(DT, "inst_id", inst_id)
@@ -167,7 +357,7 @@ load_DataCollectorAgent <- function() {
         data.table::setDT(DT)
         invisible(DT)
       },
-      get_local_utime_okx_candle = function(inst_id, bar) self$data_collector$okx_candle[[inst_id]][[bar]]$update_time,
+      get_local_utime_okx_candle = function(inst_id, bar) {self$data_collector$okx_candle[[inst_id]][[bar]]$update_time},
       set_local_utime_okx_candle = function(inst_id, bar) {self$data_collector$okx_candle[[inst_id]][[bar]]$update_time <- Sys.time(); invisible(NULL)},
       
       sync_data_okx_candle_timely = function(inst_id, bar) {

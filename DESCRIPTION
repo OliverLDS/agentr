@@ -42,6 +42,7 @@ Collate:
     'conv_terminal.R'
     'conv_email.R'
     'conv_telegram.R'
+    'conv_x.R'
     'llm_groq.R'
     'llm_gemini.R'
     'agent_core.R'
