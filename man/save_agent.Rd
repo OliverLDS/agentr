@@ -2,18 +2,19 @@
 % Please edit documentation in R/utils_io.R
 \name{save_agent}
 \alias{save_agent}
-\title{Save an XAgent object to a file}
+\title{Save an \code{agentr} object to a file}
 \usage{
 save_agent(agent, file_path)
 }
 \arguments{
-\item{agent}{An object of class \code{XAgent}.}
+\item{agent}{An object created by \code{agentr}.}
 
-\item{file_path}{A string specifying the file path where the agent should be saved.}
+\item{file_path}{File path where the object should be saved.}
 }
 \value{
-No return value. The function is called for its side effect.
+Invisibly returns \code{TRUE}.
 }
 \description{
-This function saves an XAgent object to a specified \code{.rds} file.
+Saves an \code{\link{AgentCore}}, \code{\link{CognitiveState}}, \code{\link{AffectiveState}}, or
+\code{\link{Scaffolder}} object to a specified \code{.rds} file.
 }

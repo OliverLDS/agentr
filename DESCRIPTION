@@ -1,54 +1,29 @@
 Package: agentr
 Type: Package
-Title: Modular Agentic AI Framework in R
-Version: 0.1.2
+Title: Cognitive Core for Agentic Workflows in R
+Version: 0.1.3
 Authors@R: 
     person(given = "Oliver", 
-           family = "Lee",
-           email = "olee7149@gmail.com", 
+           family = "Zhou",
+           email = "oliver.yxzhou@gmail.com",
            role = c("aut", "cre"))
 Description: 
-    agentr is a lightweight, modular R framework for building intelligent agents with identity, memory, 
-    emotions, and LLM integration. Designed for automation, experimentation, and integration with other 
-    packages such as 'okxr', 'binxr', 'strategyr', and 'tradesimr', it can be used for local companions, 
-    Telegram-connected assistants, financial or news bots, and emotion-aware interaction systems. 
-    Includes state management, emotional modeling, prompt composition, and data API integration.
-License: MIT
+    Cognitive and human-interaction core for agentic workflows.
+    The package represents agent state, supports human-in-the-loop scaffolding,
+    and generates workflow specifications such as DAG-like plans and
+    implementation-ready structures. It intentionally excludes communication
+    backends and provider-specific LLM client code so that workflow reasoning
+    can remain cleanly separated from execution and transport layers.
+License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Depends: R (>= 4.1.0)
 Imports: 
     R6,
-    data.table (>= 1.14.0),
-    httr,
     jsonlite,
-    emayili,
-    stats,
-    rlang
+    rlang,
+    yaml
 Suggests:
-    okxr,
-    investdatar,
-    investlabr,
-    tradesimr,
-    strategy,
-Collate:
-    'utils_imports.R'
-    'utils_time.R'
-    'utils_data_sync.R'
-    'utils_io.R'
-    'utils_prompt.R'
-    'utils_tool_config.R'
-    'cog_emotion.R'
-    'conv_terminal.R'
-    'conv_email.R'
-    'conv_telegram.R'
-    'conv_x.R'
-    'llm_groq.R'
-    'llm_gemini.R'
-    'agent_core.R'
-    'agent_data_collector.R'
-    'agent_strat_analyzer.R'
-    'agent_crypto_trader.R'
-    'new_agent_crypto_trader.R'
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3

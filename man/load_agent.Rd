@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils_io.R
 \name{load_agent}
 \alias{load_agent}
-\title{Load an XAgent object from a file}
+\title{Load an \code{agentr} object from a file}
 \usage{
 load_agent(file_path)
 }
 \arguments{
-\item{file_path}{A string specifying the file path from which to load the agent.}
+\item{file_path}{File path from which to load the object.}
 }
 \value{
-An object of class \code{XAgent}.
+An object created by \code{agentr}.
 }
 \description{
-This function loads an XAgent object from a saved \code{.rds} file.
+Loads an \code{agentr} core object from a saved \code{.rds} file.
 }

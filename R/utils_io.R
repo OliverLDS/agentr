@@ -65,63 +65,73 @@
 
   repeat {
     if (!file.exists(lockfile)) {
-      # No one is writing — safe to read
+      # No one is writing; safe to read
       return(readRDS(path))
     }
 
     # Wait and retry
     attempts <- attempts + 1
     if (attempts >= max_attempts) {
-      stop("File is locked for too long — cannot read.")
+      stop("File is locked for too long; cannot read.")
     }
     Sys.sleep(wait / max_attempts)
   }
 }
 
-#' Save an XAgent object to a file
+#' Save an `agentr` object to a file
 #'
-#' This function saves an XAgent object to a specified `.rds` file.
+#' Saves an [`AgentCore`], [`CognitiveState`], [`AffectiveState`], or
+#' [`Scaffolder`] object to a specified `.rds` file.
 #'
-#' @param agent An object of class \code{XAgent}.
-#' @param file_path A string specifying the file path where the agent should be saved.
+#' @param agent An object created by `agentr`.
+#' @param file_path File path where the object should be saved.
 #'
-#' @return No return value. The function is called for its side effect.
+#' @return Invisibly returns `TRUE`.
 #' @export
 save_agent <- function(agent, file_path) {
-  if (!inherits(agent, "Agent")) stop("Object is not of class 'Agent'")
+  valid_classes <- c("AgentCore", "CognitiveState", "AffectiveState", "Scaffolder")
+  if (!any(vapply(valid_classes, function(class_name) inherits(agent, class_name), logical(1)))) {
+    stop("Object is not a supported `agentr` core object.", call. = FALSE)
+  }
   .safe_save_rds(agent, file_path)
-  message(paste("Agent saved to", file_path))
+  invisible(TRUE)
 }
 
-#' Load an XAgent object from a file
+#' Load an `agentr` object from a file
 #'
-#' This function loads an XAgent object from a saved `.rds` file.
+#' Loads an `agentr` core object from a saved `.rds` file.
 #'
-#' @param file_path A string specifying the file path from which to load the agent.
+#' @param file_path File path from which to load the object.
 #'
-#' @return An object of class \code{XAgent}.
+#' @return An object created by `agentr`.
 #' @export
 load_agent <- function(file_path) {
-  if (!file.exists(file_path)) stop("File does not exist:", file_path)
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
   agent <- .safe_read_rds(file_path)
-  if (!inherits(agent, "Agent")) stop("Loaded object is not of class 'Agent'")
-  message(paste("Agent loaded from", file_path))
-  return(agent)
+  valid_classes <- c("AgentCore", "CognitiveState", "AffectiveState", "Scaffolder")
+  if (!any(vapply(valid_classes, function(class_name) inherits(agent, class_name), logical(1)))) {
+    stop("Loaded object is not a supported `agentr` core object.", call. = FALSE)
+  }
+  agent
 }
 
-#' Backup an XAgent object with timestamped filename
+#' Backup an `agentr` object with a timestamped filename
 #'
-#' This function saves a timestamped backup of the agent to a specified directory.
+#' Saves a timestamped backup of an `agentr` core object to a specified
+#' directory.
 #'
-#' @param agent An object of class \code{XAgent}.
-#' @param dir A string specifying the backup directory. Defaults to \code{"agent_backups"}.
+#' @param agent An object created by `agentr`.
+#' @param dir Backup directory.
 #'
-#' @return No return value. The function is called for its side effect.
+#' @return Invisibly returns the backup file path.
 #' @export
 backup_agent <- function(agent, dir = "agent_backups") {
   if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
   timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-  file_path <- file.path(dir, paste0(agent$name, "_", timestamp, ".rds"))
+  object_name <- if (!is.null(agent$name)) agent$name else class(agent)[1]
+  file_path <- file.path(dir, paste0(object_name, "_", timestamp, ".rds"))
   .safe_save_rds(agent, file_path)
+  invisible(file_path)
 }
-

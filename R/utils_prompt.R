@@ -26,8 +26,11 @@
 
 .separate_chats <- function(agent_name, chat_DT, dialog_only = TRUE, 
   pretty = FALSE, auto_unbox = TRUE, na = "null") {
-  if (dialog_only) {chat_DT <- chat_DT[type == 'dialog',]}
-  chat_DT <- chat_DT[, .(role, msg)]
+  if (dialog_only && "type" %in% names(chat_DT)) {
+    chat_DT <- chat_DT[chat_DT$type == "dialog", , drop = FALSE]
+  }
+  keep <- intersect(c("role", "msg"), names(chat_DT))
+  chat_DT <- chat_DT[, keep, drop = FALSE]
   n <- nrow(chat_DT)
   if (n == 0L) {
     return(list(

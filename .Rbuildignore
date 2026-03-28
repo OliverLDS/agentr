@@ -1,0 +1,3 @@
+^\\.r-local-lib($|/)
+^agentr\\.Rcheck($|/)
+^R/\\.Rhistory$

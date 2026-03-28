@@ -1,121 +1,52 @@
-# Function Index: XAgent Package
+# Function Index
 
-This document provides a categorized index of exported functions and methods in the **XAgent** R package. It is intended to assist developers and users in locating key utilities and understanding their intended usage.
+## Core R6 Classes
 
----
+| Object | Purpose |
+| --- | --- |
+| `CognitiveState` | Minimal cognitive state container with update hooks |
+| `AffectiveState` | Affective layer with inertia-aware updates |
+| `AgentCore` | Minimal agent container for cognition, affect, and scaffolding |
+| `Scaffolder` | Human-in-the-loop workflow elicitation interface |
 
-## 1. 📦 Agent Initialization & Persistence
+## Workflow Helpers
 
-| Function/Method  | Purpose                                                |
-| ---------------- | ------------------------------------------------------ |
-| `XAgent$new()`   | Create a new agent with a name and initial mind\_state |
-| `load_agent()`   | Load an agent from an RDS file                         |
-| `save_agent()`   | Save an agent to an RDS file                           |
-| `backup_agent()` | Save an agent with timestamped filename                |
+| Function | Purpose |
+| --- | --- |
+| `workflow_node()` | Create a workflow node record |
+| `workflow_edge()` | Create a workflow edge record |
+| `new_workflow_spec()` | Build a workflow specification object |
+| `validate_workflow_spec()` | Validate workflow structure |
 
----
+## Affective Utilities
 
-## 2. 🧠 Mind State Management
+| Function | Purpose |
+| --- | --- |
+| `default_emotion_state()` | Create a default affective state |
+| `define_random_emotion_state()` | Create a randomized affective state |
+| `decay_emotion_state()` | Apply time-based decay |
+| `combine_emotions()` | Combine affective dimensions |
+| `compute_blended_emotions()` | Derive blended affective states |
+| `describe_emotional_state()` | Summarize current affective state |
 
-| Function/Method       | Purpose                                         |
-| --------------------- | ----------------------------------------------- |
-| `init_mind_state()`   | Create or modify the mind\_state structure      |
-| `update_mind_state()` | Update a nested path inside mind\_state         |
-| `set_nested_path()`   | Utility to update deeply nested list structures |
+## Terminal Helpers
 
----
+| Function | Purpose |
+| --- | --- |
+| `render_markdown_terminal()` | Render light markdown styling in terminals |
+| `terminal_scaffold_input()` | Prompt for user input during scaffolding |
+| `terminal_ask_node_complete()` | Ask whether a workflow node is complete |
+| `terminal_ask_workflow_changes()` | Ask whether nodes should be added or removed |
+| `terminal_ask_node_rule()` | Ask for a node-specific rule |
 
-## 3. 📡 Communication Interfaces
+## Persistence and Serialization
 
-### Telegram
-
-| Function/Method   | Purpose                                 |
-| ----------------- | --------------------------------------- |
-| `send_text_TG()`  | Send a text message via Telegram        |
-| `send_image_TG()` | Send an image with caption via Telegram |
-| `sync_TG_chats()` | Fetch user replies from Telegram        |
-
-### Email
-
-| Function/Method | Purpose                           |
-| --------------- | --------------------------------- |
-| `send_email()`  | Send an email via configured tool |
-
-### Local Chat
-
-| Function/Method           | Purpose                                                |
-| ------------------------- | ------------------------------------------------------ |
-| `send_text_local()`       | Append message to local chat file                      |
-| `sync_local_user_input()` | Read user input from chat file and update agent memory |
-| `popout_local()`          | Open local chat file in external editor                |
-
----
-
-## 4. 🧠 Prompt Composition & LLM Querying
-
-| Function/Method          | Purpose                          |
-| ------------------------ | -------------------------------- |
-| `compose_prompt_plain()` | Compose prompt from chat history |
-| `query_groq()`           | Query Groq API with prompt       |
-| `query_gemini()`         | Query Gemini API with prompt     |
-
----
-
-## 5. 📈 Data Fetching Utilities
-
-| Function                        | Purpose                              |
-| ------------------------------- | ------------------------------------ |
-| `fetch_fred_series()`           | Download FRED time series            |
-| `fetch_ts_daily_alphavantage()` | Daily OHLC data from Alpha Vantage   |
-| `fetch_binance_klines()`        | Minute-level kline data from Binance |
-| `fetch_rss()`                   | Load and parse RSS feed              |
-
----
-
-## 6. 🧬 Emotion Modeling
-
-| Function/Method                 | Purpose                               |
-| ------------------------------- | ------------------------------------- |
-| `define_random_emotion_state()` | Generate random emotion profile       |
-| `decay_emotion_state()`         | Apply decay to existing emotion state |
-| `describe_emotional_state()`    | Return qualitative emotion summary    |
-| `combine_emotions()`            | Merge multiple emotion states         |
-| `compute_blended_emotions()`    | Blend emotion states with weights     |
-
----
-
-## 7. ⚙️ Tools and Configuration
-
-| Function/Method     | Purpose                                                 |
-| ------------------- | ------------------------------------------------------- |
-| `tool_set_config()` | Return prefilled config list for tool (e.g., TG, email) |
-
----
-
-## 8. 📃 Utilities and Format Helpers
-
-| Function                  | Purpose                             |
-| ------------------------- | ----------------------------------- |
-| `convert_time_to_tz()`    | Convert time to a specific timezone |
-| `format_timestamp()`      | Format timestamp in readable form   |
-| `recent_timestamp()`      | Filter recent entries               |
-| `util_sync_new_records()` | Compare and sync data frame records |
-
----
-
-## 9. 🔄 Operators
-
-| Operator | Purpose |     |                                   |
-| -------- | ------- | --- | --------------------------------- |
-| \`%      |         | %\` | Return left-hand side if not NULL |
-
----
-
-## 10. 🧪 Example Agent Workflows (see `/examples`)
-
-* `agent_workflow.R`: Load and test an agent interactively
-* Includes: Email sending, LLM querying, FRED/RSS/news access
-
----
-
-For full details on each function or method, refer to the generated documentation in the `man/` folder or run `?function_name` within R.
+| Function | Purpose |
+| --- | --- |
+| `save_agent()` | Save an `agentr` core object |
+| `load_agent()` | Load an `agentr` core object |
+| `backup_agent()` | Save a timestamped backup |
+| `load_json_file()` | Load JSON files |
+| `load_yaml_file()` | Load YAML files |
+| `inferencer_available()` | Detect optional `inferencer` availability |
+| `inferencer_integration()` | Build optional integration metadata |

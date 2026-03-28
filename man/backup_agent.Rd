@@ -2,18 +2,19 @@
 % Please edit documentation in R/utils_io.R
 \name{backup_agent}
 \alias{backup_agent}
-\title{Backup an XAgent object with timestamped filename}
+\title{Backup an \code{agentr} object with a timestamped filename}
 \usage{
 backup_agent(agent, dir = "agent_backups")
 }
 \arguments{
-\item{agent}{An object of class \code{XAgent}.}
+\item{agent}{An object created by \code{agentr}.}
 
-\item{dir}{A string specifying the backup directory. Defaults to \code{"agent_backups"}.}
+\item{dir}{Backup directory.}
 }
 \value{
-No return value. The function is called for its side effect.
+Invisibly returns the backup file path.
 }
 \description{
-This function saves a timestamped backup of the agent to a specified directory.
+Saves a timestamped backup of an \code{agentr} core object to a specified
+directory.
 }

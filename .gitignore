@@ -13,6 +13,9 @@
 
 # Cache
 .Rcheck/
+*.Rcheck/
+.r-local-lib/
 
 # Upload
 upload.sh
+R/.Rhistory

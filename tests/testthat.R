@@ -1,4 +1,4 @@
 library(testthat)
-library(XAgent)
+library(agentr)
 
-test_check("XAgent")
+test_check("agentr")
