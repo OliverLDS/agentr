@@ -38,6 +38,17 @@ Implemented as `Scaffolder`, which supports:
 - node-specific rule capture
 - iterative workflow refinement
 
+### LLM bridge layer
+
+Implemented through scaffolder-message helpers that let an external LLM:
+
+- inspect current task and workflow state through `build_scaffolder_prompt()`
+- respond with machine-readable JSON actions
+- have those actions validated against allowed scaffolder methods
+- translate validated actions into concrete `Scaffolder` method calls
+
+The bridge is intentionally constrained: it exposes scaffolding methods, not arbitrary code execution.
+
 ## Workflow Output
 
 Workflow objects are outputs of reasoning and scaffolding. They are represented by `agentr_workflow_spec` and contain:

@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of agentic workflows. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and generates workflow specifications such as DAG-like plans and implementation-ready structures.
 
-Version `0.1.3` deliberately narrows package scope. `agentr` is now the core reasoning/scaffolding layer, not the transport or execution layer.
+Version `0.1.4` keeps that narrowed scope and adds a machine-readable bridge between scaffolding state and external LLM reasoning. `agentr` remains the core reasoning/scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -11,6 +11,7 @@ Version `0.1.3` deliberately narrows package scope. `agentr` is now the core rea
 - R6 state objects for cognition and affect
 - a minimal `AgentCore` container
 - a `Scaffolder` interface for human-guided workflow elicitation
+- an LLM-facing prompt and action bridge for scaffolding decisions
 - workflow-spec helpers for DAG-like outputs
 - terminal scaffolding helpers
 - JSON/YAML and object persistence utilities
@@ -50,6 +51,25 @@ scaffolder$decompose_task()
 spec <- scaffolder$workflow_spec()
 spec
 ```
+
+## LLM Scaffolding Bridge
+
+`0.1.4` adds a minimal bridge for letting an external LLM reason about scaffolding actions without exposing arbitrary code execution.
+
+```r
+prompt <- build_scaffolder_prompt(scaffolder)
+
+message_json <- '{
+  "actions": [
+    {"method": "decompose_task", "args": {"candidates": ["Clarify goals", "Ask for rules"]}},
+    {"method": "ask_human_rule", "args": {"node_id": "node_2"}}
+  ]
+}'
+
+apply_scaffolder_message(scaffolder, message_json)
+```
+
+The LLM is constrained to a validated set of scaffolder methods and must return machine-readable JSON.
 
 ## Workflow Output
 

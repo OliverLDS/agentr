@@ -18,6 +18,16 @@
 | `new_workflow_spec()` | Build a workflow specification object |
 | `validate_workflow_spec()` | Validate workflow structure |
 
+## LLM Scaffolding Bridge
+
+| Function | Purpose |
+| --- | --- |
+| `scaffolder_action_methods()` | List the methods an LLM may request |
+| `build_scaffolder_prompt()` | Build a prompt that describes task, workflow state, and allowed actions |
+| `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
+| `validate_scaffolder_message()` | Validate requested scaffolding actions |
+| `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |
+
 ## Affective Utilities
 
 | Function | Purpose |
