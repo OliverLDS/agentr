@@ -107,6 +107,33 @@ validate_workflow_spec <- function(x) {
   invisible(x)
 }
 
+#' Save a workflow specification
+#'
+#' @param workflow Workflow specification.
+#' @param file_path File path where the workflow should be saved.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_workflow_spec <- function(workflow, file_path) {
+  validate_workflow_spec(workflow)
+  .safe_save_rds(workflow, file_path)
+  invisible(TRUE)
+}
+
+#' Load a workflow specification
+#'
+#' @param file_path File path from which to load the workflow.
+#'
+#' @return Workflow specification.
+#' @export
+load_workflow_spec <- function(file_path) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  workflow <- .safe_read_rds(file_path)
+  validate_workflow_spec(workflow)
+}
+
 #' Format a workflow specification
 #'
 #' @param x Workflow specification.

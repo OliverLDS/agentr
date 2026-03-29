@@ -11,8 +11,9 @@ build_scaffolder_prompt(scaffolder, task = NULL, format = "json")
 
 \item{task}{Optional task text. Defaults to the scaffolder's current task.}
 
-\item{format}{Response format requested from the LLM. Currently only \code{"json"}
-is supported.}
+\item{format}{Prompt payload format. Use \code{"json"} for SDK-facing structured
+payloads and \code{"markdown"} for prompts that a human may paste into a chat
+interface.}
 }
 \value{
 Character string prompt.

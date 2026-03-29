@@ -1,4 +1,4 @@
-# agentr 0.1.3 Architecture
+# agentr 0.1.5 Architecture
 
 `agentr` is the agent core, not the execution layer.
 
@@ -44,10 +44,18 @@ Implemented through scaffolder-message helpers that let an external LLM:
 
 - inspect current task and workflow state through `build_scaffolder_prompt()`
 - respond with machine-readable JSON actions
-- have those actions validated against allowed scaffolder methods
+- have those actions validated against allowed scaffolder methods and current workflow references
 - translate validated actions into concrete `Scaffolder` method calls
+- return a normalized dispatch result for downstream orchestration
 
 The bridge is intentionally constrained: it exposes scaffolding methods, not arbitrary code execution.
+
+The dispatch result contains:
+
+- `applied_actions`
+- `workflow_after`
+- `human_prompts`
+- `errors`
 
 ## Workflow Output
 
@@ -65,6 +73,11 @@ Node records include:
 - `rule_spec`
 - `implementation_hint`
 - `complete`
+
+Workflow specs can also be:
+
+- saved and loaded independently
+- exported as graph-ready tables for packages such as `igraph`
 
 ## Package Boundaries
 

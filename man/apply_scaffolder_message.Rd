@@ -7,7 +7,8 @@
 apply_scaffolder_message(
   scaffolder,
   message,
-  allowed_methods = scaffolder_action_methods()
+  allowed_methods = scaffolder_action_methods(),
+  stop_on_error = TRUE
 )
 }
 \arguments{
@@ -16,9 +17,13 @@ apply_scaffolder_message(
 \item{message}{Parsed message list or JSON string.}
 
 \item{allowed_methods}{Character vector of allowed method names.}
+
+\item{stop_on_error}{Whether to stop on the first action error. When \code{FALSE},
+errors are collected in the returned result object.}
 }
 \value{
-List of method-call results.
+A standardized list with \code{applied_actions}, \code{workflow_after},
+\code{human_prompts}, and \code{errors}.
 }
 \description{
 Parses and dispatches a machine-readable scaffolder message into concrete

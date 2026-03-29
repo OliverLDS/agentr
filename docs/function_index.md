@@ -17,6 +17,9 @@
 | `workflow_edge()` | Create a workflow edge record |
 | `new_workflow_spec()` | Build a workflow specification object |
 | `validate_workflow_spec()` | Validate workflow structure |
+| `save_workflow_spec()` | Save a workflow specification |
+| `load_workflow_spec()` | Load a workflow specification |
+| `workflow_graph_data()` | Export graph-ready node and edge tables |
 
 ## LLM Scaffolding Bridge
 
@@ -27,6 +30,7 @@
 | `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
 | `validate_scaffolder_message()` | Validate requested scaffolding actions |
 | `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |
+| `collect_scaffolder_questions()` | Collect human-facing prompts from dispatch results or interaction logs |
 
 ## Affective Utilities
 
