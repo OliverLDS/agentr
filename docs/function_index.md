@@ -49,8 +49,9 @@
 | --- | --- |
 | `render_markdown_terminal()` | Render light markdown styling in terminals |
 | `terminal_scaffold_input()` | Prompt for user input during scaffolding |
+| `terminal_discuss_task()` | Capture free-form terminal feedback into the scaffolder |
 | `terminal_ask_node_complete()` | Ask whether a workflow node is complete |
-| `terminal_ask_workflow_changes()` | Ask whether nodes should be added or removed |
+| `terminal_ask_workflow_changes()` | Ask what workflow or edge changes should be made |
 | `terminal_ask_node_rule()` | Ask for a node-specific rule |
 
 ## Persistence and Serialization

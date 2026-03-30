@@ -4,7 +4,13 @@
 \alias{workflow_edge}
 \title{Create a workflow edge record}
 \usage{
-workflow_edge(from, to, relation = "depends_on")
+workflow_edge(
+  from,
+  to,
+  relation = "depends_on",
+  confidence = NA_real_,
+  notes = NA_character_
+)
 }
 \arguments{
 \item{from}{Source node id.}
@@ -12,6 +18,10 @@ workflow_edge(from, to, relation = "depends_on")
 \item{to}{Target node id.}
 
 \item{relation}{Edge relation label.}
+
+\item{confidence}{Optional edge confidence score between 0 and 1.}
+
+\item{notes}{Optional edge notes.}
 }
 \value{
 One-row data frame.

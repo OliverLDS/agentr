@@ -11,7 +11,10 @@ workflow_node(
   human_required = TRUE,
   rule_spec = NA_character_,
   implementation_hint = NA_character_,
-  complete = FALSE
+  complete = FALSE,
+  review_status = "pending",
+  review_notes = NA_character_,
+  review_confidence = NA_real_
 )
 }
 \arguments{
@@ -28,6 +31,12 @@ workflow_node(
 \item{implementation_hint}{Optional implementation hint.}
 
 \item{complete}{Whether the node is considered complete.}
+
+\item{review_status}{Node-level review status.}
+
+\item{review_notes}{Optional node-level review notes.}
+
+\item{review_confidence}{Optional confidence attached to the latest review.}
 }
 \value{
 One-row data frame.

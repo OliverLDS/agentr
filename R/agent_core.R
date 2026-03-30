@@ -18,6 +18,12 @@
 #' @param metadata Free-form metadata list used by `$initialize()`.
 #' @param scaffolder Optional [`Scaffolder`] instance used by
 #'   `$attach_scaffolder()`.
+#' @section Methods:
+#' \describe{
+#'   \item{`$initialize(id = "agentr-core", name = "agentr", cognition = CognitiveState$new(), affect = AffectiveState$new(), metadata = list())`}{Create a minimal agent container with cognition and affect.}
+#'   \item{`$attach_scaffolder(scaffolder = NULL)`}{Attach an existing scaffolder or create a new [`Scaffolder`] owned by the agent.}
+#'   \item{`$snapshot()`}{Return a serializable snapshot of the agent's core state.}
+#' }
 #'
 #' @export
 AgentCore <- R6::R6Class(
@@ -30,6 +36,8 @@ AgentCore <- R6::R6Class(
     scaffolder = NULL,
     metadata = NULL,
 
+    #' @description
+    #' Create an `AgentCore` with cognition, affect, and free-form metadata.
     initialize = function(
       id = "agentr-core",
       name = "agentr",
@@ -47,6 +55,8 @@ AgentCore <- R6::R6Class(
       self$metadata <- metadata
     },
 
+    #' @description
+    #' Attach an existing scaffolder or create a new one owned by this agent.
     attach_scaffolder = function(scaffolder = NULL) {
       if (is.null(scaffolder)) {
         scaffolder <- Scaffolder$new(agent = self)
@@ -56,6 +66,8 @@ AgentCore <- R6::R6Class(
       invisible(self)
     },
 
+    #' @description
+    #' Return a serializable snapshot of the agent core state.
     snapshot = function() {
       list(
         id = self$id,

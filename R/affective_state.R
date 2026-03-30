@@ -192,6 +192,14 @@ describe_emotional_state <- function(
 #' @param threshold Threshold used by `$describe()`.
 #' @param include_blended Logical flag used by `$describe()`.
 #' @param method Combination method used by `$describe()`.
+#' @section Methods:
+#' \describe{
+#'   \item{`$initialize(state = default_emotion_state())`}{Create an affective state container.}
+#'   \item{`$decay(current_time = Sys.time())`}{Apply time-based decay to the stored affective state.}
+#'   \item{`$update_primary(updates)`}{Blend named primary-emotion updates into the current state using inertia.}
+#'   \item{`$describe(threshold = 0.2, include_blended = TRUE, method = "geometric")`}{Return a natural-language description of the current affective state.}
+#'   \item{`$as_list()`}{Return the raw underlying affective-state list.}
+#' }
 #'
 #' @export
 AffectiveState <- R6::R6Class(
@@ -199,15 +207,21 @@ AffectiveState <- R6::R6Class(
   public = list(
     state = NULL,
 
+    #' @description
+    #' Create an `AffectiveState` with an initial emotion state.
     initialize = function(state = default_emotion_state()) {
       self$state <- state
     },
 
+    #' @description
+    #' Apply time-based decay to the current affective state.
     decay = function(current_time = Sys.time()) {
       self$state <- decay_emotion_state(self$state, current_time = current_time)
       invisible(self)
     },
 
+    #' @description
+    #' Blend named primary-emotion updates into the current affective state.
     update_primary = function(updates) {
       stopifnot(is.numeric(updates))
       self$decay()
@@ -229,6 +243,8 @@ AffectiveState <- R6::R6Class(
       invisible(self)
     },
 
+    #' @description
+    #' Return a natural-language description of the current affective state.
     describe = function(
       threshold = 0.2,
       include_blended = TRUE,
@@ -242,6 +258,8 @@ AffectiveState <- R6::R6Class(
       )
     },
 
+    #' @description
+    #' Return the underlying affective state as a plain list.
     as_list = function() {
       self$state
     }

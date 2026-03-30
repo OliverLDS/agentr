@@ -4,10 +4,39 @@
 \alias{Scaffolder}
 \title{Scaffolder}
 \description{
-Minimal human-in-the-loop scaffolding interface for workflow elicitation.
-A \code{Scaffolder} evaluates a task, creates candidate workflow nodes, tracks
-provisional confidence, and records human feedback for iterative refinement.
+Scaffolder
+
+Scaffolder
 }
+\details{
+Human-in-the-loop scaffolding interface for iterative workflow elicitation.
+A \code{Scaffolder} keeps a persistent task-evaluation artifact, supports
+free-form discussion rounds before structured graph edits, separates
+workflow-level and node-level review, and treats node/edge edits as
+first-class operations.
+}
+\section{Methods}{
+
+\describe{
+\item{\verb{$initialize(agent = NULL, completion_threshold = 0.75)}}{Create a scaffolder with empty workflow state and review metadata.}
+\item{\verb{$evaluate_task(task, summary = NULL, workflow_complete = NA, blockers = NULL, next_focus = NULL)}}{Create or refresh the persistent task-evaluation artifact.}
+\item{\verb{$discuss_task(feedback, source = "human", node_id = NULL, confidence = NA_real_)}}{Record a free-form human, model, or system discussion round.}
+\item{\verb{$decompose_task(task = self$task, candidates = NULL, suggestions = NULL)}}{Create or replace the workflow from linear candidates or non-linear graph suggestions.}
+\item{\verb{$ask_human_complete(node_id)}}{Create a prompt asking whether a workflow node is complete.}
+\item{\verb{$ask_human_changes()}}{Create a prompt asking what workflow or edge changes should happen next.}
+\item{\verb{$ask_human_rule(node_id)}}{Create a prompt requesting a node-specific rule.}
+\item{\verb{$review_workflow(status = "pending", notes = NULL, confidence = NA_real_)}}{Store workflow-level completeness or revision review state.}
+\item{\verb{$review_node(node_id, status = "pending", notes = NULL, confidence = NA_real_, complete = NULL)}}{Store node-level correctness or completion review state.}
+\item{\verb{$edit_workflow(add = NULL, insert = NULL, remove = NULL, add_edges = NULL, remove_edges = NULL, rule_specs = list(), confidence = list())}}{Apply first-class node and edge edits to the current workflow.}
+\item{\verb{$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())}}{Compatibility wrapper for structured human workflow edits.}
+\item{\verb{$workflow_spec()}}{Validate and return the current workflow specification.}
+\item{\verb{$implementation_spec()}}{Return an implementation-facing summary of workflow nodes and rules.}
+\item{\verb{$low_confidence_nodes()}}{Return workflow nodes below the completion threshold.}
+\item{\verb{$get_node(node_id)}}{Return a single workflow node by identifier.}
+\item{\verb{$record_interaction(type, payload)}}{Append an interaction event to the scaffolder log.}
+}
+}
+
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -28,10 +57,14 @@ provisional confidence, and records human feedback for iterative refinement.
 \itemize{
 \item \href{#method-Scaffolder-new}{\code{Scaffolder$new()}}
 \item \href{#method-Scaffolder-evaluate_task}{\code{Scaffolder$evaluate_task()}}
+\item \href{#method-Scaffolder-discuss_task}{\code{Scaffolder$discuss_task()}}
 \item \href{#method-Scaffolder-decompose_task}{\code{Scaffolder$decompose_task()}}
 \item \href{#method-Scaffolder-ask_human_complete}{\code{Scaffolder$ask_human_complete()}}
 \item \href{#method-Scaffolder-ask_human_changes}{\code{Scaffolder$ask_human_changes()}}
 \item \href{#method-Scaffolder-ask_human_rule}{\code{Scaffolder$ask_human_rule()}}
+\item \href{#method-Scaffolder-review_workflow}{\code{Scaffolder$review_workflow()}}
+\item \href{#method-Scaffolder-review_node}{\code{Scaffolder$review_node()}}
+\item \href{#method-Scaffolder-edit_workflow}{\code{Scaffolder$edit_workflow()}}
 \item \href{#method-Scaffolder-apply_human_feedback}{\code{Scaffolder$apply_human_feedback()}}
 \item \href{#method-Scaffolder-workflow_spec}{\code{Scaffolder$workflow_spec()}}
 \item \href{#method-Scaffolder-implementation_spec}{\code{Scaffolder$implementation_spec()}}
@@ -45,6 +78,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-new"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-new}{}}}
 \subsection{Method \code{new()}}{
+Create a \code{Scaffolder} with empty workflow, review, and discussion state.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$new(agent = NULL, completion_threshold = 0.75)}\if{html}{\out{</div>}}
 }
@@ -63,14 +97,58 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-evaluate_task"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-evaluate_task}{}}}
 \subsection{Method \code{evaluate_task()}}{
+Create or refresh the persistent task-evaluation artifact.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$evaluate_task(task)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$evaluate_task(
+  task,
+  summary = NULL,
+  workflow_complete = NA,
+  blockers = NULL,
+  next_focus = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{task}}{Task text used by \verb{$evaluate_task()} and \verb{$decompose_task()}.}
+
+\item{\code{summary}}{Optional task summary used by \verb{$evaluate_task()}.}
+
+\item{\code{workflow_complete}}{Optional task-level completeness flag used by
+\verb{$evaluate_task()}.}
+
+\item{\code{blockers}}{Optional blocker strings used by \verb{$evaluate_task()}.}
+
+\item{\code{next_focus}}{Optional next-focus note used by \verb{$evaluate_task()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-discuss_task"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-discuss_task}{}}}
+\subsection{Method \code{discuss_task()}}{
+Record a free-form human, model, or system discussion round.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$discuss_task(
+  feedback,
+  source = "human",
+  node_id = NULL,
+  confidence = NA_real_
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{feedback}}{Free-form discussion feedback used by \verb{$discuss_task()}.}
+
+\item{\code{source}}{Discussion source used by \verb{$discuss_task()}.}
+
+\item{\code{node_id}}{Workflow node identifier used by node-specific methods.}
+
+\item{\code{confidence}}{Confidence value used by review/edit helpers.}
 }
 \if{html}{\out{</div>}}
 }
@@ -79,8 +157,13 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-decompose_task"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-decompose_task}{}}}
 \subsection{Method \code{decompose_task()}}{
+Replace the workflow with nodes and edges derived from task suggestions.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$decompose_task(task = self$task, candidates = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$decompose_task(
+  task = self$task,
+  candidates = NULL,
+  suggestions = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -89,6 +172,9 @@ provisional confidence, and records human feedback for iterative refinement.
 \item{\code{task}}{Task text used by \verb{$evaluate_task()} and \verb{$decompose_task()}.}
 
 \item{\code{candidates}}{Optional candidate node labels used by \verb{$decompose_task()}.}
+
+\item{\code{suggestions}}{Optional free-form or structured graph suggestions used by
+\verb{$decompose_task()}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -97,6 +183,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-ask_human_complete"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-ask_human_complete}{}}}
 \subsection{Method \code{ask_human_complete()}}{
+Build a prompt asking whether a node is complete.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$ask_human_complete(node_id)}\if{html}{\out{</div>}}
 }
@@ -104,7 +191,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{node_id}}{Workflow node identifier used by node-specific prompt methods.}
+\item{\code{node_id}}{Workflow node identifier used by node-specific methods.}
 }
 \if{html}{\out{</div>}}
 }
@@ -113,6 +200,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-ask_human_changes"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-ask_human_changes}{}}}
 \subsection{Method \code{ask_human_changes()}}{
+Build a prompt asking what workflow or edge changes should happen next.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$ask_human_changes()}\if{html}{\out{</div>}}
 }
@@ -122,6 +210,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-ask_human_rule"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-ask_human_rule}{}}}
 \subsection{Method \code{ask_human_rule()}}{
+Build a prompt asking for a node-specific rule.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$ask_human_rule(node_id)}\if{html}{\out{</div>}}
 }
@@ -129,7 +218,102 @@ provisional confidence, and records human feedback for iterative refinement.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{node_id}}{Workflow node identifier used by node-specific prompt methods.}
+\item{\code{node_id}}{Workflow node identifier used by node-specific methods.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-review_workflow"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-review_workflow}{}}}
+\subsection{Method \code{review_workflow()}}{
+Store workflow-level completeness or revision review state.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$review_workflow(
+  status = "pending",
+  notes = NULL,
+  confidence = NA_real_
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{status}}{Review status used by \verb{$review_workflow()} and
+\verb{$review_node()}.}
+
+\item{\code{notes}}{Optional review notes.}
+
+\item{\code{confidence}}{Confidence value used by review/edit helpers.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-review_node"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-review_node}{}}}
+\subsection{Method \code{review_node()}}{
+Store node-level review status, notes, confidence, and completion state.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$review_node(
+  node_id,
+  status = "pending",
+  notes = NULL,
+  confidence = NA_real_,
+  complete = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{node_id}}{Workflow node identifier used by node-specific methods.}
+
+\item{\code{status}}{Review status used by \verb{$review_workflow()} and
+\verb{$review_node()}.}
+
+\item{\code{notes}}{Optional review notes.}
+
+\item{\code{confidence}}{Confidence value used by review/edit helpers.}
+
+\item{\code{complete}}{Optional node completion flag used by \verb{$review_node()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-edit_workflow"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-edit_workflow}{}}}
+\subsection{Method \code{edit_workflow()}}{
+Apply first-class node and edge edits to the current workflow.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$edit_workflow(
+  add = NULL,
+  insert = NULL,
+  remove = NULL,
+  add_edges = NULL,
+  remove_edges = NULL,
+  rule_specs = list(),
+  confidence = list()
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{add}}{List of node records to add in \verb{$edit_workflow()}.}
+
+\item{\code{insert}}{List of insertion specs used by \verb{$edit_workflow()}.}
+
+\item{\code{remove}}{Character vector of node ids to remove in \verb{$edit_workflow()}.}
+
+\item{\code{add_edges}}{List of edge records to add in \verb{$edit_workflow()}.}
+
+\item{\code{remove_edges}}{List of edge specs to remove in \verb{$edit_workflow()}.}
+
+\item{\code{rule_specs}}{Named list of rule specs used by \verb{$edit_workflow()}.}
+
+\item{\code{confidence}}{Confidence value used by review/edit helpers.}
 }
 \if{html}{\out{</div>}}
 }
@@ -138,6 +322,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-apply_human_feedback"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-apply_human_feedback}{}}}
 \subsection{Method \code{apply_human_feedback()}}{
+Apply legacy structured human feedback to the workflow.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$apply_human_feedback(
   completeness = NULL,
@@ -154,15 +339,13 @@ provisional confidence, and records human feedback for iterative refinement.
 \item{\code{completeness}}{Named list of completion flags used by
 \verb{$apply_human_feedback()}.}
 
-\item{\code{add}}{List of node records to add in \verb{$apply_human_feedback()}.}
+\item{\code{add}}{List of node records to add in \verb{$edit_workflow()}.}
 
-\item{\code{remove}}{Character vector of node ids to remove in
-\verb{$apply_human_feedback()}.}
+\item{\code{remove}}{Character vector of node ids to remove in \verb{$edit_workflow()}.}
 
-\item{\code{rule_specs}}{Named list of rule specs used by \verb{$apply_human_feedback()}.}
+\item{\code{rule_specs}}{Named list of rule specs used by \verb{$edit_workflow()}.}
 
-\item{\code{confidence}}{Named list of confidence updates used by
-\verb{$apply_human_feedback()}.}
+\item{\code{confidence}}{Confidence value used by review/edit helpers.}
 }
 \if{html}{\out{</div>}}
 }
@@ -171,6 +354,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-workflow_spec"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-workflow_spec}{}}}
 \subsection{Method \code{workflow_spec()}}{
+Validate and return the current workflow specification.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$workflow_spec()}\if{html}{\out{</div>}}
 }
@@ -180,6 +364,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-implementation_spec"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-implementation_spec}{}}}
 \subsection{Method \code{implementation_spec()}}{
+Return an implementation-facing summary of workflow nodes and rules.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$implementation_spec()}\if{html}{\out{</div>}}
 }
@@ -189,6 +374,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-low_confidence_nodes"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-low_confidence_nodes}{}}}
 \subsection{Method \code{low_confidence_nodes()}}{
+Return workflow nodes whose confidence falls below the completion threshold.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$low_confidence_nodes()}\if{html}{\out{</div>}}
 }
@@ -198,6 +384,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-get_node"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-get_node}{}}}
 \subsection{Method \code{get_node()}}{
+Return a single workflow node by identifier.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$get_node(node_id)}\if{html}{\out{</div>}}
 }
@@ -205,7 +392,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{node_id}}{Workflow node identifier used by node-specific prompt methods.}
+\item{\code{node_id}}{Workflow node identifier used by node-specific methods.}
 }
 \if{html}{\out{</div>}}
 }
@@ -214,6 +401,7 @@ provisional confidence, and records human feedback for iterative refinement.
 \if{html}{\out{<a id="method-Scaffolder-record_interaction"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-record_interaction}{}}}
 \subsection{Method \code{record_interaction()}}{
+Append an interaction record to the scaffolder log.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$record_interaction(type, payload)}\if{html}{\out{</div>}}
 }

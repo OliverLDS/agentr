@@ -4,8 +4,24 @@
 \alias{AffectiveState}
 \title{AffectiveState}
 \description{
+AffectiveState
+
+AffectiveState
+}
+\details{
 Minimal structured affective layer with inertia-aware updates.
 }
+\section{Methods}{
+
+\describe{
+\item{\verb{$initialize(state = default_emotion_state())}}{Create an affective state container.}
+\item{\verb{$decay(current_time = Sys.time())}}{Apply time-based decay to the stored affective state.}
+\item{\verb{$update_primary(updates)}}{Blend named primary-emotion updates into the current state using inertia.}
+\item{\verb{$describe(threshold = 0.2, include_blended = TRUE, method = "geometric")}}{Return a natural-language description of the current affective state.}
+\item{\verb{$as_list()}}{Return the raw underlying affective-state list.}
+}
+}
+
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -28,6 +44,7 @@ Minimal structured affective layer with inertia-aware updates.
 \if{html}{\out{<a id="method-AffectiveState-new"></a>}}
 \if{latex}{\out{\hypertarget{method-AffectiveState-new}{}}}
 \subsection{Method \code{new()}}{
+Create an \code{AffectiveState} with an initial emotion state.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AffectiveState$new(state = default_emotion_state())}\if{html}{\out{</div>}}
 }
@@ -44,6 +61,7 @@ Minimal structured affective layer with inertia-aware updates.
 \if{html}{\out{<a id="method-AffectiveState-decay"></a>}}
 \if{latex}{\out{\hypertarget{method-AffectiveState-decay}{}}}
 \subsection{Method \code{decay()}}{
+Apply time-based decay to the current affective state.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AffectiveState$decay(current_time = Sys.time())}\if{html}{\out{</div>}}
 }
@@ -60,6 +78,7 @@ Minimal structured affective layer with inertia-aware updates.
 \if{html}{\out{<a id="method-AffectiveState-update_primary"></a>}}
 \if{latex}{\out{\hypertarget{method-AffectiveState-update_primary}{}}}
 \subsection{Method \code{update_primary()}}{
+Blend named primary-emotion updates into the current affective state.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AffectiveState$update_primary(updates)}\if{html}{\out{</div>}}
 }
@@ -76,6 +95,7 @@ Minimal structured affective layer with inertia-aware updates.
 \if{html}{\out{<a id="method-AffectiveState-describe"></a>}}
 \if{latex}{\out{\hypertarget{method-AffectiveState-describe}{}}}
 \subsection{Method \code{describe()}}{
+Return a natural-language description of the current affective state.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AffectiveState$describe(
   threshold = 0.2,
@@ -100,6 +120,7 @@ Minimal structured affective layer with inertia-aware updates.
 \if{html}{\out{<a id="method-AffectiveState-as_list"></a>}}
 \if{latex}{\out{\hypertarget{method-AffectiveState-as_list}{}}}
 \subsection{Method \code{as_list()}}{
+Return the underlying affective state as a plain list.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AffectiveState$as_list()}\if{html}{\out{</div>}}
 }

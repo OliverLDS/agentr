@@ -12,7 +12,7 @@ terminal_ask_node_rule(scaffolder, node_id)
 \item{node_id}{Workflow node identifier.}
 }
 \value{
-The human response string.
+A list containing the prompt and response.
 }
 \description{
 Ask for a node-specific rule in the terminal

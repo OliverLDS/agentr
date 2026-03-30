@@ -62,29 +62,77 @@ terminal_scaffold_input <- function(prompt) {
   readline(prompt = paste0(render_markdown_terminal(prompt), "\n> "))
 }
 
+#' Capture free-form terminal feedback and record it in the scaffolder
+#'
+#' @param scaffolder A [`Scaffolder`] instance.
+#' @param prompt Character string shown to the human.
+#' @param source Discussion source label.
+#' @param node_id Optional workflow node identifier.
+#'
+#' @return A list containing the prompt and recorded response.
+#' @export
+terminal_discuss_task <- function(
+  scaffolder,
+  prompt = "Share feedback for the current task or workflow.",
+  source = "human",
+  node_id = NULL
+) {
+  stopifnot(inherits(scaffolder, "Scaffolder"))
+  response <- terminal_scaffold_input(prompt)
+  if (nzchar(trimws(response))) {
+    scaffolder$discuss_task(
+      feedback = response,
+      source = source,
+      node_id = node_id
+    )
+  }
+
+  list(
+    prompt = prompt,
+    response = response
+  )
+}
+
 #' Ask for workflow-node completeness in the terminal
 #'
 #' @param scaffolder A [`Scaffolder`] instance.
 #' @param node_id Workflow node identifier.
 #'
-#' @return The human response string.
+#' @return A list containing the prompt and response.
 #' @export
 terminal_ask_node_complete <- function(scaffolder, node_id) {
   stopifnot(inherits(scaffolder, "Scaffolder"))
   prompt <- scaffolder$ask_human_complete(node_id)
-  terminal_scaffold_input(prompt$question)
+  response <- terminal_scaffold_input(prompt$question)
+
+  if (nzchar(trimws(response))) {
+    scaffolder$discuss_task(response, source = "human", node_id = node_id)
+    normalized <- tolower(trimws(response))
+    if (normalized %in% c("y", "yes", "complete", "done")) {
+      scaffolder$review_node(node_id, status = "approved", notes = response, complete = TRUE)
+    }
+    if (normalized %in% c("n", "no", "incomplete", "not yet")) {
+      scaffolder$review_node(node_id, status = "needs_revision", notes = response, complete = FALSE)
+    }
+  }
+
+  list(prompt = prompt, response = response)
 }
 
 #' Ask for workflow changes in the terminal
 #'
 #' @param scaffolder A [`Scaffolder`] instance.
 #'
-#' @return The human response string.
+#' @return A list containing the prompt and response.
 #' @export
 terminal_ask_workflow_changes <- function(scaffolder) {
   stopifnot(inherits(scaffolder, "Scaffolder"))
   prompt <- scaffolder$ask_human_changes()
-  terminal_scaffold_input(prompt$question)
+  response <- terminal_scaffold_input(prompt$question)
+  if (nzchar(trimws(response))) {
+    scaffolder$discuss_task(response, source = "human")
+  }
+  list(prompt = prompt, response = response)
 }
 
 #' Ask for a node-specific rule in the terminal
@@ -92,10 +140,15 @@ terminal_ask_workflow_changes <- function(scaffolder) {
 #' @param scaffolder A [`Scaffolder`] instance.
 #' @param node_id Workflow node identifier.
 #'
-#' @return The human response string.
+#' @return A list containing the prompt and response.
 #' @export
 terminal_ask_node_rule <- function(scaffolder, node_id) {
   stopifnot(inherits(scaffolder, "Scaffolder"))
   prompt <- scaffolder$ask_human_rule(node_id)
-  terminal_scaffold_input(prompt$question)
+  response <- terminal_scaffold_input(prompt$question)
+  if (nzchar(trimws(response))) {
+    scaffolder$discuss_task(response, source = "human", node_id = node_id)
+    scaffolder$edit_workflow(rule_specs = stats::setNames(list(response), node_id))
+  }
+  list(prompt = prompt, response = response)
 }

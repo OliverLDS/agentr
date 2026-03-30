@@ -19,4 +19,5 @@ Rscript -e 'roxygen2::roxygenise()'
 Rscript -e 'testthat::test_local()'
 rm -rf agentr.Rcheck
 R CMD build .
-R CMD check agentr_0.1.3.tar.gz --no-manual
+PKG_TARBALL=$(ls -t agentr_*.tar.gz | head -n 1)
+R CMD check "$PKG_TARBALL" --no-manual

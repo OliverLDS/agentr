@@ -1,4 +1,4 @@
-# agentr 0.1.5 Architecture
+# agentr 0.1.6 Architecture
 
 `agentr` is the agent core, not the execution layer.
 
@@ -30,12 +30,12 @@ Implemented as `AffectiveState`, which preserves and cleans up the existing emot
 
 Implemented as `Scaffolder`, which supports:
 
-- task evaluation
-- candidate node decomposition
-- provisional confidence assignment
-- completeness checks
-- add/remove node prompts
-- node-specific rule capture
+- persistent task evaluation artifacts
+- free-form human/model discussion rounds
+- candidate node decomposition and non-linear graph suggestions
+- workflow-level review
+- node-level review
+- first-class node and edge editing
 - iterative workflow refinement
 
 ### LLM bridge layer
@@ -73,6 +73,9 @@ Node records include:
 - `rule_spec`
 - `implementation_hint`
 - `complete`
+- `review_status`
+- `review_notes`
+- `review_confidence`
 
 Workflow specs can also be:
 

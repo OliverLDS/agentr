@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of agentic workflows. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and generates workflow specifications such as DAG-like plans and implementation-ready structures.
 
-Version `0.1.5` keeps that narrowed scope and hardens the machine-readable bridge between scaffolding state and external LLM reasoning. `agentr` remains the core reasoning/scaffolding layer, not the transport or execution layer.
+Version `0.1.6` keeps that narrowed scope and upgrades scaffolding into a more realistic discussion-and-review loop. `agentr` remains the core reasoning/scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -54,13 +54,14 @@ spec
 
 ## LLM Scaffolding Bridge
 
-`0.1.5` provides a constrained bridge for letting an external LLM reason about scaffolding actions without exposing arbitrary code execution.
+`0.1.6` provides a constrained bridge for letting an external LLM reason about scaffolding actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)
 
 message_json <- '{
   "actions": [
+    {"method": "discuss_task", "args": {"feedback": "The human wants an approval branch.", "source": "human"}},
     {"method": "decompose_task", "args": {"candidates": ["Clarify goals", "Ask for rules"]}},
     {"method": "ask_human_rule", "args": {"node_id": "node_2"}}
   ]
@@ -107,20 +108,30 @@ reasoner <- function(prompt) {
   '{
     "actions": [
       {
-        "method": "decompose_task",
+        "method": "discuss_task",
         "args": {
-          "candidates": [
-            "Clarify onboarding goals",
-            "Identify required tools",
-            "Ask for approval rules",
-            "Draft implementation handoff"
-          ]
+          "feedback": "The workflow likely needs a dedicated approval checkpoint.",
+          "source": "model"
         }
       },
       {
-        "method": "ask_human_rule",
+        "method": "decompose_task",
         "args": {
-          "node_id": "node_3"
+          "suggestions": {
+            "nodes": [
+              {"id": "node_1", "label": "Clarify onboarding goals", "confidence": 0.9},
+              {"id": "node_2", "label": "Identify required tools", "confidence": 0.8},
+              {"id": "node_3", "label": "Ask for approval rules", "depends_on": ["node_1"], "confidence": 0.7},
+              {"id": "node_4", "label": "Draft implementation handoff", "depends_on": ["node_2", "node_3"], "confidence": 0.7}
+            ]
+          }
+        }
+      },
+      {
+        "method": "review_workflow",
+        "args": {
+          "status": "needs_revision",
+          "notes": "Approval rules still need human confirmation."
         }
       }
     ]
@@ -136,7 +147,7 @@ collect_scaffolder_questions(scaffolder, dispatch)
 
 ## Workflow Output
 
-The workflow object is intentionally simple in `0.1.3` and includes:
+The workflow object is intentionally simple and includes:
 
 - `nodes`
 - `edges`
@@ -144,6 +155,9 @@ The workflow object is intentionally simple in `0.1.3` and includes:
 - `human_required`
 - `rule_spec`
 - `implementation_hint`
+- `review_status`
+- `review_notes`
+- `review_confidence`
 
 These structures are outputs of scaffolding and reasoning, not hard-coded package workflows.
 

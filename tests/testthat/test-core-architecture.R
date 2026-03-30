@@ -24,14 +24,30 @@ test_that("AffectiveState updates with inertia and stays bounded", {
   expect_true(all(state$primary <= 1))
 })
 
-test_that("Scaffolder produces workflow specs and applies human feedback", {
+test_that("Scaffolder supports discussion, review, and graph editing", {
   agent <- AgentCore$new()
   scaffolder <- Scaffolder$new(agent = agent)
 
-  scaffolder$evaluate_task("Design a workflow")
-  scaffolder$decompose_task(candidates = c("Clarify", "Plan", "Translate"))
-  scaffolder$apply_human_feedback(
-    completeness = list(node_1 = TRUE),
+  scaffolder$evaluate_task(
+    "Design a workflow",
+    summary = "Design a reviewable workflow",
+    blockers = c("Need approval path")
+  )
+  scaffolder$discuss_task("We may need a parallel review branch.", source = "human")
+  scaffolder$decompose_task(suggestions = list(
+    nodes = list(
+      list(id = "node_1", label = "Clarify"),
+      list(id = "node_2", label = "Plan"),
+      list(id = "node_3", label = "Translate", depends_on = c("node_1", "node_2"))
+    )
+  ))
+  scaffolder$review_workflow(status = "needs_revision", notes = "Missing approval review")
+  scaffolder$review_node("node_1", status = "approved", notes = "Clear", complete = TRUE)
+  scaffolder$edit_workflow(
+    insert = list(list(
+      node = list(label = "Approval review", confidence = 0.7),
+      between = list("node_2", "node_3")
+    )),
     rule_specs = list(node_2 = "Require approval before branching"),
     confidence = list(node_3 = 0.4)
   )
@@ -39,7 +55,7 @@ test_that("Scaffolder produces workflow specs and applies human feedback", {
   spec <- scaffolder$workflow_spec()
 
   expect_s3_class(spec, "agentr_workflow_spec")
-  expect_true(identical(nrow(spec$nodes), 3L))
+  expect_true(identical(nrow(spec$nodes), 4L))
   expect_true(spec$nodes$complete[spec$nodes$id == "node_1"])
   expect_true(identical(
     spec$nodes$rule_spec[spec$nodes$id == "node_2"],
@@ -49,7 +65,17 @@ test_that("Scaffolder produces workflow specs and applies human feedback", {
     spec$nodes$confidence[spec$nodes$id == "node_3"],
     0.4
   )))
-  expect_true(identical(nrow(scaffolder$low_confidence_nodes()), 1L))
+  expect_true(identical(
+    spec$nodes$review_status[spec$nodes$id == "node_1"],
+    "approved"
+  ))
+  expect_true(identical(
+    spec$metadata$workflow_review$status,
+    "needs_revision"
+  ))
+  expect_true(identical(length(spec$metadata$discussion_rounds), 1L))
+  expect_true(identical(nrow(spec$edges), 3L))
+  expect_true(identical(nrow(scaffolder$low_confidence_nodes()), 2L))
 })
 
 test_that("save_agent and load_agent round-trip core objects", {
@@ -96,11 +122,12 @@ test_that("build_scaffolder_prompt supports json and markdown outputs", {
   expect_true(grepl("\"task\": \"Build a DAG for a package release\"", prompt_json, fixed = TRUE))
   expect_true(grepl("\"available_methods\"", prompt_json, fixed = TRUE))
   expect_true(grepl("\"response_requirements\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"discuss_task\"", prompt_json, fixed = TRUE))
   expect_true(grepl("# Scaffolding Reasoning Prompt", prompt_markdown, fixed = TRUE))
   expect_true(grepl("## Available Scaffolder Methods", prompt_markdown, fixed = TRUE))
-  expect_true(grepl("apply_human_feedback", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("edit_workflow", prompt_markdown, fixed = TRUE))
   expect_true(grepl("machine-readable JSON only", prompt_markdown, fixed = TRUE))
-  expect_true(grepl("Ask the human only when ambiguity, missing rules, or completion checks block progress", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("Use discuss_task to preserve free-form human or model reasoning before committing graph edits", prompt_markdown, fixed = TRUE))
 })
 
 test_that("parse and validate scaffolder message accept valid json", {
@@ -134,17 +161,28 @@ test_that("apply_scaffolder_message dispatches actions to scaffolder methods", {
     actions = list(
       list(
         method = "evaluate_task",
-        args = list(task = "Draft a workflow")
+        args = list(task = "Draft a workflow", summary = "Initial task assessment")
+      ),
+      list(
+        method = "discuss_task",
+        args = list(feedback = "Human wants a review checkpoint.", source = "human")
       ),
       list(
         method = "decompose_task",
-        args = list(candidates = list("Clarify", "Translate"))
+        args = list(suggestions = list(
+          nodes = list(
+            list(id = "node_1", label = "Clarify"),
+            list(id = "node_2", label = "Translate")
+          ),
+          edges = list(list(from = "node_1", to = "node_2", relation = "depends_on"))
+        ))
       ),
       list(
-        method = "apply_human_feedback",
+        method = "edit_workflow",
         args = list(
           confidence = list(node_1 = 0.9),
-          rule_specs = list(node_2 = "Require a final review")
+          rule_specs = list(node_2 = "Require a final review"),
+          add_edges = list(list(from = "node_1", to = "node_2", relation = "depends_on"))
         )
       )
     )
@@ -157,9 +195,10 @@ test_that("apply_scaffolder_message dispatches actions to scaffolder methods", {
     names(out),
     c("applied_actions", "workflow_after", "human_prompts", "errors")
   ))
-  expect_true(identical(length(out$applied_actions), 3L))
+  expect_true(identical(length(out$applied_actions), 4L))
   expect_true(identical(scaffolder$task, "Draft a workflow"))
   expect_true(identical(nrow(scaffolder$workflow$nodes), 2L))
+  expect_true(identical(length(scaffolder$workflow$metadata$discussion_rounds), 1L))
   expect_true(isTRUE(all.equal(
     scaffolder$workflow$nodes$confidence[scaffolder$workflow$nodes$id == "node_1"],
     0.9
@@ -218,17 +257,17 @@ test_that("validate_scaffolder_message enforces method-specific arguments", {
   expect_error(
     validate_scaffolder_message(list(
       actions = list(list(
-        method = "apply_human_feedback",
-        args = list(confidence = list(node_1 = 1.2))
+        method = "review_node",
+        args = list(node_id = "node_1", confidence = 1.2)
       ))
     )),
-    "values must be numeric in \\[0, 1\\]"
+    "Confidence values must be numeric in \\[0, 1\\]"
   )
 
   expect_error(
     validate_scaffolder_message(list(
       actions = list(list(
-        method = "apply_human_feedback",
+        method = "edit_workflow",
         args = list(add = list(list(confidence = 0.5)))
       ))
     )),
@@ -256,7 +295,7 @@ test_that("apply_scaffolder_message validates node references against state", {
     apply_scaffolder_message(
       scaffolder,
       list(actions = list(list(
-        method = "apply_human_feedback",
+        method = "edit_workflow",
         args = list(
           remove = list("node_1"),
           rule_specs = list(node_1 = "Removed node")
@@ -305,4 +344,25 @@ test_that("apply_scaffolder_message can collect errors when stop_on_error is fal
   expect_true(identical(length(result$human_prompts), 1L))
   expect_true(identical(result$applied_actions[[1]]$status, "error"))
   expect_true(identical(result$applied_actions[[2]]$status, "applied"))
+})
+
+test_that("edit_workflow supports edge insertion and removal", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Edit graph edges")
+  scaffolder$decompose_task(candidates = c("Start", "Finish"))
+
+  scaffolder$edit_workflow(
+    insert = list(list(
+      node = list(id = "node_mid", label = "Review"),
+      between = list("node_1", "node_2")
+    )),
+    remove_edges = list(list(from = "node_1", to = "node_2"))
+  )
+
+  spec <- scaffolder$workflow_spec()
+
+  expect_true("node_mid" %in% spec$nodes$id)
+  expect_false(any(spec$edges$from == "node_1" & spec$edges$to == "node_2"))
+  expect_true(any(spec$edges$from == "node_1" & spec$edges$to == "node_mid"))
+  expect_true(any(spec$edges$from == "node_mid" & spec$edges$to == "node_2"))
 })

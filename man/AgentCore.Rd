@@ -4,11 +4,25 @@
 \alias{AgentCore}
 \title{AgentCore}
 \description{
+AgentCore
+
+AgentCore
+}
+\details{
 Minimal agent container for the \code{agentr} cognitive core.
 An \code{AgentCore} combines cognitive and affective state layers and can
 optionally own a \code{\link{Scaffolder}} instance for human-in-the-loop workflow
 elicitation.
 }
+\section{Methods}{
+
+\describe{
+\item{\verb{$initialize(id = "agentr-core", name = "agentr", cognition = CognitiveState$new(), affect = AffectiveState$new(), metadata = list())}}{Create a minimal agent container with cognition and affect.}
+\item{\verb{$attach_scaffolder(scaffolder = NULL)}}{Attach an existing scaffolder or create a new \code{\link{Scaffolder}} owned by the agent.}
+\item{\verb{$snapshot()}}{Return a serializable snapshot of the agent's core state.}
+}
+}
+
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -39,6 +53,7 @@ elicitation.
 \if{html}{\out{<a id="method-AgentCore-new"></a>}}
 \if{latex}{\out{\hypertarget{method-AgentCore-new}{}}}
 \subsection{Method \code{new()}}{
+Create an \code{AgentCore} with cognition, affect, and free-form metadata.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AgentCore$new(
   id = "agentr-core",
@@ -69,6 +84,7 @@ elicitation.
 \if{html}{\out{<a id="method-AgentCore-attach_scaffolder"></a>}}
 \if{latex}{\out{\hypertarget{method-AgentCore-attach_scaffolder}{}}}
 \subsection{Method \code{attach_scaffolder()}}{
+Attach an existing scaffolder or create a new one owned by this agent.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AgentCore$attach_scaffolder(scaffolder = NULL)}\if{html}{\out{</div>}}
 }
@@ -86,6 +102,7 @@ elicitation.
 \if{html}{\out{<a id="method-AgentCore-snapshot"></a>}}
 \if{latex}{\out{\hypertarget{method-AgentCore-snapshot}{}}}
 \subsection{Method \code{snapshot()}}{
+Return a serializable snapshot of the agent core state.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AgentCore$snapshot()}\if{html}{\out{</div>}}
 }

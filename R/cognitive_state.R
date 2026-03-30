@@ -33,6 +33,17 @@
 #' @param note Optional note used by `$bayes_update()`.
 #' @param type Update type used by `$record_update()`.
 #' @param key Update key used by `$record_update()`.
+#' @section Methods:
+#' \describe{
+#'   \item{`$initialize(beliefs = list(), knowledge = list(), goals = list(), task_context = list(), confidence = numeric(), update_log = list())`}{Create a lightweight cognitive state container.}
+#'   \item{`$set_belief(name, value, confidence = NULL)`}{Store or update a named belief and optional confidence value.}
+#'   \item{`$add_knowledge(entry, label = NULL)`}{Append a knowledge record with timestamped provenance.}
+#'   \item{`$set_goal(id, description, status = "proposed")`}{Store or update a goal record.}
+#'   \item{`$set_context(...)`}{Merge named task-context fields into the current cognitive state.}
+#'   \item{`$bayes_update(target, evidence, prior = NULL, note = NULL)`}{Record a placeholder Bayesian-style update artifact.}
+#'   \item{`$as_list()`}{Return the cognitive state as a plain list.}
+#'   \item{`$record_update(type, key, value, confidence = NULL)`}{Append a structured update record to the update log.}
+#' }
 #'
 #' @export
 CognitiveState <- R6::R6Class(
@@ -45,6 +56,8 @@ CognitiveState <- R6::R6Class(
     confidence = NULL,
     update_log = NULL,
 
+    #' @description
+    #' Create a `CognitiveState` with beliefs, knowledge, goals, and context.
     initialize = function(
       beliefs = list(),
       knowledge = list(),
@@ -61,6 +74,8 @@ CognitiveState <- R6::R6Class(
       self$update_log <- update_log
     },
 
+    #' @description
+    #' Store or update a named belief and optional confidence value.
     set_belief = function(name, value, confidence = NULL) {
       self$beliefs[[name]] <- value
       if (!is.null(confidence)) {
@@ -75,6 +90,8 @@ CognitiveState <- R6::R6Class(
       invisible(self)
     },
 
+    #' @description
+    #' Append a timestamped knowledge record to the cognitive state.
     add_knowledge = function(entry, label = NULL) {
       record <- list(
         label = label,
@@ -86,6 +103,8 @@ CognitiveState <- R6::R6Class(
       invisible(self)
     },
 
+    #' @description
+    #' Store or update a structured goal record.
     set_goal = function(id, description, status = "proposed") {
       self$goals[[id]] <- list(
         id = id,
@@ -97,6 +116,8 @@ CognitiveState <- R6::R6Class(
       invisible(self)
     },
 
+    #' @description
+    #' Merge named task-context fields into the current state.
     set_context = function(...) {
       updates <- list(...)
       if (!length(updates)) {
@@ -109,6 +130,8 @@ CognitiveState <- R6::R6Class(
       invisible(self)
     },
 
+    #' @description
+    #' Record a placeholder Bayesian-style update artifact.
     bayes_update = function(target, evidence, prior = NULL, note = NULL) {
       update_record <- list(
         target = target,
@@ -122,6 +145,8 @@ CognitiveState <- R6::R6Class(
       invisible(update_record)
     },
 
+    #' @description
+    #' Return the cognitive state as a plain list.
     as_list = function() {
       list(
         beliefs = self$beliefs,
@@ -133,6 +158,8 @@ CognitiveState <- R6::R6Class(
       )
     },
 
+    #' @description
+    #' Append a structured update event to the update log.
     record_update = function(type, key, value, confidence = NULL) {
       self$update_log[[length(self$update_log) + 1]] <- list(
         type = type,

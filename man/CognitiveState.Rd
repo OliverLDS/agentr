@@ -4,11 +4,30 @@
 \alias{CognitiveState}
 \title{CognitiveState}
 \description{
+CognitiveState
+
+CognitiveState
+}
+\details{
 Minimal structured cognitive layer for agent state representation.
 This class intentionally provides only a lightweight API for \verb{0.1.3}.
 Its \code{bayes_update()} method is a placeholder interface rather than a full
 inference engine.
 }
+\section{Methods}{
+
+\describe{
+\item{\verb{$initialize(beliefs = list(), knowledge = list(), goals = list(), task_context = list(), confidence = numeric(), update_log = list())}}{Create a lightweight cognitive state container.}
+\item{\verb{$set_belief(name, value, confidence = NULL)}}{Store or update a named belief and optional confidence value.}
+\item{\verb{$add_knowledge(entry, label = NULL)}}{Append a knowledge record with timestamped provenance.}
+\item{\verb{$set_goal(id, description, status = "proposed")}}{Store or update a goal record.}
+\item{\verb{$set_context(...)}}{Merge named task-context fields into the current cognitive state.}
+\item{\verb{$bayes_update(target, evidence, prior = NULL, note = NULL)}}{Record a placeholder Bayesian-style update artifact.}
+\item{\verb{$as_list()}}{Return the cognitive state as a plain list.}
+\item{\verb{$record_update(type, key, value, confidence = NULL)}}{Append a structured update record to the update log.}
+}
+}
+
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -44,6 +63,7 @@ inference engine.
 \if{html}{\out{<a id="method-CognitiveState-new"></a>}}
 \if{latex}{\out{\hypertarget{method-CognitiveState-new}{}}}
 \subsection{Method \code{new()}}{
+Create a \code{CognitiveState} with beliefs, knowledge, goals, and context.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CognitiveState$new(
   beliefs = list(),
@@ -78,6 +98,7 @@ inference engine.
 \if{html}{\out{<a id="method-CognitiveState-set_belief"></a>}}
 \if{latex}{\out{\hypertarget{method-CognitiveState-set_belief}{}}}
 \subsection{Method \code{set_belief()}}{
+Store or update a named belief and optional confidence value.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CognitiveState$set_belief(name, value, confidence = NULL)}\if{html}{\out{</div>}}
 }
@@ -100,6 +121,7 @@ inference engine.
 \if{html}{\out{<a id="method-CognitiveState-add_knowledge"></a>}}
 \if{latex}{\out{\hypertarget{method-CognitiveState-add_knowledge}{}}}
 \subsection{Method \code{add_knowledge()}}{
+Append a timestamped knowledge record to the cognitive state.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CognitiveState$add_knowledge(entry, label = NULL)}\if{html}{\out{</div>}}
 }
@@ -118,6 +140,7 @@ inference engine.
 \if{html}{\out{<a id="method-CognitiveState-set_goal"></a>}}
 \if{latex}{\out{\hypertarget{method-CognitiveState-set_goal}{}}}
 \subsection{Method \code{set_goal()}}{
+Store or update a structured goal record.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CognitiveState$set_goal(id, description, status = "proposed")}\if{html}{\out{</div>}}
 }
@@ -138,6 +161,7 @@ inference engine.
 \if{html}{\out{<a id="method-CognitiveState-set_context"></a>}}
 \if{latex}{\out{\hypertarget{method-CognitiveState-set_context}{}}}
 \subsection{Method \code{set_context()}}{
+Merge named task-context fields into the current state.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CognitiveState$set_context(...)}\if{html}{\out{</div>}}
 }
@@ -154,6 +178,7 @@ inference engine.
 \if{html}{\out{<a id="method-CognitiveState-bayes_update"></a>}}
 \if{latex}{\out{\hypertarget{method-CognitiveState-bayes_update}{}}}
 \subsection{Method \code{bayes_update()}}{
+Record a placeholder Bayesian-style update artifact.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CognitiveState$bayes_update(target, evidence, prior = NULL, note = NULL)}\if{html}{\out{</div>}}
 }
@@ -176,6 +201,7 @@ inference engine.
 \if{html}{\out{<a id="method-CognitiveState-as_list"></a>}}
 \if{latex}{\out{\hypertarget{method-CognitiveState-as_list}{}}}
 \subsection{Method \code{as_list()}}{
+Return the cognitive state as a plain list.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CognitiveState$as_list()}\if{html}{\out{</div>}}
 }
@@ -185,6 +211,7 @@ inference engine.
 \if{html}{\out{<a id="method-CognitiveState-record_update"></a>}}
 \if{latex}{\out{\hypertarget{method-CognitiveState-record_update}{}}}
 \subsection{Method \code{record_update()}}{
+Append a structured update event to the update log.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CognitiveState$record_update(type, key, value, confidence = NULL)}\if{html}{\out{</div>}}
 }

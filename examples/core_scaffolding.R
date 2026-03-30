@@ -15,13 +15,22 @@ cat(prompt_markdown)
 response_json <- '{
   "actions": [
     {
+      "method": "discuss_task",
+      "args": {
+        "feedback": "Approval rules may require a dedicated review node.",
+        "source": "model"
+      }
+    },
+    {
       "method": "decompose_task",
       "args": {
-        "candidates": [
-          "Clarify requirements",
-          "Capture human rules",
-          "Draft implementation handoff"
-        ]
+        "suggestions": {
+          "nodes": [
+            {"id": "node_1", "label": "Clarify requirements", "confidence": 0.9},
+            {"id": "node_2", "label": "Capture human rules", "confidence": 0.8},
+            {"id": "node_3", "label": "Draft implementation handoff", "depends_on": ["node_1", "node_2"], "confidence": 0.7}
+          ]
+        }
       }
     }
   ]

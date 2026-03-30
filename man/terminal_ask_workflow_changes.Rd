@@ -10,7 +10,7 @@ terminal_ask_workflow_changes(scaffolder)
 \item{scaffolder}{A \code{\link{Scaffolder}} instance.}
 }
 \value{
-The human response string.
+A list containing the prompt and response.
 }
 \description{
 Ask for workflow changes in the terminal
