@@ -5,8 +5,9 @@
 
 #' @keywords internal
 .scaffolder_store_workflow_proposal <- function(scaffolder, proposal) {
-  validate_workflow_proposal(proposal)
-  scaffolder$proposal_log[[proposal$id]] <- proposal
+  proposal <- .as_workflow_proposal_object(proposal)
+  scaffolder$workflow_state$add_proposal(proposal)
+  .scaffolder_sync_legacy_state(scaffolder)
   invisible(proposal)
 }
 
@@ -62,6 +63,7 @@
     task = scaffolder$task,
     metadata = scaffolder$workflow$metadata
   )
+  .scaffolder_sync_approved_workflow(scaffolder)
 
   scaffolder$workflow
 }
@@ -84,24 +86,23 @@
   timestamp = Sys.time()
 ) {
   stopifnot(inherits(scaffolder, "Scaffolder"))
-
-  active_ids <- names(scaffolder$proposal_log)
-  for (proposal_id in active_ids) {
-    if (identical(proposal_id, approved_proposal_id)) {
-      next
-    }
-    proposal <- scaffolder$proposal_log[[proposal_id]]
-    if (is.null(proposal) || !(proposal$status %in% c("pending", "under_discussion"))) {
-      next
-    }
-    proposal <- transition_workflow_proposal(
-      proposal,
-      to_status = "superseded",
-      timestamp = timestamp,
-      superseded_by = approved_proposal_id
-    )
-    .scaffolder_store_workflow_proposal(scaffolder, proposal)
-  }
-
   invisible(scaffolder)
+}
+
+#' @keywords internal
+.scaffolder_sync_legacy_state <- function(scaffolder) {
+  stopifnot(inherits(scaffolder, "Scaffolder"))
+  scaffolder$workflow <- scaffolder$workflow_state$approved_workflow
+  scaffolder$proposal_log <- lapply(
+    scaffolder$workflow_state$proposals,
+    function(item) item$as_list()
+  )
+  invisible(scaffolder)
+}
+
+#' @keywords internal
+.scaffolder_sync_approved_workflow <- function(scaffolder) {
+  stopifnot(inherits(scaffolder, "Scaffolder"))
+  scaffolder$workflow_state$set_approved_workflow(scaffolder$workflow)
+  .scaffolder_sync_legacy_state(scaffolder)
 }

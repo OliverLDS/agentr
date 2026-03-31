@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.1.9
+
+Released: 2026-03-31
+
+- Added public `WorkflowProposal` and `WorkflowProposalState` R6 classes so workflow proposal lifecycle handling is available through dedicated stateful objects.
+- Integrated `Scaffolder` with `WorkflowProposalState` while preserving the existing top-level proposal review methods.
+- Updated proposal persistence helpers to work with the new public proposal class objects.
+- Expanded lifecycle docs and examples to show direct use of public proposal and proposal-state classes.
+
 ## agentr 0.1.8
 
 Released: 2026-03-31

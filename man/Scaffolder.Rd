@@ -32,7 +32,7 @@ explicit lifecycle state.
 \item{\verb{$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())}}{Compatibility wrapper for structured human workflow edits.}
 \item{\verb{$propose_workflow(workflow, source = "model", notes = NULL)}}{Store a pending workflow proposal for preview and review.}
 \item{\verb{$list_workflow_proposals(status = NULL)}}{Return a summary table of stored workflow proposals.}
-\item{\verb{$get_workflow_proposal(proposal_id)}}{Return a stored workflow proposal record by identifier.}
+\item{\verb{$get_workflow_proposal(proposal_id)}}{Return a stored \code{WorkflowProposal} object by identifier.}
 \item{\verb{$approve_workflow_proposal(proposal_id)}}{Promote a stored workflow proposal to the live workflow and supersede older active proposals when applicable.}
 \item{\verb{$discuss_workflow_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)}}{Attach free-form discussion feedback to a non-approved workflow proposal and transition it into discussion state when needed.}
 \item{\verb{$workflow_spec()}}{Validate and return the current workflow specification.}
@@ -51,6 +51,8 @@ explicit lifecycle state.
 \item{\code{task}}{Current task text.}
 
 \item{\code{workflow}}{Current workflow specification.}
+
+\item{\code{workflow_state}}{Public workflow proposal state container.}
 
 \item{\code{proposal_log}}{Stored workflow proposals across pending, discussion,
 approved, superseded, and rejected lifecycle states.}
@@ -428,7 +430,7 @@ Return a summary table of stored workflow proposals.
 \if{html}{\out{<a id="method-Scaffolder-get_workflow_proposal"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-get_workflow_proposal}{}}}
 \subsection{Method \code{get_workflow_proposal()}}{
-Return a stored workflow proposal record by identifier.
+Return a stored \code{WorkflowProposal} object by identifier.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$get_workflow_proposal(proposal_id)}\if{html}{\out{</div>}}
 }

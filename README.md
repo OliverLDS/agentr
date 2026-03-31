@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of agentic workflows. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and generates workflow specifications such as DAG-like plans and implementation-ready structures.
 
-Version `0.1.8` keeps that narrowed scope and makes the scaffolding lifecycle easier to use by documenting the stage boundaries clearly and supporting proposal persistence as a first-class artifact. `agentr` remains the core reasoning/scaffolding layer, not the transport or execution layer.
+Version `0.1.9` keeps that narrowed scope and introduces public dedicated proposal and state classes so proposal lifecycle handling matches the package's R6-style object model. `agentr` remains the core reasoning/scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -52,6 +52,11 @@ spec <- scaffolder$workflow_spec()
 spec
 ```
 
+`0.1.9` also exposes:
+
+- `WorkflowProposal` for one persisted proposal and its lifecycle
+- `WorkflowProposalState` for approved workflow plus proposal history
+
 ## Lifecycle Stages
 
 `agentr` now treats scaffolding work as three explicit stages:
@@ -66,7 +71,7 @@ Use `Scaffolder` plus the constrained LLM bridge to evaluate tasks, discuss open
 
 ## LLM Scaffolding Bridge
 
-`0.1.8` provides a constrained bridge for letting an external LLM reason about scaffolding actions without exposing arbitrary code execution.
+`0.1.9` provides a constrained bridge for letting an external LLM reason about scaffolding actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)
@@ -125,6 +130,19 @@ If you still have the original `Scaffolder`, you can also export graph data dire
 
 ```r
 graph_data <- workflow_proposal_graph_data(scaffolder, preview$proposal_id)
+```
+
+You can also create and manage proposal objects directly:
+
+```r
+proposal <- WorkflowProposal$new(
+  id = "proposal_manual",
+  workflow = scaffolder$workflow_spec(),
+  notes = "Manual review branch"
+)
+
+proposal$discuss("Needs an explicit publication checkpoint.")
+proposal$transition("under_discussion")
 ```
 
 The LLM is constrained to a validated set of scaffolder methods and must return machine-readable JSON. The dispatch result is normalized into:

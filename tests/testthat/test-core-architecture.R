@@ -111,6 +111,63 @@ test_that("save_workflow_spec and load_workflow_spec round-trip workflow specs",
   expect_true(identical(nrow(loaded$nodes), 2L))
 })
 
+test_that("WorkflowProposal supports public lifecycle methods", {
+  proposal <- WorkflowProposal$new(
+    id = "proposal_public",
+    workflow = new_workflow_spec(
+      nodes = workflow_node("node_1", "Draft"),
+      edges = .empty_workflow_edges(),
+      task = "Public proposal"
+    )
+  )
+
+  expect_true(inherits(proposal, "WorkflowProposal"))
+  expect_true(identical(proposal$status, "pending"))
+
+  proposal$discuss("Needs human review.")
+  expect_true(identical(proposal$status, "under_discussion"))
+  expect_true(identical(length(proposal$discussion_rounds), 1L))
+
+  proposal$transition("approved")
+  expect_true(identical(proposal$status, "approved"))
+  expect_true(inherits(proposal$summary(), "data.frame"))
+})
+
+test_that("WorkflowProposalState manages approved workflow and proposals", {
+  state <- WorkflowProposalState$new()
+  proposal_1 <- WorkflowProposal$new(
+    id = "proposal_1",
+    workflow = new_workflow_spec(
+      nodes = workflow_node("node_1", "Draft"),
+      edges = .empty_workflow_edges(),
+      task = "State flow"
+    )
+  )
+  proposal_2 <- WorkflowProposal$new(
+    id = "proposal_2",
+    workflow = new_workflow_spec(
+      nodes = rbind(
+        workflow_node("node_1", "Draft"),
+        workflow_node("node_2", "Review")
+      ),
+      edges = workflow_edge("node_1", "node_2"),
+      task = "State flow"
+    )
+  )
+
+  state$add_proposal(proposal_1)
+  state$add_proposal(proposal_2)
+  proposal_1$discuss("Needs review.")
+  state$add_proposal(proposal_1)
+  approved <- state$approve_proposal("proposal_2")
+
+  expect_true(inherits(state, "WorkflowProposalState"))
+  expect_true(inherits(approved, "WorkflowProposal"))
+  expect_true(identical(state$approved_workflow$task, "State flow"))
+  expect_true(identical(state$get_proposal("proposal_1")$status, "superseded"))
+  expect_true(identical(state$get_proposal("proposal_2")$status, "approved"))
+})
+
 test_that("build_scaffolder_prompt supports json and markdown outputs", {
   scaffolder <- Scaffolder$new(agent = AgentCore$new())
   scaffolder$evaluate_task("Build a DAG for a package release")
@@ -320,6 +377,7 @@ test_that("apply_scaffolder_message accepts a downloaded json file path", {
 test_that("workflow proposals can be previewed, discussed, and approved", {
   scaffolder <- Scaffolder$new(agent = AgentCore$new())
   scaffolder$evaluate_task("Design an autonomous workflow")
+  expect_true(inherits(scaffolder$workflow_state, "WorkflowProposalState"))
 
   message <- list(
     actions = list(
@@ -345,6 +403,7 @@ test_that("workflow proposals can be previewed, discussed, and approved", {
   expect_true(identical(proposals$status[[1]], "pending"))
 
   proposal <- scaffolder$get_workflow_proposal(preview$proposal_id)
+  expect_true(inherits(proposal, "WorkflowProposal"))
   expect_true(identical(proposal$notes, "Initial model proposal."))
 
   scaffolder$discuss_workflow_proposal(
@@ -492,7 +551,7 @@ test_that("workflow proposal persistence and graph helpers round-trip proposal o
   graph_data <- workflow_proposal_graph_data(loaded)
   graph_data_from_scaffolder <- workflow_proposal_graph_data(scaffolder, proposal$id)
 
-  expect_s3_class(loaded, "agentr_workflow_proposal")
+  expect_true(inherits(loaded, "WorkflowProposal"))
   expect_true(identical(loaded$id, proposal$id))
   expect_true(identical(loaded$status, "pending"))
   expect_true(identical(nrow(graph_data$vertices), 2L))
@@ -502,7 +561,7 @@ test_that("workflow proposal persistence and graph helpers round-trip proposal o
 })
 
 test_that("workflow proposals print with a compact summary", {
-  proposal <- new_workflow_proposal(
+  proposal <- WorkflowProposal$new(
     id = "proposal_1",
     workflow = new_workflow_spec(
       nodes = workflow_node("node_1", "Only step"),
@@ -516,7 +575,7 @@ test_that("workflow proposals print with a compact summary", {
 })
 
 test_that("invalid workflow proposal transitions fail clearly", {
-  proposal <- new_workflow_proposal(
+  proposal <- WorkflowProposal$new(
     id = "proposal_1",
     workflow = new_workflow_spec(
       nodes = workflow_node("node_1", "Only step"),
@@ -524,10 +583,10 @@ test_that("invalid workflow proposal transitions fail clearly", {
       task = "Invalid transitions"
     )
   )
-  proposal <- transition_workflow_proposal(proposal, "approved")
+  proposal$transition("approved")
 
   expect_error(
-    transition_workflow_proposal(proposal, "under_discussion"),
+    proposal$transition("under_discussion"),
     "Invalid workflow proposal transition"
   )
 })

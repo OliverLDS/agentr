@@ -19,7 +19,7 @@ At this stage, the active workflow is still the approved working state inside th
 
 ## 2. Workflow Proposal Review And Approval
 
-When a model or human suggests a new workflow shape, use `preview_scaffolder_message()` or `Scaffolder$propose_workflow()` to store it as a proposal without mutating the live workflow.
+When a model or human suggests a new workflow shape, use `preview_scaffolder_message()`, `Scaffolder$propose_workflow()`, or `WorkflowProposal$new()` to create a proposal without mutating the live workflow.
 
 Proposal lifecycle statuses are:
 
@@ -65,4 +65,14 @@ You can also export graph data directly from a `Scaffolder` plus proposal id:
 
 ```r
 graph_data <- workflow_proposal_graph_data(scaffolder, preview$proposal_id)
+```
+
+If you want to work with proposal state directly, use `WorkflowProposalState`:
+
+```r
+state <- WorkflowProposalState$new(
+  approved_workflow = scaffolder$workflow_spec()
+)
+state$add_proposal(proposal)
+latest <- state$latest_proposal()
 ```

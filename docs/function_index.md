@@ -8,6 +8,8 @@
 | `AffectiveState` | Affective layer with inertia-aware updates |
 | `AgentCore` | Minimal agent container for cognition, affect, and scaffolding |
 | `Scaffolder` | Human-in-the-loop workflow elicitation interface |
+| `WorkflowProposal` | Public workflow proposal lifecycle object |
+| `WorkflowProposalState` | Public approved-workflow and proposal-history state container |
 
 ## Workflow Helpers
 

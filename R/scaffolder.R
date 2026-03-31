@@ -1,4 +1,4 @@
-# Internal scaffolder helpers support 0.1.8's discussion, review, proposal, and graph
+# Internal scaffolder helpers support 0.1.9's discussion, review, proposal, and graph
 # editing APIs while keeping the exported R6 class concise.
 
 .default_decomposition_candidates <- function() {
@@ -346,6 +346,7 @@
 #' @field agent Optional [`AgentCore`] owner.
 #' @field task Current task text.
 #' @field workflow Current workflow specification.
+#' @field workflow_state Public workflow proposal state container.
 #' @field proposal_log Stored workflow proposals across pending, discussion,
 #'   approved, superseded, and rejected lifecycle states.
 #' @field interaction_log List of scaffolding interactions.
@@ -400,7 +401,7 @@
 #'   \item{`$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())`}{Compatibility wrapper for structured human workflow edits.}
 #'   \item{`$propose_workflow(workflow, source = "model", notes = NULL)`}{Store a pending workflow proposal for preview and review.}
 #'   \item{`$list_workflow_proposals(status = NULL)`}{Return a summary table of stored workflow proposals.}
-#'   \item{`$get_workflow_proposal(proposal_id)`}{Return a stored workflow proposal record by identifier.}
+#'   \item{`$get_workflow_proposal(proposal_id)`}{Return a stored `WorkflowProposal` object by identifier.}
 #'   \item{`$approve_workflow_proposal(proposal_id)`}{Promote a stored workflow proposal to the live workflow and supersede older active proposals when applicable.}
 #'   \item{`$discuss_workflow_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)`}{Attach free-form discussion feedback to a non-approved workflow proposal and transition it into discussion state when needed.}
 #'   \item{`$workflow_spec()`}{Validate and return the current workflow specification.}
@@ -417,6 +418,7 @@ Scaffolder <- R6::R6Class(
     agent = NULL,
     task = NULL,
     workflow = NULL,
+    workflow_state = NULL,
     proposal_log = NULL,
     interaction_log = NULL,
     completion_threshold = NULL,
@@ -441,6 +443,9 @@ Scaffolder <- R6::R6Class(
           workflow_review = NULL,
           discussion_rounds = list()
         )
+      )
+      self$workflow_state <- WorkflowProposalState$new(
+        approved_workflow = self$workflow
       )
       self$proposal_log <- list()
       self$interaction_log <- list()
@@ -480,6 +485,7 @@ Scaffolder <- R6::R6Class(
 
       self$workflow$metadata$evaluation <- assessment
       self$workflow$metadata <- .append_metadata_history(self$workflow$metadata, "evaluation", assessment)
+      .scaffolder_sync_approved_workflow(self)
       self$record_interaction("evaluate_task", assessment)
       invisible(assessment)
     },
@@ -548,6 +554,7 @@ Scaffolder <- R6::R6Class(
         task = task,
         metadata = metadata
       )
+      .scaffolder_sync_approved_workflow(self)
 
       self$record_interaction(
         "decompose_task",
@@ -727,7 +734,7 @@ Scaffolder <- R6::R6Class(
         notes = notes
       )
 
-      .scaffolder_store_workflow_proposal(self, proposal)
+      proposal <- .scaffolder_store_workflow_proposal(self, proposal)
       self$record_interaction("propose_workflow", list(
         proposal_id = proposal$id,
         source = proposal$source,
@@ -765,14 +772,9 @@ Scaffolder <- R6::R6Class(
     },
 
     #' @description
-    #' Return a stored workflow proposal record by identifier.
+    #' Return a stored `WorkflowProposal` object by identifier.
     get_workflow_proposal = function(proposal_id) {
-      proposal <- self$proposal_log[[proposal_id]]
-      if (is.null(proposal)) {
-        stop("Unknown workflow proposal: ", proposal_id, call. = FALSE)
-      }
-      validate_workflow_proposal(proposal)
-      proposal
+      self$workflow_state$get_proposal(proposal_id)
     },
 
     #' @description
@@ -781,21 +783,9 @@ Scaffolder <- R6::R6Class(
     approve_workflow_proposal = function(proposal_id) {
       proposal <- self$get_workflow_proposal(proposal_id)
       approved_at <- Sys.time()
-      latest_active <- latest_workflow_proposal(self)
-      proposal <- transition_workflow_proposal(
-        proposal,
-        to_status = "approved",
-        timestamp = approved_at,
-        supersedes = if (is.null(latest_active) || identical(latest_active$id, proposal_id)) {
-          NULL
-        } else {
-          latest_active$id
-        }
-      )
-      .scaffolder_store_workflow_proposal(self, proposal)
-      .scaffolder_supersede_other_active_proposals(self, proposal_id, timestamp = approved_at)
-      self$workflow <- proposal$workflow
-      self$task <- proposal$workflow$task %||% self$task
+      proposal <- self$workflow_state$approve_proposal(proposal_id, timestamp = approved_at)
+      .scaffolder_sync_legacy_state(self)
+      self$task <- self$workflow$task %||% self$task
 
       self$record_interaction("approve_workflow_proposal", list(
         proposal_id = proposal_id,
@@ -820,7 +810,7 @@ Scaffolder <- R6::R6Class(
         source = source,
         confidence = confidence
       )
-      proposal <- out$proposal
+      proposal <- .as_workflow_proposal_object(out$proposal)
       round <- out$round
       .scaffolder_store_workflow_proposal(self, proposal)
       self$record_interaction("discuss_workflow_proposal", list(

@@ -62,6 +62,8 @@ new_workflow_proposal <- function(
 #' @return The validated proposal, invisibly.
 #' @export
 validate_workflow_proposal <- function(x) {
+  x <- .proposal_record(x)
+
   required_fields <- c(
     "id",
     "status",
@@ -96,6 +98,7 @@ validate_workflow_proposal <- function(x) {
 
 #' @keywords internal
 as_workflow_proposal_summary <- function(x) {
+  x <- .proposal_record(x)
   validate_workflow_proposal(x)
   data.frame(
     id = x$id,
@@ -115,6 +118,7 @@ as_workflow_proposal_summary <- function(x) {
 
 #' @keywords internal
 workflow_proposal_can_transition <- function(proposal, to_status) {
+  proposal <- .proposal_record(proposal)
   validate_workflow_proposal(proposal)
   to_status <- .normalize_workflow_proposal_status(to_status)
   from_status <- proposal$status
@@ -142,6 +146,7 @@ transition_workflow_proposal <- function(
   superseded_by = NULL,
   supersedes = NULL
 ) {
+  proposal <- .proposal_record(proposal)
   validate_workflow_proposal(proposal)
   to_status <- .normalize_workflow_proposal_status(to_status)
 
@@ -185,6 +190,7 @@ append_workflow_proposal_discussion <- function(
   confidence = NA_real_,
   timestamp = Sys.time()
 ) {
+  proposal <- .proposal_record(proposal)
   validate_workflow_proposal(proposal)
 
   if (!is.character(feedback) || length(feedback) != 1L || !nzchar(feedback)) {
@@ -229,6 +235,7 @@ append_workflow_proposal_discussion <- function(
 #' @return Invisibly returns `TRUE`.
 #' @export
 save_workflow_proposal <- function(proposal, file_path) {
+  proposal <- .proposal_record(proposal)
   validate_workflow_proposal(proposal)
   .safe_save_rds(proposal, file_path)
   invisible(TRUE)
@@ -248,6 +255,7 @@ load_workflow_proposal <- function(file_path) {
   }
   proposal <- .safe_read_rds(file_path)
   validate_workflow_proposal(proposal)
+  .as_workflow_proposal_object(proposal)
 }
 
 #' Convert a workflow proposal into graph-ready data
@@ -270,8 +278,9 @@ workflow_proposal_graph_data <- function(x, proposal_id = NULL) {
     return(workflow_graph_data(proposal$workflow))
   }
 
-  validate_workflow_proposal(x)
-  workflow_graph_data(x$workflow)
+  proposal <- .proposal_record(x)
+  validate_workflow_proposal(proposal)
+  workflow_graph_data(proposal$workflow)
 }
 
 #' Format a workflow proposal
@@ -294,23 +303,16 @@ print.agentr_workflow_proposal <- function(x, ...) {
 #' @keywords internal
 active_workflow_proposals <- function(scaffolder) {
   stopifnot(inherits(scaffolder, "Scaffolder"))
-  Filter(
-    function(item) item$status %in% c("pending", "under_discussion"),
-    unname(scaffolder$proposal_log)
-  )
+  scaffolder$workflow_state$active_proposals()
 }
 
 #' @keywords internal
 latest_workflow_proposal <- function(scaffolder) {
-  proposals <- proposal_history(scaffolder)
-  if (!length(proposals)) {
-    return(NULL)
-  }
-  proposals[[length(proposals)]]
+  scaffolder$workflow_state$latest_proposal()
 }
 
 #' @keywords internal
 proposal_history <- function(scaffolder) {
   stopifnot(inherits(scaffolder, "Scaffolder"))
-  unname(scaffolder$proposal_log)
+  scaffolder$workflow_state$proposal_history()
 }
