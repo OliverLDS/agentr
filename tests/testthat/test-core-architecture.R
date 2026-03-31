@@ -353,11 +353,166 @@ test_that("workflow proposals can be previewed, discussed, and approved", {
   )
   proposal <- scaffolder$get_workflow_proposal(preview$proposal_id)
   expect_true(identical(length(proposal$discussion_rounds), 1L))
+  expect_true(identical(proposal$status, "under_discussion"))
 
   scaffolder$approve_workflow_proposal(preview$proposal_id)
   proposals <- scaffolder$list_workflow_proposals()
   expect_true(identical(nrow(scaffolder$workflow$nodes), 2L))
   expect_true(identical(proposals$status[[1]], "approved"))
+})
+
+test_that("approved proposals cannot be reopened by discussion", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Freeze approved workflows")
+
+  proposal <- scaffolder$propose_workflow(
+    new_workflow_spec(
+      nodes = rbind(
+        workflow_node("node_1", "Clarify"),
+        workflow_node("node_2", "Approve")
+      ),
+      edges = workflow_edge("node_1", "node_2"),
+      task = "Freeze approved workflows"
+    )
+  )
+  scaffolder$approve_workflow_proposal(proposal$id)
+
+  expect_error(
+    scaffolder$discuss_workflow_proposal(proposal$id, "Please revise this."),
+    "Cannot discuss an approved workflow proposal directly"
+  )
+})
+
+test_that("approving a newer proposal supersedes older active proposals", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Supersede stale proposals")
+
+  proposal_1 <- scaffolder$propose_workflow(
+    new_workflow_spec(
+      nodes = workflow_node("node_1", "Initial draft"),
+      edges = .empty_workflow_edges(),
+      task = "Supersede stale proposals"
+    ),
+    notes = "Older proposal"
+  )
+
+  proposal_2 <- scaffolder$propose_workflow(
+    new_workflow_spec(
+      nodes = rbind(
+        workflow_node("node_1", "Initial draft"),
+        workflow_node("node_2", "Human review")
+      ),
+      edges = workflow_edge("node_1", "node_2"),
+      task = "Supersede stale proposals"
+    ),
+    notes = "Newer proposal"
+  )
+
+  scaffolder$discuss_workflow_proposal(proposal_1$id, "This needs a review step.")
+  scaffolder$approve_workflow_proposal(proposal_2$id)
+
+  proposals <- scaffolder$list_workflow_proposals()
+  proposal_1_after <- scaffolder$get_workflow_proposal(proposal_1$id)
+  proposal_2_after <- scaffolder$get_workflow_proposal(proposal_2$id)
+
+  expect_true(identical(proposal_1_after$status, "superseded"))
+  expect_true(identical(proposal_1_after$superseded_by, proposal_2$id))
+  expect_true(identical(proposal_2_after$status, "approved"))
+  expect_true(identical(scaffolder$workflow$nodes$label[[2]], "Human review"))
+  expect_true(any(proposals$status == "superseded"))
+  expect_true(any(proposals$status == "approved"))
+})
+
+test_that("implementation prompt uses approved workflow only when proposals exist", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Approved workflow only")
+  scaffolder$decompose_task(candidates = c("Approved step"))
+
+  scaffolder$propose_workflow(
+    new_workflow_spec(
+      nodes = rbind(
+        workflow_node("node_1", "Proposed step"),
+        workflow_node("node_2", "Unapproved review")
+      ),
+      edges = workflow_edge("node_1", "node_2"),
+      task = "Approved workflow only"
+    ),
+    notes = "Not approved yet"
+  )
+
+  prompt_json <- build_implementation_prompt(scaffolder, language = "R")
+
+  expect_true(grepl("\"Approved step\"", prompt_json, fixed = TRUE))
+  expect_false(grepl("\"Unapproved review\"", prompt_json, fixed = TRUE))
+})
+
+test_that("preview_scaffolder_message stores proposals without mutating live workflow", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Preview only")
+  scaffolder$decompose_task(candidates = c("Current approved step"))
+
+  preview <- preview_scaffolder_message(
+    scaffolder,
+    list(actions = list(
+      list(method = "edit_workflow", args = list(
+        add = list(list(label = "Previewed proposal node"))
+      ))
+    ))
+  )
+
+  expect_true(any(scaffolder$workflow$nodes$label == "Current approved step"))
+  expect_false(any(scaffolder$workflow$nodes$label == "Previewed proposal node"))
+  expect_true(any(preview$workflow_after$nodes$label == "Previewed proposal node"))
+  expect_true(identical(
+    scaffolder$get_workflow_proposal(preview$proposal_id)$status,
+    "pending"
+  ))
+})
+
+test_that("workflow proposal persistence and graph helpers round-trip proposal objects", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Persist proposal")
+
+  proposal <- scaffolder$propose_workflow(
+    new_workflow_spec(
+      nodes = rbind(
+        workflow_node("node_1", "Draft"),
+        workflow_node("node_2", "Review")
+      ),
+      edges = workflow_edge("node_1", "node_2"),
+      task = "Persist proposal"
+    )
+  )
+
+  path <- tempfile(fileext = ".rds")
+  on.exit(unlink(path), add = TRUE)
+
+  save_workflow_proposal(proposal, path)
+  loaded <- load_workflow_proposal(path)
+  graph_data <- workflow_proposal_graph_data(loaded)
+
+  expect_s3_class(loaded, "agentr_workflow_proposal")
+  expect_true(identical(loaded$id, proposal$id))
+  expect_true(identical(loaded$status, "pending"))
+  expect_true(identical(nrow(graph_data$vertices), 2L))
+  expect_true(identical(nrow(graph_data$edges), 1L))
+})
+
+test_that("invalid workflow proposal transitions fail clearly", {
+  proposal <- new_workflow_proposal(
+    id = "proposal_1",
+    workflow = new_workflow_spec(
+      nodes = workflow_node("node_1", "Only step"),
+      edges = .empty_workflow_edges(),
+      task = "Invalid transitions"
+    )
+  )
+  proposal <- transition_workflow_proposal(proposal, "approved")
+
+  expect_error(
+    transition_workflow_proposal(proposal, "under_discussion"),
+    "Invalid workflow proposal transition"
+  )
 })
 
 test_that("validate_scaffolder_message rejects unsupported methods", {

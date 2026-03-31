@@ -12,8 +12,9 @@ Scaffolder
 Human-in-the-loop scaffolding interface for iterative workflow elicitation.
 A \code{Scaffolder} keeps a persistent task-evaluation artifact, supports
 free-form discussion rounds before structured graph edits, separates
-workflow-level and node-level review, and treats node/edge edits as
-first-class operations.
+workflow-level and node-level review, treats node/edge edits as
+first-class operations, and manages previewable workflow proposals with
+explicit lifecycle state.
 }
 \section{Methods}{
 
@@ -29,11 +30,11 @@ first-class operations.
 \item{\verb{$review_node(node_id, status = "pending", notes = NULL, confidence = NA_real_, complete = NULL)}}{Store node-level correctness or completion review state.}
 \item{\verb{$edit_workflow(add = NULL, insert = NULL, remove = NULL, add_edges = NULL, remove_edges = NULL, rule_specs = list(), confidence = list())}}{Apply first-class node and edge edits to the current workflow.}
 \item{\verb{$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())}}{Compatibility wrapper for structured human workflow edits.}
-\item{\verb{$propose_workflow(workflow, source = "model", notes = NULL)}}{Store an unapproved workflow proposal for preview and review.}
+\item{\verb{$propose_workflow(workflow, source = "model", notes = NULL)}}{Store a pending workflow proposal for preview and review.}
 \item{\verb{$list_workflow_proposals(status = NULL)}}{Return a summary table of stored workflow proposals.}
 \item{\verb{$get_workflow_proposal(proposal_id)}}{Return a stored workflow proposal record by identifier.}
-\item{\verb{$approve_workflow_proposal(proposal_id)}}{Promote a stored workflow proposal to the live workflow.}
-\item{\verb{$discuss_workflow_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)}}{Attach free-form discussion feedback to a stored workflow proposal.}
+\item{\verb{$approve_workflow_proposal(proposal_id)}}{Promote a stored workflow proposal to the live workflow and supersede older active proposals when applicable.}
+\item{\verb{$discuss_workflow_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)}}{Attach free-form discussion feedback to a non-approved workflow proposal and transition it into discussion state when needed.}
 \item{\verb{$workflow_spec()}}{Validate and return the current workflow specification.}
 \item{\verb{$implementation_spec()}}{Return an implementation-facing summary of workflow nodes and rules.}
 \item{\verb{$low_confidence_nodes()}}{Return workflow nodes below the completion threshold.}
@@ -51,7 +52,8 @@ first-class operations.
 
 \item{\code{workflow}}{Current workflow specification.}
 
-\item{\code{proposal_log}}{Stored workflow proposals awaiting approval or revision.}
+\item{\code{proposal_log}}{Stored workflow proposals across pending, discussion,
+approved, superseded, and rejected lifecycle states.}
 
 \item{\code{interaction_log}}{List of scaffolding interactions.}
 
@@ -384,7 +386,7 @@ Apply legacy structured human feedback to the workflow.
 \if{html}{\out{<a id="method-Scaffolder-propose_workflow"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-propose_workflow}{}}}
 \subsection{Method \code{propose_workflow()}}{
-Store an unapproved workflow proposal for preview and review.
+Store a pending workflow proposal for preview and review.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$propose_workflow(workflow, source = "model", notes = NULL)}\if{html}{\out{</div>}}
 }
@@ -443,7 +445,8 @@ Return a stored workflow proposal record by identifier.
 \if{html}{\out{<a id="method-Scaffolder-approve_workflow_proposal"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-approve_workflow_proposal}{}}}
 \subsection{Method \code{approve_workflow_proposal()}}{
-Promote a stored workflow proposal to the live workflow.
+Promote a stored workflow proposal to the live workflow and supersede
+older active proposals when applicable.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$approve_workflow_proposal(proposal_id)}\if{html}{\out{</div>}}
 }
@@ -460,7 +463,8 @@ Promote a stored workflow proposal to the live workflow.
 \if{html}{\out{<a id="method-Scaffolder-discuss_workflow_proposal"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-discuss_workflow_proposal}{}}}
 \subsection{Method \code{discuss_workflow_proposal()}}{
-Attach free-form discussion feedback to a stored workflow proposal.
+Attach free-form discussion feedback to a non-approved workflow proposal
+and transition it into discussion state when needed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$discuss_workflow_proposal(
   proposal_id,

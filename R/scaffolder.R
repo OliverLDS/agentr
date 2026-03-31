@@ -1,4 +1,4 @@
-# Internal scaffolder helpers support 0.1.6's discussion, review, and graph
+# Internal scaffolder helpers support 0.1.7's discussion, review, proposal, and graph
 # editing APIs while keeping the exported R6 class concise.
 
 .default_decomposition_candidates <- function() {
@@ -339,13 +339,15 @@
 #' Human-in-the-loop scaffolding interface for iterative workflow elicitation.
 #' A `Scaffolder` keeps a persistent task-evaluation artifact, supports
 #' free-form discussion rounds before structured graph edits, separates
-#' workflow-level and node-level review, and treats node/edge edits as
-#' first-class operations.
+#' workflow-level and node-level review, treats node/edge edits as
+#' first-class operations, and manages previewable workflow proposals with
+#' explicit lifecycle state.
 #'
 #' @field agent Optional [`AgentCore`] owner.
 #' @field task Current task text.
 #' @field workflow Current workflow specification.
-#' @field proposal_log Stored workflow proposals awaiting approval or revision.
+#' @field proposal_log Stored workflow proposals across pending, discussion,
+#'   approved, superseded, and rejected lifecycle states.
 #' @field interaction_log List of scaffolding interactions.
 #' @field completion_threshold Threshold used to flag low-confidence nodes.
 #' @param agent Optional [`AgentCore`] used by `$initialize()`.
@@ -396,11 +398,11 @@
 #'   \item{`$review_node(node_id, status = "pending", notes = NULL, confidence = NA_real_, complete = NULL)`}{Store node-level correctness or completion review state.}
 #'   \item{`$edit_workflow(add = NULL, insert = NULL, remove = NULL, add_edges = NULL, remove_edges = NULL, rule_specs = list(), confidence = list())`}{Apply first-class node and edge edits to the current workflow.}
 #'   \item{`$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())`}{Compatibility wrapper for structured human workflow edits.}
-#'   \item{`$propose_workflow(workflow, source = "model", notes = NULL)`}{Store an unapproved workflow proposal for preview and review.}
+#'   \item{`$propose_workflow(workflow, source = "model", notes = NULL)`}{Store a pending workflow proposal for preview and review.}
 #'   \item{`$list_workflow_proposals(status = NULL)`}{Return a summary table of stored workflow proposals.}
 #'   \item{`$get_workflow_proposal(proposal_id)`}{Return a stored workflow proposal record by identifier.}
-#'   \item{`$approve_workflow_proposal(proposal_id)`}{Promote a stored workflow proposal to the live workflow.}
-#'   \item{`$discuss_workflow_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)`}{Attach free-form discussion feedback to a stored workflow proposal.}
+#'   \item{`$approve_workflow_proposal(proposal_id)`}{Promote a stored workflow proposal to the live workflow and supersede older active proposals when applicable.}
+#'   \item{`$discuss_workflow_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)`}{Attach free-form discussion feedback to a non-approved workflow proposal and transition it into discussion state when needed.}
 #'   \item{`$workflow_spec()`}{Validate and return the current workflow specification.}
 #'   \item{`$implementation_spec()`}{Return an implementation-facing summary of workflow nodes and rules.}
 #'   \item{`$low_confidence_nodes()`}{Return workflow nodes below the completion threshold.}
@@ -648,46 +650,15 @@ Scaffolder <- R6::R6Class(
       rule_specs = list(),
       confidence = list()
     ) {
-      nodes <- self$workflow$nodes
-      edges <- self$workflow$edges
-
-      if (!is.null(remove) && length(remove)) {
-        nodes <- nodes[!(nodes$id %in% remove), , drop = FALSE]
-      }
-
-      additions <- .coerce_node_records(add, nodes)
-      if (nrow(additions)) {
-        nodes <- rbind(nodes, additions)
-      }
-
-      inserted <- .insert_workflow_nodes(nodes, edges, insert)
-      nodes <- inserted$nodes
-      edges <- inserted$edges
-
-      explicit_edges <- .coerce_edge_specs(add_edges)
-      if (nrow(explicit_edges)) {
-        edges <- rbind(edges, explicit_edges)
-      }
-
-      edges <- .remove_edge_specs(edges, remove_edges)
-      nodes <- .apply_named_node_values(nodes, rule_specs, "rule_spec", as.character)
-      nodes <- .apply_named_node_values(nodes, confidence, "confidence", function(x) {
-        .as_optional_confidence(x)
-      })
-
-      edges <- edges[
-        edges$from %in% nodes$id &
-          edges$to %in% nodes$id,
-        ,
-        drop = FALSE
-      ]
-      edges <- .deduplicate_edges(edges)
-
-      self$workflow <- new_workflow_spec(
-        nodes = nodes,
-        edges = edges,
-        task = self$task,
-        metadata = self$workflow$metadata
+      self$workflow <- .scaffolder_edit_workflow(
+        scaffolder = self,
+        add = add,
+        insert = insert,
+        remove = remove,
+        add_edges = add_edges,
+        remove_edges = remove_edges,
+        rule_specs = rule_specs,
+        confidence = confidence
       )
 
       self$record_interaction(
@@ -747,25 +718,18 @@ Scaffolder <- R6::R6Class(
     },
 
     #' @description
-    #' Store an unapproved workflow proposal for preview and review.
+    #' Store a pending workflow proposal for preview and review.
     propose_workflow = function(workflow, source = "model", notes = NULL) {
-      validate_workflow_spec(workflow)
-
-      proposal_id <- .next_workflow_proposal_id(self$proposal_log)
-      proposal <- list(
-        id = proposal_id,
-        status = "pending",
-        source = .normalize_scaffolder_source(source),
-        notes = if (is.null(notes)) NA_character_ else as.character(notes),
+      proposal <- new_workflow_proposal(
+        id = .scaffolder_next_workflow_proposal_id(self),
         workflow = workflow,
-        discussion_rounds = list(),
-        created_at = Sys.time(),
-        approved_at = as.POSIXct(NA)
+        source = source,
+        notes = notes
       )
 
-      self$proposal_log[[proposal_id]] <- proposal
+      .scaffolder_store_workflow_proposal(self, proposal)
       self$record_interaction("propose_workflow", list(
-        proposal_id = proposal_id,
+        proposal_id = proposal$id,
         source = proposal$source,
         notes = proposal$notes
       ))
@@ -775,8 +739,9 @@ Scaffolder <- R6::R6Class(
     #' @description
     #' Return a summary table of stored workflow proposals.
     list_workflow_proposals = function(status = NULL) {
-      proposals <- unname(self$proposal_log)
+      proposals <- proposal_history(self)
       if (!is.null(status)) {
+        status <- .normalize_workflow_proposal_status(status)
         proposals <- Filter(function(item) identical(item$status, status), proposals)
       }
       if (!length(proposals)) {
@@ -788,24 +753,15 @@ Scaffolder <- R6::R6Class(
           node_count = integer(),
           edge_count = integer(),
           created_at = as.POSIXct(character()),
+          updated_at = as.POSIXct(character()),
           approved_at = as.POSIXct(character()),
+          superseded_by = character(),
+          supersedes = character(),
           stringsAsFactors = FALSE
         ))
       }
 
-      do.call(rbind, lapply(proposals, function(item) {
-        data.frame(
-          id = item$id,
-          status = item$status,
-          source = item$source,
-          notes = item$notes,
-          node_count = nrow(item$workflow$nodes),
-          edge_count = nrow(item$workflow$edges),
-          created_at = item$created_at,
-          approved_at = item$approved_at,
-          stringsAsFactors = FALSE
-        )
-      }))
+      do.call(rbind, lapply(proposals, as_workflow_proposal_summary))
     },
 
     #' @description
@@ -815,16 +771,29 @@ Scaffolder <- R6::R6Class(
       if (is.null(proposal)) {
         stop("Unknown workflow proposal: ", proposal_id, call. = FALSE)
       }
+      validate_workflow_proposal(proposal)
       proposal
     },
 
     #' @description
-    #' Promote a stored workflow proposal to the live workflow.
+    #' Promote a stored workflow proposal to the live workflow and supersede
+    #' older active proposals when applicable.
     approve_workflow_proposal = function(proposal_id) {
       proposal <- self$get_workflow_proposal(proposal_id)
-      proposal$status <- "approved"
-      proposal$approved_at <- Sys.time()
-      self$proposal_log[[proposal_id]] <- proposal
+      approved_at <- Sys.time()
+      latest_active <- latest_workflow_proposal(self)
+      proposal <- transition_workflow_proposal(
+        proposal,
+        to_status = "approved",
+        timestamp = approved_at,
+        supersedes = if (is.null(latest_active) || identical(latest_active$id, proposal_id)) {
+          NULL
+        } else {
+          latest_active$id
+        }
+      )
+      .scaffolder_store_workflow_proposal(self, proposal)
+      .scaffolder_supersede_other_active_proposals(self, proposal_id, timestamp = approved_at)
       self$workflow <- proposal$workflow
       self$task <- proposal$workflow$task %||% self$task
 
@@ -836,7 +805,8 @@ Scaffolder <- R6::R6Class(
     },
 
     #' @description
-    #' Attach free-form discussion feedback to a stored workflow proposal.
+    #' Attach free-form discussion feedback to a non-approved workflow proposal
+    #' and transition it into discussion state when needed.
     discuss_workflow_proposal = function(
       proposal_id,
       feedback,
@@ -844,23 +814,15 @@ Scaffolder <- R6::R6Class(
       confidence = NA_real_
     ) {
       proposal <- self$get_workflow_proposal(proposal_id)
-      if (!is.character(feedback) || length(feedback) != 1L || !nzchar(feedback)) {
-        stop("`feedback` must be a non-empty string.", call. = FALSE)
-      }
-
-      round <- list(
-        source = .normalize_scaffolder_source(source),
+      out <- append_workflow_proposal_discussion(
+        proposal = proposal,
         feedback = feedback,
-        confidence = .as_optional_confidence(confidence),
-        discussed_at = Sys.time()
+        source = source,
+        confidence = confidence
       )
-
-      proposal$discussion_rounds <- c(proposal$discussion_rounds, list(round))
-      if (identical(proposal$status, "approved")) {
-        proposal$status <- "pending"
-        proposal$approved_at <- as.POSIXct(NA)
-      }
-      self$proposal_log[[proposal_id]] <- proposal
+      proposal <- out$proposal
+      round <- out$round
+      .scaffolder_store_workflow_proposal(self, proposal)
       self$record_interaction("discuss_workflow_proposal", list(
         proposal_id = proposal_id,
         feedback = feedback,
@@ -878,12 +840,7 @@ Scaffolder <- R6::R6Class(
     #' @description
     #' Return an implementation-facing summary of workflow nodes and rules.
     implementation_spec = function() {
-      nodes <- self$workflow$nodes
-      list(
-        task = self$task,
-        nodes = nodes[, c("id", "label", "rule_spec", "implementation_hint"), drop = FALSE],
-        human_required = nodes[nodes$human_required, "id", drop = TRUE]
-      )
+      .scaffolder_implementation_spec(self)
     },
 
     #' @description

@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of agentic workflows. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and generates workflow specifications such as DAG-like plans and implementation-ready structures.
 
-Version `0.1.6` keeps that narrowed scope and upgrades scaffolding into a more realistic discussion-and-review loop. `agentr` remains the core reasoning/scaffolding layer, not the transport or execution layer.
+Version `0.1.7` keeps that narrowed scope and tightens the scaffolding lifecycle with explicit workflow-proposal states and cleaner internal separation. `agentr` remains the core reasoning/scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -54,7 +54,7 @@ spec
 
 ## LLM Scaffolding Bridge
 
-`0.1.6` provides a constrained bridge for letting an external LLM reason about scaffolding actions without exposing arbitrary code execution.
+`0.1.7` provides a constrained bridge for letting an external LLM reason about scaffolding actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)
@@ -92,6 +92,8 @@ scaffolder$discuss_workflow_proposal(
 )
 # scaffolder$approve_workflow_proposal(preview$proposal_id)
 ```
+
+Proposal discussion moves a stored proposal from `pending` to `under_discussion`. The live workflow stays unchanged until `approve_workflow_proposal()` is called, and implementation prompts continue to use the approved workflow only.
 
 The LLM is constrained to a validated set of scaffolder methods and must return machine-readable JSON. The dispatch result is normalized into:
 

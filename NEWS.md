@@ -1,5 +1,17 @@
 # agentr news
 
+## agentr 0.1.7
+
+Released: 2026-03-31
+
+- Refactor `Scaffolder` internals into clearer workflow, proposal, dispatch, and prompt helper modules while preserving the current top-level UX.
+- Formalize workflow proposals with fixed statuses, transition rules, and a stable internal object shape.
+- Keep the approved workflow separate from pending proposal history so implementation handoff continues to use approved state only.
+- Prevent approved proposals from being silently reopened through discussion, and explicitly supersede older active proposals when a newer proposal is approved.
+- Add shared internal prompt-contract helpers so scaffolder, implementation, and workflow-extraction prompt builders follow the same schema discipline.
+- Add lifecycle-oriented tests around proposal discussion, approval, supersession, preview, and implementation handoff boundaries.
+- Add proposal persistence and graph helpers for internal round-trip and visualization support.
+
 ## agentr 0.1.6.2
 
 Released: 2026-03-31

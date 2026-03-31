@@ -60,6 +60,11 @@ build_implementation_prompt <- function(
   extra_context = list()
 ) {
   format <- match.arg(format, choices = c("json", "markdown"))
+  contract <- new_prompt_contract(
+    input_type = "Scaffolder|agentr_workflow_spec|implementation_spec_list",
+    target_role = "implementation_planner",
+    expected_output = "JSON object with `implementation_plan`."
+  )
 
   if (!is.character(language) || length(language) != 1L || !nzchar(language)) {
     stop("`language` must be a non-empty string.", call. = FALSE)
@@ -96,7 +101,7 @@ build_implementation_prompt <- function(
     )
   )
 
-  payload <- list(
+  payload <- .prompt_contract_payload(contract, list(
     role = "implementation_planner",
     target_agent = target_agent,
     target_language = language,
@@ -121,16 +126,10 @@ build_implementation_prompt <- function(
       ),
       schema = response_schema
     )
-  )
+  ))
 
   if (identical(format, "json")) {
-    return(jsonlite::toJSON(
-      payload,
-      auto_unbox = TRUE,
-      pretty = TRUE,
-      null = "null",
-      na = "null"
-    ))
+    return(.prompt_json(payload))
   }
 
   workflow_json <- jsonlite::toJSON(
@@ -224,6 +223,11 @@ build_workflow_extraction_prompt <- function(
   extra_context = list()
 ) {
   format <- match.arg(format, choices = c("json", "markdown"))
+  contract <- new_prompt_contract(
+    input_type = "character code context",
+    target_role = "workflow_extractor",
+    expected_output = "Workflow specification JSON with `task`, `nodes`, `edges`, and `metadata`."
+  )
 
   if (!is.character(code_context) || !length(code_context) || any(!nzchar(code_context))) {
     stop("`code_context` must be a non-empty character vector.", call. = FALSE)
@@ -289,7 +293,7 @@ build_workflow_extraction_prompt <- function(
     "When the code is ambiguous, use lower confidence values and explain assumptions in `metadata`."
   )
 
-  payload <- list(
+  payload <- .prompt_contract_payload(contract, list(
     role = "workflow_extractor",
     target_agent = target_agent,
     extraction_goal = extraction_goal,
@@ -309,16 +313,10 @@ build_workflow_extraction_prompt <- function(
       ),
       schema = response_schema
     )
-  )
+  ))
 
   if (identical(format, "json")) {
-    return(jsonlite::toJSON(
-      payload,
-      auto_unbox = TRUE,
-      pretty = TRUE,
-      null = "null",
-      na = "null"
-    ))
+    return(.prompt_json(payload))
   }
 
   schema_json <- jsonlite::toJSON(

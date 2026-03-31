@@ -1,4 +1,4 @@
-# agentr 0.1.6 Architecture
+# agentr 0.1.7 Architecture
 
 `agentr` is the agent core, not the execution layer.
 
@@ -36,7 +36,15 @@ Implemented as `Scaffolder`, which supports:
 - workflow-level review
 - node-level review
 - first-class node and edge editing
+- workflow proposal preview, approval, and supersession
 - iterative workflow refinement
+
+Internally, `0.1.7` keeps `Scaffolder` as the facade while separating:
+
+- workflow mutation helpers
+- proposal lifecycle helpers
+- dispatch helpers
+- prompt-contract helpers
 
 ### LLM bridge layer
 
@@ -56,6 +64,8 @@ The dispatch result contains:
 - `workflow_after`
 - `human_prompts`
 - `errors`
+
+Preview flows can also store proposal records without mutating the live workflow. Proposal lifecycle state is explicit: `pending`, `under_discussion`, `approved`, `superseded`, and `rejected`.
 
 ## Workflow Output
 

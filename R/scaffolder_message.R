@@ -422,6 +422,11 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
 
   format <- match.arg(format, choices = c("json", "markdown"))
   task <- task %||% scaffolder$task
+  contract <- new_prompt_contract(
+    input_type = "Scaffolder",
+    target_role = "scaffolding_reasoner",
+    expected_output = "JSON object with `actions` and optional `notes`."
+  )
 
   workflow <- scaffolder$workflow_spec()
   workflow_payload <- list(
@@ -503,7 +508,7 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
   )
 
   if (identical(format, "json")) {
-    payload <- list(
+    payload <- .prompt_contract_payload(contract, list(
       role = "scaffolding_reasoner",
       task = if (is.null(task)) "<unspecified>" else task,
       available_methods = allowed_methods,
@@ -520,15 +525,9 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
         ),
         schema = action_schema
       )
-    )
-
-    return(jsonlite::toJSON(
-      payload,
-      auto_unbox = TRUE,
-      pretty = TRUE,
-      null = "null",
-      na = "null"
     ))
+
+    return(.prompt_json(payload))
   }
 
   paste(
@@ -621,24 +620,10 @@ validate_scaffolder_message <- function(
   }
 
   for (i in seq_along(x$actions)) {
-    action <- x$actions[[i]]
-    if (!is.list(action)) {
-      stop("Each action must be a list.", call. = FALSE)
-    }
-    if (!is.character(action$method) || length(action$method) != 1L) {
-      stop("Each action must contain a single `method` string.", call. = FALSE)
-    }
-    if (!(action$method %in% allowed_methods)) {
-      stop("Unsupported scaffolder method: ", action$method, call. = FALSE)
-    }
-    if (is.null(action$args)) {
-      action$args <- list()
-      x$actions[[i]] <- action
-    }
-    if (!is.list(action$args)) {
-      stop("Each action `args` field must be a list.", call. = FALSE)
-    }
-    .validate_scaffolder_action_args(action$method, action$args)
+    x$actions[[i]] <- .scaffolder_validate_message_action(
+      x$actions[[i]],
+      allowed_methods = allowed_methods
+    )
   }
 
   invisible(x)
@@ -672,62 +657,10 @@ apply_scaffolder_message <- function(
   }
   validate_scaffolder_message(message, allowed_methods = allowed_methods)
 
-  results <- vector("list", length(message$actions))
-  human_prompts <- list()
-  errors <- list()
-
-  for (i in seq_along(message$actions)) {
-    action <- message$actions[[i]]
-    method <- action$method
-    args <- action$args
-
-    if (!is.function(scaffolder[[method]])) {
-      stop("Scaffolder does not implement method: ", method, call. = FALSE)
-    }
-
-    execution <- tryCatch({
-      .validate_scaffolder_action_refs(scaffolder, method, args)
-      dispatch_args <- .normalize_dispatch_args(scaffolder, method, args)
-      result <- do.call(scaffolder[[method]], dispatch_args)
-      list(ok = TRUE, result = result, error = NULL)
-    }, error = function(e) {
-      list(ok = FALSE, result = NULL, error = conditionMessage(e))
-    })
-
-    if (!execution$ok && isTRUE(stop_on_error)) {
-      stop(execution$error, call. = FALSE)
-    }
-
-    results[[i]] <- list(
-      index = i,
-      method = method,
-      args = args,
-      status = if (execution$ok) "applied" else "error",
-      result = execution$result,
-      error = execution$error
-    )
-
-    if (execution$ok && method %in% c("ask_human_complete", "ask_human_changes", "ask_human_rule")) {
-      human_prompts[[length(human_prompts) + 1L]] <- list(
-        index = i,
-        method = method,
-        prompt = execution$result
-      )
-    }
-    if (!execution$ok) {
-      errors[[length(errors) + 1L]] <- list(
-        index = i,
-        method = method,
-        error = execution$error
-      )
-    }
-  }
-
-  list(
-    applied_actions = results,
-    workflow_after = scaffolder$workflow_spec(),
-    human_prompts = human_prompts,
-    errors = errors
+  .scaffolder_apply_message_actions(
+    scaffolder = scaffolder,
+    actions = message$actions,
+    stop_on_error = stop_on_error
   )
 }
 
