@@ -29,6 +29,11 @@ first-class operations.
 \item{\verb{$review_node(node_id, status = "pending", notes = NULL, confidence = NA_real_, complete = NULL)}}{Store node-level correctness or completion review state.}
 \item{\verb{$edit_workflow(add = NULL, insert = NULL, remove = NULL, add_edges = NULL, remove_edges = NULL, rule_specs = list(), confidence = list())}}{Apply first-class node and edge edits to the current workflow.}
 \item{\verb{$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())}}{Compatibility wrapper for structured human workflow edits.}
+\item{\verb{$propose_workflow(workflow, source = "model", notes = NULL)}}{Store an unapproved workflow proposal for preview and review.}
+\item{\verb{$list_workflow_proposals(status = NULL)}}{Return a summary table of stored workflow proposals.}
+\item{\verb{$get_workflow_proposal(proposal_id)}}{Return a stored workflow proposal record by identifier.}
+\item{\verb{$approve_workflow_proposal(proposal_id)}}{Promote a stored workflow proposal to the live workflow.}
+\item{\verb{$discuss_workflow_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)}}{Attach free-form discussion feedback to a stored workflow proposal.}
 \item{\verb{$workflow_spec()}}{Validate and return the current workflow specification.}
 \item{\verb{$implementation_spec()}}{Return an implementation-facing summary of workflow nodes and rules.}
 \item{\verb{$low_confidence_nodes()}}{Return workflow nodes below the completion threshold.}
@@ -45,6 +50,8 @@ first-class operations.
 \item{\code{task}}{Current task text.}
 
 \item{\code{workflow}}{Current workflow specification.}
+
+\item{\code{proposal_log}}{Stored workflow proposals awaiting approval or revision.}
 
 \item{\code{interaction_log}}{List of scaffolding interactions.}
 
@@ -66,6 +73,11 @@ first-class operations.
 \item \href{#method-Scaffolder-review_node}{\code{Scaffolder$review_node()}}
 \item \href{#method-Scaffolder-edit_workflow}{\code{Scaffolder$edit_workflow()}}
 \item \href{#method-Scaffolder-apply_human_feedback}{\code{Scaffolder$apply_human_feedback()}}
+\item \href{#method-Scaffolder-propose_workflow}{\code{Scaffolder$propose_workflow()}}
+\item \href{#method-Scaffolder-list_workflow_proposals}{\code{Scaffolder$list_workflow_proposals()}}
+\item \href{#method-Scaffolder-get_workflow_proposal}{\code{Scaffolder$get_workflow_proposal()}}
+\item \href{#method-Scaffolder-approve_workflow_proposal}{\code{Scaffolder$approve_workflow_proposal()}}
+\item \href{#method-Scaffolder-discuss_workflow_proposal}{\code{Scaffolder$discuss_workflow_proposal()}}
 \item \href{#method-Scaffolder-workflow_spec}{\code{Scaffolder$workflow_spec()}}
 \item \href{#method-Scaffolder-implementation_spec}{\code{Scaffolder$implementation_spec()}}
 \item \href{#method-Scaffolder-low_confidence_nodes}{\code{Scaffolder$low_confidence_nodes()}}
@@ -362,6 +374,110 @@ Apply legacy structured human feedback to the workflow.
 \item{\code{remove}}{Character vector of node ids to remove in \verb{$edit_workflow()}.}
 
 \item{\code{rule_specs}}{Named list of rule specs used by \verb{$edit_workflow()}.}
+
+\item{\code{confidence}}{Confidence value used by review/edit helpers.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-propose_workflow"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-propose_workflow}{}}}
+\subsection{Method \code{propose_workflow()}}{
+Store an unapproved workflow proposal for preview and review.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$propose_workflow(workflow, source = "model", notes = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{workflow}}{Proposed workflow used by proposal methods.}
+
+\item{\code{source}}{Discussion source used by \verb{$discuss_task()}.}
+
+\item{\code{notes}}{Optional decomposition notes accepted directly by
+\verb{$decompose_task()}.}
+
+\item{\code{notes}}{Optional review notes.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-list_workflow_proposals"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-list_workflow_proposals}{}}}
+\subsection{Method \code{list_workflow_proposals()}}{
+Return a summary table of stored workflow proposals.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$list_workflow_proposals(status = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{status}}{Review status used by \verb{$review_workflow()} and
+\verb{$review_node()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-get_workflow_proposal"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-get_workflow_proposal}{}}}
+\subsection{Method \code{get_workflow_proposal()}}{
+Return a stored workflow proposal record by identifier.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$get_workflow_proposal(proposal_id)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{proposal_id}}{Workflow proposal identifier.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-approve_workflow_proposal"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-approve_workflow_proposal}{}}}
+\subsection{Method \code{approve_workflow_proposal()}}{
+Promote a stored workflow proposal to the live workflow.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$approve_workflow_proposal(proposal_id)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{proposal_id}}{Workflow proposal identifier.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-discuss_workflow_proposal"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-discuss_workflow_proposal}{}}}
+\subsection{Method \code{discuss_workflow_proposal()}}{
+Attach free-form discussion feedback to a stored workflow proposal.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$discuss_workflow_proposal(
+  proposal_id,
+  feedback,
+  source = "human",
+  confidence = NA_real_
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{proposal_id}}{Workflow proposal identifier.}
+
+\item{\code{feedback}}{Free-form discussion feedback used by \verb{$discuss_task()}.}
+
+\item{\code{source}}{Discussion source used by \verb{$discuss_task()}.}
 
 \item{\code{confidence}}{Confidence value used by review/edit helpers.}
 }

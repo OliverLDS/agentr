@@ -14,7 +14,8 @@ apply_scaffolder_message(
 \arguments{
 \item{scaffolder}{A \code{\link{Scaffolder}} instance.}
 
-\item{message}{Parsed message list or JSON string.}
+\item{message}{Parsed message list, JSON string, or path to a downloaded
+\code{.json} file.}
 
 \item{allowed_methods}{Character vector of allowed method names.}
 

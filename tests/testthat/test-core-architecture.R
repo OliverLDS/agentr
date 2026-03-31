@@ -126,8 +126,69 @@ test_that("build_scaffolder_prompt supports json and markdown outputs", {
   expect_true(grepl("# Scaffolding Reasoning Prompt", prompt_markdown, fixed = TRUE))
   expect_true(grepl("## Available Scaffolder Methods", prompt_markdown, fixed = TRUE))
   expect_true(grepl("edit_workflow", prompt_markdown, fixed = TRUE))
-  expect_true(grepl("machine-readable JSON only", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("downloadable `.json` file or attachment link", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("The file contents must be machine-readable JSON only", prompt_markdown, fixed = TRUE))
   expect_true(grepl("Use discuss_task to preserve free-form human or model reasoning before committing graph edits", prompt_markdown, fixed = TRUE))
+})
+
+test_that("build_implementation_prompt supports scaffolder and workflow inputs", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Implement an economic analysis workflow")
+  scaffolder$decompose_task(suggestions = list(
+    nodes = list(
+      list(id = "node_1", label = "Refresh data", implementation_hint = "Download latest macro data"),
+      list(id = "node_2", label = "Run analysis", depends_on = "node_1", rule_spec = "Summarize trend changes"),
+      list(id = "node_3", label = "Write report", depends_on = "node_2", human_required = TRUE)
+    )
+  ))
+
+  prompt_json <- build_implementation_prompt(
+    scaffolder,
+    language = "R",
+    runtime = "R package",
+    constraints = c("Prefer testthat", "Keep code modular")
+  )
+  prompt_markdown <- build_implementation_prompt(
+    scaffolder$workflow_spec(),
+    language = "Python",
+    format = "markdown",
+    target_agent = "codex"
+  )
+
+  expect_true(grepl("\"target_language\": \"R\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"implementation_plan\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"Refresh data\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("# Implementation Planning Prompt", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("Target coding agent: `codex`.", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("## Workflow Input", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("machine-readable JSON only", prompt_markdown, fixed = TRUE))
+})
+
+test_that("build_workflow_extraction_prompt supports json and markdown outputs", {
+  code_context <- c(
+    "fetch_data <- function() read.csv('latest.csv')",
+    "analyze_data <- function(df) summary(df)",
+    "write_report <- function(stats) cat('report')"
+  )
+
+  prompt_json <- build_workflow_extraction_prompt(
+    code_context = code_context,
+    task = "Infer a reporting workflow from ad hoc code",
+    language = "R"
+  )
+  prompt_markdown <- build_workflow_extraction_prompt(
+    code_context = code_context,
+    task = "Infer a reporting workflow from ad hoc code",
+    language = "R",
+    format = "markdown"
+  )
+
+  expect_true(grepl("\"workflow_extractor\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"task\": \"Infer a reporting workflow from ad hoc code\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"nodes\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("# Workflow Extraction Prompt", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("Return a top-level workflow specification object, not scaffolder actions", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("downloadable `.json` file or attachment link", prompt_markdown, fixed = TRUE))
 })
 
 test_that("parse and validate scaffolder message accept valid json", {
@@ -153,6 +214,28 @@ test_that("parse and validate scaffolder message accept valid json", {
   expect_true(is.list(parsed))
   expect_true(identical(parsed$actions[[1]]$method, "decompose_task"))
   expect_true(identical(parsed$actions[[2]]$method, "ask_human_changes"))
+})
+
+test_that("parse_scaffolder_message accepts a downloaded json file path", {
+  path <- tempfile(fileext = ".json")
+  on.exit(unlink(path), add = TRUE)
+
+  writeLines(
+    jsonlite::toJSON(
+      list(
+        actions = list(
+          list(method = "ask_human_changes", args = list())
+        )
+      ),
+      auto_unbox = TRUE
+    ),
+    path
+  )
+
+  parsed <- parse_scaffolder_message(path)
+
+  expect_true(is.list(parsed))
+  expect_true(identical(parsed$actions[[1]]$method, "ask_human_changes"))
 })
 
 test_that("apply_scaffolder_message dispatches actions to scaffolder methods", {
@@ -208,6 +291,73 @@ test_that("apply_scaffolder_message dispatches actions to scaffolder methods", {
     "Require a final review"
   ))
   expect_true(identical(length(out$errors), 0L))
+})
+
+test_that("apply_scaffolder_message accepts a downloaded json file path", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  path <- tempfile(fileext = ".json")
+  on.exit(unlink(path), add = TRUE)
+
+  writeLines(
+    jsonlite::toJSON(
+      list(
+        actions = list(
+          list(method = "evaluate_task", args = list(task = "Draft from file")),
+          list(method = "decompose_task", args = list(candidates = list("Clarify", "Translate")))
+        )
+      ),
+      auto_unbox = TRUE
+    ),
+    path
+  )
+
+  out <- apply_scaffolder_message(scaffolder, path)
+
+  expect_true(identical(scaffolder$task, "Draft from file"))
+  expect_true(identical(nrow(out$workflow_after$nodes), 2L))
+})
+
+test_that("workflow proposals can be previewed, discussed, and approved", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Design an autonomous workflow")
+
+  message <- list(
+    actions = list(
+      list(
+        method = "decompose_task",
+        args = list(suggestions = list(
+          nodes = list(
+            list(id = "node_1", label = "Refresh data"),
+            list(id = "node_2", label = "Write report", depends_on = "node_1")
+          )
+        ))
+      )
+    ),
+    notes = "Initial model proposal."
+  )
+
+  preview <- preview_scaffolder_message(scaffolder, message)
+  proposals <- scaffolder$list_workflow_proposals()
+
+  expect_true(identical(nrow(scaffolder$workflow$nodes), 0L))
+  expect_true(identical(nrow(preview$workflow_after$nodes), 2L))
+  expect_true(identical(nrow(proposals), 1L))
+  expect_true(identical(proposals$status[[1]], "pending"))
+
+  proposal <- scaffolder$get_workflow_proposal(preview$proposal_id)
+  expect_true(identical(proposal$notes, "Initial model proposal."))
+
+  scaffolder$discuss_workflow_proposal(
+    preview$proposal_id,
+    "Need a dedicated review checkpoint before publication."
+  )
+  proposal <- scaffolder$get_workflow_proposal(preview$proposal_id)
+  expect_true(identical(length(proposal$discussion_rounds), 1L))
+
+  scaffolder$approve_workflow_proposal(preview$proposal_id)
+  proposals <- scaffolder$list_workflow_proposals()
+  expect_true(identical(nrow(scaffolder$workflow$nodes), 2L))
+  expect_true(identical(proposals$status[[1]], "approved"))
 })
 
 test_that("validate_scaffolder_message rejects unsupported methods", {

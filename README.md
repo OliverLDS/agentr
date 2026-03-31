@@ -72,6 +72,27 @@ dispatch$workflow_after
 dispatch$human_prompts
 ```
 
+If you used the Markdown prompt in a chatbox UI and downloaded the model's JSON file, you can pass the file path directly:
+
+```r
+dispatch <- apply_scaffolder_message(scaffolder, "response.json")
+```
+
+If you want the human to preview a proposed DAG before it becomes the live workflow, use the non-mutating preview path:
+
+```r
+preview <- preview_scaffolder_message(scaffolder, response_json)
+proposal <- scaffolder$get_workflow_proposal(preview$proposal_id)
+graph_data <- workflow_graph_data(proposal$workflow)
+
+# Human decides whether to approve or continue discussion
+scaffolder$discuss_workflow_proposal(
+  preview$proposal_id,
+  "Add a dedicated review checkpoint before publication."
+)
+# scaffolder$approve_workflow_proposal(preview$proposal_id)
+```
+
 The LLM is constrained to a validated set of scaffolder methods and must return machine-readable JSON. The dispatch result is normalized into:
 
 - `applied_actions`
@@ -92,6 +113,34 @@ If you are calling a model through another package such as `inferencer`, use the
 prompt_json <- build_scaffolder_prompt(scaffolder, format = "json")
 ```
 
+Once the workflow is mature enough, you can generate a second-stage implementation-planning prompt for a coding agent:
+
+```r
+implementation_prompt <- build_implementation_prompt(
+  scaffolder,
+  language = "R",
+  format = "markdown",
+  target_agent = "codex",
+  runtime = "R package",
+  constraints = c("Prefer testthat", "Keep changes modular")
+)
+```
+
+If you already have ad hoc code written by others and want a reasoning model to infer an `agentr`-compatible workflow spec from it, use the workflow-extraction prompt:
+
+```r
+extraction_prompt <- build_workflow_extraction_prompt(
+  code_context = c(
+    "fetch_data <- function() read.csv('latest.csv')",
+    "analyze_data <- function(df) summary(df)",
+    "write_report <- function(stats) cat('report')"
+  ),
+  task = "Infer a reporting workflow from existing code",
+  language = "R",
+  format = "markdown"
+)
+```
+
 ## End-To-End Reasoning Loop
 
 ```r
@@ -99,7 +148,22 @@ library(agentr)
 
 agent <- AgentCore$new(name = "Scaffold Agent")
 scaffolder <- Scaffolder$new(agent = agent)
-scaffolder$evaluate_task("Design a DAG for onboarding a new analyst.")
+scaffolder$evaluate_task(
+  paste(
+    "Conduct economic analysis based on updated data, infer insightful points,",
+    "and write a professional report with visualization."
+  )
+)
+
+# Another realistic online task for the same loop:
+# scaffolder$evaluate_task(
+#   paste(
+#     "Read daily business news, select podcast topics that do not repeat",
+#     "recent channel coverage, generate a transcript with the given host roles",
+#     "and style, convert it to audio with a TTS model, and release or schedule",
+#     "the episode in the podcast channel."
+#   )
+# )
 
 prompt_json <- build_scaffolder_prompt(scaffolder, format = "json")
 
@@ -113,7 +177,7 @@ reasoner <- function(prompt) {
       {
         "method": "discuss_task",
         "args": {
-          "feedback": "The workflow likely needs a dedicated approval checkpoint.",
+          "feedback": "The workflow should separate data refresh, analysis, visualization, report drafting, and final review.",
           "source": "model"
         }
       },
@@ -122,19 +186,18 @@ reasoner <- function(prompt) {
         "args": {
           "suggestions": {
             "nodes": [
-              {"id": "node_1", "label": "Clarify onboarding goals", "confidence": 0.9},
-              {"id": "node_2", "label": "Identify required tools", "confidence": 0.8},
-              {"id": "node_3", "label": "Ask for approval rules", "depends_on": ["node_1"], "confidence": 0.7},
-              {"id": "node_4", "label": "Draft implementation handoff", "depends_on": ["node_2", "node_3"], "confidence": 0.7}
+              {"id": "node_1", "label": "Refresh economic data", "confidence": 0.95},
+              {"id": "node_2", "label": "Run economic analysis", "depends_on": ["node_1"], "confidence": 0.9},
+              {"id": "node_3", "label": "Generate visualization set", "depends_on": ["node_1"], "confidence": 0.85},
+              {"id": "node_4", "label": "Draft professional report", "depends_on": ["node_2", "node_3"], "confidence": 0.85},
+              {"id": "node_5", "label": "Request human review on narrative and claims", "depends_on": ["node_4"], "confidence": 0.75, "human_required": true}
             ]
           }
         }
       },
       {
-        "method": "review_workflow",
+        "method": "ask_human_changes",
         "args": {
-          "status": "needs_revision",
-          "notes": "Approval rules still need human confirmation."
         }
       }
     ]
@@ -144,8 +207,20 @@ reasoner <- function(prompt) {
 # response_json <- reasoner(prompt_json)
 dispatch <- apply_scaffolder_message(scaffolder, response_json)
 
+questions <- collect_scaffolder_questions(scaffolder, dispatch)
+questions
+
+# Capture free-form human feedback before the next structured update
+human_feedback <- terminal_ask_workflow_changes(scaffolder)
+
+if (nzchar(trimws(human_feedback$response))) {
+  followup_json <- build_scaffolder_prompt(scaffolder, format = "json")
+  followup_response <- inferencer::query_openrouter(followup_json, max_tokens = 4000)
+  dispatch <- apply_scaffolder_message(scaffolder, followup_response)
+}
+
 dispatch$workflow_after
-collect_scaffolder_questions(scaffolder, dispatch)
+scaffolder$workflow$metadata$discussion_rounds
 ```
 
 ## Workflow Output

@@ -7,11 +7,12 @@
 parse_scaffolder_message(text)
 }
 \arguments{
-\item{text}{Character string containing JSON.}
+\item{text}{Character string containing JSON or a path to a \code{.json} file.}
 }
 \value{
 Parsed list.
 }
 \description{
-Parses a machine-readable scaffolder message from JSON into an R list.
+Parses a machine-readable scaffolder message from JSON text or a \code{.json}
+file path into an R list.
 }

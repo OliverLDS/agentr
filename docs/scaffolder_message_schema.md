@@ -228,6 +228,12 @@ Validation rules:
 - `human_prompts`: extracted human-facing prompts
 - `errors`: collected action errors when `stop_on_error = FALSE`
 
+`apply_scaffolder_message()` accepts:
+
+- a parsed message list
+- a raw JSON string
+- a path to a downloaded `.json` file
+
 ## Sequential Semantics
 
 Actions are applied in order.

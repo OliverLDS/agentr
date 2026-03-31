@@ -329,6 +329,11 @@
   list(nodes = nodes, edges = .deduplicate_edges(edges))
 }
 
+#' @keywords internal
+.next_workflow_proposal_id <- function(proposal_log) {
+  paste0("proposal_", length(proposal_log) + 1L)
+}
+
 #' Scaffolder
 #'
 #' Human-in-the-loop scaffolding interface for iterative workflow elicitation.
@@ -340,6 +345,7 @@
 #' @field agent Optional [`AgentCore`] owner.
 #' @field task Current task text.
 #' @field workflow Current workflow specification.
+#' @field proposal_log Stored workflow proposals awaiting approval or revision.
 #' @field interaction_log List of scaffolding interactions.
 #' @field completion_threshold Threshold used to flag low-confidence nodes.
 #' @param agent Optional [`AgentCore`] used by `$initialize()`.
@@ -375,6 +381,8 @@
 #'   `$apply_human_feedback()`.
 #' @param type Interaction type used by `$record_interaction()`.
 #' @param payload Interaction payload used by `$record_interaction()`.
+#' @param workflow Proposed workflow used by proposal methods.
+#' @param proposal_id Workflow proposal identifier.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(agent = NULL, completion_threshold = 0.75)`}{Create a scaffolder with empty workflow state and review metadata.}
@@ -388,6 +396,11 @@
 #'   \item{`$review_node(node_id, status = "pending", notes = NULL, confidence = NA_real_, complete = NULL)`}{Store node-level correctness or completion review state.}
 #'   \item{`$edit_workflow(add = NULL, insert = NULL, remove = NULL, add_edges = NULL, remove_edges = NULL, rule_specs = list(), confidence = list())`}{Apply first-class node and edge edits to the current workflow.}
 #'   \item{`$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())`}{Compatibility wrapper for structured human workflow edits.}
+#'   \item{`$propose_workflow(workflow, source = "model", notes = NULL)`}{Store an unapproved workflow proposal for preview and review.}
+#'   \item{`$list_workflow_proposals(status = NULL)`}{Return a summary table of stored workflow proposals.}
+#'   \item{`$get_workflow_proposal(proposal_id)`}{Return a stored workflow proposal record by identifier.}
+#'   \item{`$approve_workflow_proposal(proposal_id)`}{Promote a stored workflow proposal to the live workflow.}
+#'   \item{`$discuss_workflow_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)`}{Attach free-form discussion feedback to a stored workflow proposal.}
 #'   \item{`$workflow_spec()`}{Validate and return the current workflow specification.}
 #'   \item{`$implementation_spec()`}{Return an implementation-facing summary of workflow nodes and rules.}
 #'   \item{`$low_confidence_nodes()`}{Return workflow nodes below the completion threshold.}
@@ -402,6 +415,7 @@ Scaffolder <- R6::R6Class(
     agent = NULL,
     task = NULL,
     workflow = NULL,
+    proposal_log = NULL,
     interaction_log = NULL,
     completion_threshold = NULL,
 
@@ -426,6 +440,7 @@ Scaffolder <- R6::R6Class(
           discussion_rounds = list()
         )
       )
+      self$proposal_log <- list()
       self$interaction_log <- list()
     },
 
@@ -729,6 +744,129 @@ Scaffolder <- R6::R6Class(
         )
       )
       invisible(self$workflow)
+    },
+
+    #' @description
+    #' Store an unapproved workflow proposal for preview and review.
+    propose_workflow = function(workflow, source = "model", notes = NULL) {
+      validate_workflow_spec(workflow)
+
+      proposal_id <- .next_workflow_proposal_id(self$proposal_log)
+      proposal <- list(
+        id = proposal_id,
+        status = "pending",
+        source = .normalize_scaffolder_source(source),
+        notes = if (is.null(notes)) NA_character_ else as.character(notes),
+        workflow = workflow,
+        discussion_rounds = list(),
+        created_at = Sys.time(),
+        approved_at = as.POSIXct(NA)
+      )
+
+      self$proposal_log[[proposal_id]] <- proposal
+      self$record_interaction("propose_workflow", list(
+        proposal_id = proposal_id,
+        source = proposal$source,
+        notes = proposal$notes
+      ))
+      invisible(proposal)
+    },
+
+    #' @description
+    #' Return a summary table of stored workflow proposals.
+    list_workflow_proposals = function(status = NULL) {
+      proposals <- unname(self$proposal_log)
+      if (!is.null(status)) {
+        proposals <- Filter(function(item) identical(item$status, status), proposals)
+      }
+      if (!length(proposals)) {
+        return(data.frame(
+          id = character(),
+          status = character(),
+          source = character(),
+          notes = character(),
+          node_count = integer(),
+          edge_count = integer(),
+          created_at = as.POSIXct(character()),
+          approved_at = as.POSIXct(character()),
+          stringsAsFactors = FALSE
+        ))
+      }
+
+      do.call(rbind, lapply(proposals, function(item) {
+        data.frame(
+          id = item$id,
+          status = item$status,
+          source = item$source,
+          notes = item$notes,
+          node_count = nrow(item$workflow$nodes),
+          edge_count = nrow(item$workflow$edges),
+          created_at = item$created_at,
+          approved_at = item$approved_at,
+          stringsAsFactors = FALSE
+        )
+      }))
+    },
+
+    #' @description
+    #' Return a stored workflow proposal record by identifier.
+    get_workflow_proposal = function(proposal_id) {
+      proposal <- self$proposal_log[[proposal_id]]
+      if (is.null(proposal)) {
+        stop("Unknown workflow proposal: ", proposal_id, call. = FALSE)
+      }
+      proposal
+    },
+
+    #' @description
+    #' Promote a stored workflow proposal to the live workflow.
+    approve_workflow_proposal = function(proposal_id) {
+      proposal <- self$get_workflow_proposal(proposal_id)
+      proposal$status <- "approved"
+      proposal$approved_at <- Sys.time()
+      self$proposal_log[[proposal_id]] <- proposal
+      self$workflow <- proposal$workflow
+      self$task <- proposal$workflow$task %||% self$task
+
+      self$record_interaction("approve_workflow_proposal", list(
+        proposal_id = proposal_id,
+        approved_at = proposal$approved_at
+      ))
+      invisible(self$workflow)
+    },
+
+    #' @description
+    #' Attach free-form discussion feedback to a stored workflow proposal.
+    discuss_workflow_proposal = function(
+      proposal_id,
+      feedback,
+      source = "human",
+      confidence = NA_real_
+    ) {
+      proposal <- self$get_workflow_proposal(proposal_id)
+      if (!is.character(feedback) || length(feedback) != 1L || !nzchar(feedback)) {
+        stop("`feedback` must be a non-empty string.", call. = FALSE)
+      }
+
+      round <- list(
+        source = .normalize_scaffolder_source(source),
+        feedback = feedback,
+        confidence = .as_optional_confidence(confidence),
+        discussed_at = Sys.time()
+      )
+
+      proposal$discussion_rounds <- c(proposal$discussion_rounds, list(round))
+      if (identical(proposal$status, "approved")) {
+        proposal$status <- "pending"
+        proposal$approved_at <- as.POSIXct(NA)
+      }
+      self$proposal_log[[proposal_id]] <- proposal
+      self$record_interaction("discuss_workflow_proposal", list(
+        proposal_id = proposal_id,
+        feedback = feedback,
+        source = round$source
+      ))
+      invisible(proposal)
     },
 
     #' @description

@@ -27,9 +27,12 @@
 | --- | --- |
 | `scaffolder_action_methods()` | List the methods an LLM may request |
 | `build_scaffolder_prompt()` | Build a prompt that describes task, workflow state, and allowed actions |
+| `build_implementation_prompt()` | Build an implementation-planning prompt for a coding agent |
+| `build_workflow_extraction_prompt()` | Build a prompt to reverse-engineer existing code into an agentr workflow spec |
 | `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
 | `validate_scaffolder_message()` | Validate requested scaffolding actions |
 | `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |
+| `preview_scaffolder_message()` | Preview and optionally store a workflow proposal without mutating the live workflow |
 | `collect_scaffolder_questions()` | Collect human-facing prompts from dispatch results or interaction logs |
 
 ## Affective Utilities

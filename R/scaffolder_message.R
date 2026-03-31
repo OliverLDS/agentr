@@ -555,8 +555,10 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
     "```",
     "",
     "## Response Requirements",
-    "- Respond with machine-readable JSON only.",
-    "- Do not include markdown fences or explanatory prose outside JSON.",
+    "- Produce the response as a downloadable `.json` file or attachment link for the user.",
+    "- The file contents must be machine-readable JSON only.",
+    "- Do not paste long JSON inline in the chat unless the UI cannot provide a file or attachment link.",
+    "- If the UI cannot provide a file, then return raw JSON only with no markdown fences or explanatory prose.",
     "- The JSON must have an `actions` array and may have a `notes` string.",
     "- Each action must contain `method` and `args`.",
     "",
@@ -570,15 +572,23 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
 
 #' Parse an LLM scaffolder message
 #'
-#' Parses a machine-readable scaffolder message from JSON into an R list.
+#' Parses a machine-readable scaffolder message from JSON text or a `.json`
+#' file path into an R list.
 #'
-#' @param text Character string containing JSON.
+#' @param text Character string containing JSON or a path to a `.json` file.
 #'
 #' @return Parsed list.
 #' @export
 parse_scaffolder_message <- function(text) {
   if (!is.character(text) || length(text) != 1L || !nzchar(text)) {
-    stop("`text` must be a non-empty JSON string.", call. = FALSE)
+    stop("`text` must be a non-empty JSON string or `.json` file path.", call. = FALSE)
+  }
+
+  if (file.exists(text)) {
+    if (!grepl("\\.json$", text, ignore.case = TRUE)) {
+      stop("Scaffolder message files must use a `.json` extension.", call. = FALSE)
+    }
+    text <- paste(readLines(text, warn = FALSE), collapse = "\n")
   }
 
   parsed <- tryCatch(
@@ -640,7 +650,8 @@ validate_scaffolder_message <- function(
 #' calls on a [`Scaffolder`] instance.
 #'
 #' @param scaffolder A [`Scaffolder`] instance.
-#' @param message Parsed message list or JSON string.
+#' @param message Parsed message list, JSON string, or path to a downloaded
+#'   `.json` file.
 #' @param allowed_methods Character vector of allowed method names.
 #' @param stop_on_error Whether to stop on the first action error. When `FALSE`,
 #'   errors are collected in the returned result object.
@@ -717,6 +728,70 @@ apply_scaffolder_message <- function(
     workflow_after = scaffolder$workflow_spec(),
     human_prompts = human_prompts,
     errors = errors
+  )
+}
+
+#' Preview a machine-readable scaffolder message without mutating live workflow
+#'
+#' Applies a message to a deep clone of the scaffolder, returns the preview
+#' result, and optionally stores the resulting workflow as a proposal on the
+#' original scaffolder for later approval or discussion.
+#'
+#' @param scaffolder A [`Scaffolder`] instance.
+#' @param message Parsed message list, JSON string, or path to a downloaded
+#'   `.json` file.
+#' @param allowed_methods Character vector of allowed method names.
+#' @param stop_on_error Whether to stop on the first action error. When `FALSE`,
+#'   errors are collected in the returned result object.
+#' @param store_proposal Whether to store the previewed workflow as a proposal on
+#'   the original scaffolder.
+#' @param source Proposal source label used when storing a proposal.
+#' @param proposal_notes Optional proposal notes. Defaults to top-level
+#'   `message$notes` when available.
+#'
+#' @return A standardized list with `proposal_id`, `proposal`, `preview_dispatch`,
+#'   `workflow_after`, `human_prompts`, and `errors`.
+#' @export
+preview_scaffolder_message <- function(
+  scaffolder,
+  message,
+  allowed_methods = scaffolder_action_methods(),
+  stop_on_error = TRUE,
+  store_proposal = TRUE,
+  source = "model",
+  proposal_notes = NULL
+) {
+  stopifnot(inherits(scaffolder, "Scaffolder"))
+
+  parsed_message <- if (is.character(message)) parse_scaffolder_message(message) else message
+  validate_scaffolder_message(parsed_message, allowed_methods = allowed_methods)
+
+  preview_scaffolder <- scaffolder$clone(deep = TRUE)
+  preview_dispatch <- apply_scaffolder_message(
+    preview_scaffolder,
+    parsed_message,
+    allowed_methods = allowed_methods,
+    stop_on_error = stop_on_error
+  )
+
+  proposal <- NULL
+  proposal_id <- NULL
+  if (isTRUE(store_proposal)) {
+    proposal <- scaffolder$propose_workflow(
+      workflow = preview_dispatch$workflow_after,
+      source = source,
+      notes = proposal_notes %||% parsed_message$notes
+    )
+    proposal_id <- proposal$id
+  }
+
+  list(
+    proposal_id = proposal_id,
+    proposal = proposal,
+    preview_dispatch = preview_dispatch,
+    workflow_after = preview_dispatch$workflow_after,
+    human_prompts = preview_dispatch$human_prompts,
+    errors = preview_dispatch$errors
   )
 }
 
