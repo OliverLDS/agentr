@@ -83,6 +83,45 @@ scaffolder_action_methods <- function() {
   )
 }
 
+#' @keywords internal
+.normalize_dispatch_args <- function(scaffolder, method, args) {
+  if (!is.list(args)) {
+    return(args)
+  }
+
+  if (!identical(method, "decompose_task")) {
+    return(args)
+  }
+
+  method_formals <- names(formals(scaffolder[[method]]))
+  if (all(c("nodes", "edges", "notes") %in% method_formals)) {
+    return(args)
+  }
+
+  nodes_arg <- .arg_get(args, "nodes")
+  edges_arg <- .arg_get(args, "edges")
+  notes_arg <- .arg_get(args, "notes")
+  suggestions_arg <- .arg_get(args, "suggestions")
+
+  if (is.null(nodes_arg) && is.null(edges_arg) && is.null(notes_arg)) {
+    return(args)
+  }
+
+  if (is.null(suggestions_arg)) {
+    suggestions_arg <- list(
+      nodes = nodes_arg %||% list(),
+      edges = edges_arg %||% list(),
+      notes = notes_arg
+    )
+  }
+
+  args$nodes <- NULL
+  args$edges <- NULL
+  args$notes <- NULL
+  args$suggestions <- suggestions_arg
+  args
+}
+
 #' Validate scaffolder action arguments for a specific method
 #'
 #' @param method Scaffolder method name.
@@ -102,7 +141,7 @@ scaffolder_action_methods <- function() {
     method,
     evaluate_task = c("task", "summary", "workflow_complete", "blockers", "next_focus"),
     discuss_task = c("feedback", "source", "node_id", "confidence"),
-    decompose_task = c("task", "candidates", "suggestions"),
+    decompose_task = c("task", "candidates", "suggestions", "nodes", "edges", "notes"),
     review_workflow = c("status", "notes", "confidence"),
     review_node = c("node_id", "status", "notes", "confidence", "complete"),
     edit_workflow = c("add", "insert", "remove", "add_edges", "remove_edges", "rule_specs", "confidence"),
@@ -140,6 +179,8 @@ scaffolder_action_methods <- function() {
     task_arg <- .arg_get(args, "task")
     candidates_arg <- .arg_get(args, "candidates")
     suggestions_arg <- .arg_get(args, "suggestions")
+    nodes_arg <- .arg_get(args, "nodes")
+    edges_arg <- .arg_get(args, "edges")
     if (!is.null(task_arg) &&
         (!is.character(task_arg) || length(task_arg) != 1L || !nzchar(task_arg))) {
       stop("`decompose_task.task` must be a non-empty string when provided.", call. = FALSE)
@@ -157,6 +198,12 @@ scaffolder_action_methods <- function() {
         !is.list(suggestions_arg) &&
         !is.character(suggestions_arg)) {
       stop("`decompose_task.suggestions` must be a list or character vector.", call. = FALSE)
+    }
+    if (!is.null(nodes_arg) && !is.list(nodes_arg)) {
+      stop("`decompose_task.nodes` must be a list of node specs.", call. = FALSE)
+    }
+    if (!is.null(edges_arg) && !is.list(edges_arg)) {
+      stop("`decompose_task.edges` must be a list of edge specs.", call. = FALSE)
     }
   }
 
@@ -629,7 +676,8 @@ apply_scaffolder_message <- function(
 
     execution <- tryCatch({
       .validate_scaffolder_action_refs(scaffolder, method, args)
-      result <- do.call(scaffolder[[method]], args)
+      dispatch_args <- .normalize_dispatch_args(scaffolder, method, args)
+      result <- do.call(scaffolder[[method]], dispatch_args)
       list(ok = TRUE, result = result, error = NULL)
     }, error = function(e) {
       list(ok = FALSE, result = NULL, error = conditionMessage(e))

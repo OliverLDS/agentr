@@ -97,6 +97,24 @@
 }
 
 #' @keywords internal
+.resolve_workflow_node_ref <- function(ref, nodes) {
+  ref <- as.character(ref)
+  if (ref %in% nodes$id) {
+    return(ref)
+  }
+
+  label_matches <- nodes$id[nodes$label == ref]
+  if (length(label_matches) == 1L) {
+    return(label_matches[[1]])
+  }
+  if (length(label_matches) > 1L) {
+    stop("Workflow node reference is ambiguous: ", ref, call. = FALSE)
+  }
+
+  ref
+}
+
+#' @keywords internal
 .deduplicate_edges <- function(edges) {
   if (!nrow(edges)) {
     return(edges)
@@ -147,22 +165,35 @@
 
     if (!is.null(item$depends_on)) {
       for (dep in unlist(item$depends_on, use.names = FALSE)) {
-        inferred_edges[[edge_index]] <- workflow_edge(as.character(dep), node_id)
+        inferred_edges[[edge_index]] <- workflow_edge(
+          .resolve_workflow_node_ref(dep, nodes),
+          node_id
+        )
         edge_index <- edge_index + 1L
       }
     }
     if (!is.null(item$after)) {
-      inferred_edges[[edge_index]] <- workflow_edge(as.character(item$after), node_id)
+      inferred_edges[[edge_index]] <- workflow_edge(
+        .resolve_workflow_node_ref(item$after, nodes),
+        node_id
+      )
       edge_index <- edge_index + 1L
     }
     if (!is.null(item$before)) {
-      inferred_edges[[edge_index]] <- workflow_edge(node_id, as.character(item$before))
+      inferred_edges[[edge_index]] <- workflow_edge(
+        node_id,
+        .resolve_workflow_node_ref(item$before, nodes)
+      )
       edge_index <- edge_index + 1L
     }
   }
 
   explicit_edges <- if (length(edge_specs)) {
-    do.call(rbind, lapply(edge_specs, .coerce_workflow_edge_item))
+    do.call(rbind, lapply(edge_specs, function(item) {
+      item$from <- .resolve_workflow_node_ref(item$from, nodes)
+      item$to <- .resolve_workflow_node_ref(item$to, nodes)
+      .coerce_workflow_edge_item(item)
+    }))
   } else {
     .empty_workflow_edges()
   }
@@ -322,6 +353,10 @@
 #' @param candidates Optional candidate node labels used by `$decompose_task()`.
 #' @param suggestions Optional free-form or structured graph suggestions used by
 #'   `$decompose_task()`.
+#' @param nodes Optional node list accepted directly by `$decompose_task()`.
+#' @param edges Optional edge list accepted directly by `$decompose_task()`.
+#' @param notes Optional decomposition notes accepted directly by
+#'   `$decompose_task()`.
 #' @param feedback Free-form discussion feedback used by `$discuss_task()`.
 #' @param source Discussion source used by `$discuss_task()`.
 #' @param node_id Workflow node identifier used by node-specific methods.
@@ -345,7 +380,7 @@
 #'   \item{`$initialize(agent = NULL, completion_threshold = 0.75)`}{Create a scaffolder with empty workflow state and review metadata.}
 #'   \item{`$evaluate_task(task, summary = NULL, workflow_complete = NA, blockers = NULL, next_focus = NULL)`}{Create or refresh the persistent task-evaluation artifact.}
 #'   \item{`$discuss_task(feedback, source = "human", node_id = NULL, confidence = NA_real_)`}{Record a free-form human, model, or system discussion round.}
-#'   \item{`$decompose_task(task = self$task, candidates = NULL, suggestions = NULL)`}{Create or replace the workflow from linear candidates or non-linear graph suggestions.}
+#'   \item{`$decompose_task(task = self$task, candidates = NULL, suggestions = NULL, nodes = NULL, edges = NULL, notes = NULL)`}{Create or replace the workflow from linear candidates or non-linear graph suggestions.}
 #'   \item{`$ask_human_complete(node_id)`}{Create a prompt asking whether a workflow node is complete.}
 #'   \item{`$ask_human_changes()`}{Create a prompt asking what workflow or edge changes should happen next.}
 #'   \item{`$ask_human_rule(node_id)`}{Create a prompt requesting a node-specific rule.}
@@ -462,9 +497,24 @@ Scaffolder <- R6::R6Class(
 
     #' @description
     #' Replace the workflow with nodes and edges derived from task suggestions.
-    decompose_task = function(task = self$task, candidates = NULL, suggestions = NULL) {
+    decompose_task = function(
+      task = self$task,
+      candidates = NULL,
+      suggestions = NULL,
+      nodes = NULL,
+      edges = NULL,
+      notes = NULL
+    ) {
       if (is.null(task)) {
         stop("A task must be evaluated before decomposition.", call. = FALSE)
+      }
+
+      if (is.null(suggestions) && (!is.null(nodes) || !is.null(edges))) {
+        suggestions <- list(
+          nodes = nodes %||% list(),
+          edges = edges %||% list(),
+          notes = notes
+        )
       }
 
       plan <- .coerce_decomposition_plan(candidates = candidates, suggestions = suggestions)

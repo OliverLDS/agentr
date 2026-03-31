@@ -21,7 +21,7 @@ first-class operations.
 \item{\verb{$initialize(agent = NULL, completion_threshold = 0.75)}}{Create a scaffolder with empty workflow state and review metadata.}
 \item{\verb{$evaluate_task(task, summary = NULL, workflow_complete = NA, blockers = NULL, next_focus = NULL)}}{Create or refresh the persistent task-evaluation artifact.}
 \item{\verb{$discuss_task(feedback, source = "human", node_id = NULL, confidence = NA_real_)}}{Record a free-form human, model, or system discussion round.}
-\item{\verb{$decompose_task(task = self$task, candidates = NULL, suggestions = NULL)}}{Create or replace the workflow from linear candidates or non-linear graph suggestions.}
+\item{\verb{$decompose_task(task = self$task, candidates = NULL, suggestions = NULL, nodes = NULL, edges = NULL, notes = NULL)}}{Create or replace the workflow from linear candidates or non-linear graph suggestions.}
 \item{\verb{$ask_human_complete(node_id)}}{Create a prompt asking whether a workflow node is complete.}
 \item{\verb{$ask_human_changes()}}{Create a prompt asking what workflow or edge changes should happen next.}
 \item{\verb{$ask_human_rule(node_id)}}{Create a prompt requesting a node-specific rule.}
@@ -162,7 +162,10 @@ Replace the workflow with nodes and edges derived from task suggestions.
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$decompose_task(
   task = self$task,
   candidates = NULL,
-  suggestions = NULL
+  suggestions = NULL,
+  nodes = NULL,
+  edges = NULL,
+  notes = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -175,6 +178,15 @@ Replace the workflow with nodes and edges derived from task suggestions.
 
 \item{\code{suggestions}}{Optional free-form or structured graph suggestions used by
 \verb{$decompose_task()}.}
+
+\item{\code{nodes}}{Optional node list accepted directly by \verb{$decompose_task()}.}
+
+\item{\code{edges}}{Optional edge list accepted directly by \verb{$decompose_task()}.}
+
+\item{\code{notes}}{Optional decomposition notes accepted directly by
+\verb{$decompose_task()}.}
+
+\item{\code{notes}}{Optional review notes.}
 }
 \if{html}{\out{</div>}}
 }
@@ -242,6 +254,9 @@ Store workflow-level completeness or revision review state.
 \item{\code{status}}{Review status used by \verb{$review_workflow()} and
 \verb{$review_node()}.}
 
+\item{\code{notes}}{Optional decomposition notes accepted directly by
+\verb{$decompose_task()}.}
+
 \item{\code{notes}}{Optional review notes.}
 
 \item{\code{confidence}}{Confidence value used by review/edit helpers.}
@@ -271,6 +286,9 @@ Store node-level review status, notes, confidence, and completion state.
 
 \item{\code{status}}{Review status used by \verb{$review_workflow()} and
 \verb{$review_node()}.}
+
+\item{\code{notes}}{Optional decomposition notes accepted directly by
+\verb{$decompose_task()}.}
 
 \item{\code{notes}}{Optional review notes.}
 

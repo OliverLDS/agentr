@@ -366,3 +366,72 @@ test_that("edit_workflow supports edge insertion and removal", {
   expect_true(any(spec$edges$from == "node_1" & spec$edges$to == "node_mid"))
   expect_true(any(spec$edges$from == "node_mid" & spec$edges$to == "node_2"))
 })
+
+test_that("apply_scaffolder_message accepts direct decompose_task nodes and label edges", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Design onboarding workflow")
+
+  rs1 <- '{
+    "actions": [
+      {
+        "method": "discuss_task",
+        "args": {
+          "feedback": "Initial discussion: onboarding should cover logistics, access, training, and QA.",
+          "source": "model"
+        }
+      },
+      {
+        "method": "decompose_task",
+        "args": {
+          "nodes": [
+            {"label": "Receive equipment", "confidence": 0.95, "human_required": true},
+            {"label": "Complete HR paperwork", "confidence": 0.95, "human_required": true},
+            {"label": "Set up system access", "confidence": 0.9, "human_required": false},
+            {"label": "Attend orientation", "confidence": 0.9, "human_required": true}
+          ],
+          "edges": [
+            {"from": "Receive equipment", "to": "Complete HR paperwork"},
+            {"from": "Receive equipment", "to": "Set up system access"},
+            {"from": "Set up system access", "to": "Attend orientation"}
+          ]
+        }
+      }
+    ]
+  }'
+
+  out <- apply_scaffolder_message(scaffolder, rs1)
+  spec <- out$workflow_after
+
+  expect_true(identical(nrow(spec$nodes), 4L))
+  expect_true(identical(nrow(spec$edges), 3L))
+  expect_true(all(spec$edges$from %in% spec$nodes$id))
+  expect_true(all(spec$edges$to %in% spec$nodes$id))
+  expect_true(identical(length(spec$metadata$discussion_rounds), 1L))
+  expect_true(any(spec$nodes$label == "Receive equipment"))
+})
+
+test_that("dispatch normalizes direct decompose_task args for legacy method signatures", {
+  legacy_scaffolder <- list(
+    decompose_task = function(task = NULL, candidates = NULL, suggestions = NULL) {
+      NULL
+    }
+  )
+
+  args <- list(
+    nodes = list(
+      list(label = "Receive equipment"),
+      list(label = "Complete HR paperwork")
+    ),
+    edges = list(
+      list(from = "Receive equipment", to = "Complete HR paperwork")
+    )
+  )
+
+  normalized <- agentr:::.normalize_dispatch_args(legacy_scaffolder, "decompose_task", args)
+
+  expect_true(is.null(normalized$nodes))
+  expect_true(is.null(normalized$edges))
+  expect_true(is.list(normalized$suggestions))
+  expect_true(identical(length(normalized$suggestions$nodes), 2L))
+  expect_true(identical(length(normalized$suggestions$edges), 1L))
+})

@@ -1,7 +1,7 @@
 Package: agentr
 Type: Package
 Title: Cognitive Core for Agentic Workflows in R
-Version: 0.1.6
+Version: 0.1.6.1
 Authors@R: 
     person(given = "Oliver", 
            family = "Zhou",

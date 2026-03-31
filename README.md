@@ -103,7 +103,10 @@ scaffolder$evaluate_task("Design a DAG for onboarding a new analyst.")
 
 prompt_json <- build_scaffolder_prompt(scaffolder, format = "json")
 
-# Placeholder for a reasoning model call handled elsewhere, e.g. inferencer
+# Real reasoning-model call via inferencer
+response_json <- inferencer::query_openrouter(prompt_json, max_tokens = 4000)
+
+# Or use a local placeholder during development
 reasoner <- function(prompt) {
   '{
     "actions": [
@@ -138,7 +141,7 @@ reasoner <- function(prompt) {
   }'
 }
 
-response_json <- reasoner(prompt_json)
+# response_json <- reasoner(prompt_json)
 dispatch <- apply_scaffolder_message(scaffolder, response_json)
 
 dispatch$workflow_after
