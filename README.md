@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of agentic workflows. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and generates workflow specifications such as DAG-like plans and implementation-ready structures.
 
-Version `0.1.7` keeps that narrowed scope and tightens the scaffolding lifecycle with explicit workflow-proposal states and cleaner internal separation. `agentr` remains the core reasoning/scaffolding layer, not the transport or execution layer.
+Version `0.1.8` keeps that narrowed scope and makes the scaffolding lifecycle easier to use by documenting the stage boundaries clearly and supporting proposal persistence as a first-class artifact. `agentr` remains the core reasoning/scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -52,9 +52,21 @@ spec <- scaffolder$workflow_spec()
 spec
 ```
 
+## Lifecycle Stages
+
+`agentr` now treats scaffolding work as three explicit stages:
+
+1. workflow elicitation
+2. workflow proposal review and approval
+3. implementation and extraction handoff
+
+## Workflow Elicitation
+
+Use `Scaffolder` plus the constrained LLM bridge to evaluate tasks, discuss open questions, and build or edit workflow structure.
+
 ## LLM Scaffolding Bridge
 
-`0.1.7` provides a constrained bridge for letting an external LLM reason about scaffolding actions without exposing arbitrary code execution.
+`0.1.8` provides a constrained bridge for letting an external LLM reason about scaffolding actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)
@@ -83,7 +95,7 @@ If you want the human to preview a proposed DAG before it becomes the live workf
 ```r
 preview <- preview_scaffolder_message(scaffolder, response_json)
 proposal <- scaffolder$get_workflow_proposal(preview$proposal_id)
-graph_data <- workflow_graph_data(proposal$workflow)
+graph_data <- workflow_proposal_graph_data(proposal)
 
 # Human decides whether to approve or continue discussion
 scaffolder$discuss_workflow_proposal(
@@ -94,6 +106,26 @@ scaffolder$discuss_workflow_proposal(
 ```
 
 Proposal discussion moves a stored proposal from `pending` to `under_discussion`. The live workflow stays unchanged until `approve_workflow_proposal()` is called, and implementation prompts continue to use the approved workflow only.
+
+## Workflow Proposal Review And Approval
+
+Proposal objects can be saved and reloaded independently of the full `Scaffolder`:
+
+```r
+proposal <- scaffolder$get_workflow_proposal(preview$proposal_id)
+
+save_workflow_proposal(proposal, "workflow_proposal.rds")
+loaded_proposal <- load_workflow_proposal("workflow_proposal.rds")
+
+validate_workflow_proposal(loaded_proposal)
+graph_data <- workflow_proposal_graph_data(loaded_proposal)
+```
+
+If you still have the original `Scaffolder`, you can also export graph data directly from the stored proposal id:
+
+```r
+graph_data <- workflow_proposal_graph_data(scaffolder, preview$proposal_id)
+```
 
 The LLM is constrained to a validated set of scaffolder methods and must return machine-readable JSON. The dispatch result is normalized into:
 
@@ -142,6 +174,10 @@ extraction_prompt <- build_workflow_extraction_prompt(
   format = "markdown"
 )
 ```
+
+## Implementation And Extraction Handoff
+
+Implementation prompts are built from the approved workflow only. Previewed or discussed proposals do not affect handoff until they are explicitly approved.
 
 ## End-To-End Reasoning Loop
 

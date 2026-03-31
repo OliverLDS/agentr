@@ -20,6 +20,10 @@
 | `save_workflow_spec()` | Save a workflow specification |
 | `load_workflow_spec()` | Load a workflow specification |
 | `workflow_graph_data()` | Export graph-ready node and edge tables |
+| `validate_workflow_proposal()` | Validate a workflow proposal object |
+| `save_workflow_proposal()` | Save a workflow proposal |
+| `load_workflow_proposal()` | Load a workflow proposal |
+| `workflow_proposal_graph_data()` | Export graph-ready node and edge tables from a workflow proposal |
 
 ## LLM Scaffolding Bridge
 

@@ -1,0 +1,68 @@
+# Proposal Lifecycle
+
+`agentr` separates workflow work into three stages:
+
+1. workflow elicitation
+2. workflow proposal review and approval
+3. implementation and extraction handoff
+
+## 1. Workflow Elicitation
+
+During elicitation, `Scaffolder` is used to:
+
+- evaluate the task
+- discuss open questions
+- decompose the task into workflow nodes and edges
+- collect review and rule information
+
+At this stage, the active workflow is still the approved working state inside the `Scaffolder`.
+
+## 2. Workflow Proposal Review And Approval
+
+When a model or human suggests a new workflow shape, use `preview_scaffolder_message()` or `Scaffolder$propose_workflow()` to store it as a proposal without mutating the live workflow.
+
+Proposal lifecycle statuses are:
+
+- `pending`
+- `under_discussion`
+- `approved`
+- `superseded`
+- `rejected`
+
+Key behavior:
+
+- preview creates a stored proposal while leaving the live workflow unchanged
+- discussion moves a pending proposal into `under_discussion`
+- approval promotes the proposal workflow into the live approved workflow
+- approving a newer proposal supersedes older active proposals
+- approved proposals are not reopened by direct discussion
+
+## 3. Implementation And Extraction Handoff
+
+Once a workflow is approved, use:
+
+- `build_implementation_prompt()` to hand the approved workflow to a coding agent
+- `build_workflow_extraction_prompt()` to infer a workflow from existing code before preview and approval
+
+Implementation handoff uses the approved workflow only. Pending or discussed proposals do not affect implementation prompts until approval happens.
+
+## Persistence
+
+Workflow proposals can be saved independently of the full `Scaffolder` session:
+
+```r
+preview <- preview_scaffolder_message(scaffolder, response_json)
+proposal <- scaffolder$get_workflow_proposal(preview$proposal_id)
+
+save_workflow_proposal(proposal, "proposal.rds")
+loaded <- load_workflow_proposal("proposal.rds")
+
+validate_workflow_proposal(loaded)
+graph_data <- workflow_proposal_graph_data(loaded)
+```
+
+You can also export graph data directly from a `Scaffolder` plus proposal id:
+
+```r
+graph_data <- workflow_proposal_graph_data(scaffolder, preview$proposal_id)
+```

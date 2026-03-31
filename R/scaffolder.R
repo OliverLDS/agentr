@@ -1,4 +1,4 @@
-# Internal scaffolder helpers support 0.1.7's discussion, review, proposal, and graph
+# Internal scaffolder helpers support 0.1.8's discussion, review, proposal, and graph
 # editing APIs while keeping the exported R6 class concise.
 
 .default_decomposition_candidates <- function() {

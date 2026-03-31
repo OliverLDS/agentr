@@ -52,7 +52,15 @@ new_workflow_proposal <- function(
   validate_workflow_proposal(proposal)
 }
 
-#' @keywords internal
+#' Validate a workflow proposal
+#'
+#' Checks that a workflow proposal has the expected structure, valid lifecycle
+#' status, and a valid embedded workflow specification.
+#'
+#' @param x Workflow proposal object.
+#'
+#' @return The validated proposal, invisibly.
+#' @export
 validate_workflow_proposal <- function(x) {
   required_fields <- c(
     "id",
@@ -210,14 +218,30 @@ append_workflow_proposal_discussion <- function(
   list(proposal = proposal, round = round)
 }
 
-#' @keywords internal
+#' Save a workflow proposal
+#'
+#' Saves an `agentr_workflow_proposal` object so it can be reviewed, approved,
+#' or visualized in a later session.
+#'
+#' @param proposal Workflow proposal object.
+#' @param file_path File path where the proposal should be saved.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
 save_workflow_proposal <- function(proposal, file_path) {
   validate_workflow_proposal(proposal)
   .safe_save_rds(proposal, file_path)
   invisible(TRUE)
 }
 
-#' @keywords internal
+#' Load a workflow proposal
+#'
+#' Loads a previously saved workflow proposal from an `.rds` file.
+#'
+#' @param file_path File path from which to load the proposal.
+#'
+#' @return Workflow proposal object.
+#' @export
 load_workflow_proposal <- function(file_path) {
   if (!file.exists(file_path)) {
     stop("File does not exist: ", file_path, call. = FALSE)
@@ -226,7 +250,17 @@ load_workflow_proposal <- function(file_path) {
   validate_workflow_proposal(proposal)
 }
 
-#' @keywords internal
+#' Convert a workflow proposal into graph-ready data
+#'
+#' Exports graph-ready vertex and edge tables for a stored workflow proposal.
+#' This accepts either a workflow proposal object directly or a `Scaffolder`
+#' plus a proposal id.
+#'
+#' @param x A workflow proposal object or a [`Scaffolder`] instance.
+#' @param proposal_id Optional proposal id when `x` is a [`Scaffolder`].
+#'
+#' @return A list with `vertices` and `edges`.
+#' @export
 workflow_proposal_graph_data <- function(x, proposal_id = NULL) {
   if (inherits(x, "Scaffolder")) {
     if (is.null(proposal_id)) {
@@ -238,6 +272,23 @@ workflow_proposal_graph_data <- function(x, proposal_id = NULL) {
 
   validate_workflow_proposal(x)
   workflow_graph_data(x$workflow)
+}
+
+#' Format a workflow proposal
+#'
+#' @param x Workflow proposal object.
+#' @param ... Unused.
+#'
+#' @export
+print.agentr_workflow_proposal <- function(x, ...) {
+  validate_workflow_proposal(x)
+  cat("<agentr_workflow_proposal>\n")
+  cat("Id:", x$id, "\n")
+  cat("Status:", x$status, "\n")
+  cat("Source:", x$source, "\n")
+  cat("Nodes:", nrow(x$workflow$nodes), "\n")
+  cat("Edges:", nrow(x$workflow$edges), "\n")
+  invisible(x)
 }
 
 #' @keywords internal

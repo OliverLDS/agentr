@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.1.8
+
+Released: 2026-03-31
+
+- Clarified the workflow lifecycle docs so elicitation, proposal review and approval, and implementation or extraction handoff are documented as separate stages.
+- Promoted proposal persistence helpers into the documented package surface, including validation, save/load, and graph export support for workflow proposals.
+- Added a proposal lifecycle document and expanded README examples to show how proposals can be persisted and reviewed outside a live `Scaffolder`.
+- Added proposal print behavior and test coverage for exported proposal persistence helpers.
+
 ## agentr 0.1.7
 
 Released: 2026-03-31

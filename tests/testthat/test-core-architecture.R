@@ -490,12 +490,29 @@ test_that("workflow proposal persistence and graph helpers round-trip proposal o
   save_workflow_proposal(proposal, path)
   loaded <- load_workflow_proposal(path)
   graph_data <- workflow_proposal_graph_data(loaded)
+  graph_data_from_scaffolder <- workflow_proposal_graph_data(scaffolder, proposal$id)
 
   expect_s3_class(loaded, "agentr_workflow_proposal")
   expect_true(identical(loaded$id, proposal$id))
   expect_true(identical(loaded$status, "pending"))
   expect_true(identical(nrow(graph_data$vertices), 2L))
   expect_true(identical(nrow(graph_data$edges), 1L))
+  expect_true(identical(nrow(graph_data_from_scaffolder$vertices), 2L))
+  expect_true(identical(nrow(graph_data_from_scaffolder$edges), 1L))
+})
+
+test_that("workflow proposals print with a compact summary", {
+  proposal <- new_workflow_proposal(
+    id = "proposal_1",
+    workflow = new_workflow_spec(
+      nodes = workflow_node("node_1", "Only step"),
+      edges = .empty_workflow_edges(),
+      task = "Print proposal"
+    )
+  )
+
+  expect_output(print(proposal), "<agentr_workflow_proposal>")
+  expect_output(print(proposal), "Status: pending")
 })
 
 test_that("invalid workflow proposal transitions fail clearly", {

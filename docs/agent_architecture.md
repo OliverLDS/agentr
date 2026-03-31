@@ -1,4 +1,4 @@
-# agentr 0.1.7 Architecture
+# agentr 0.1.8 Architecture
 
 `agentr` is the agent core, not the execution layer.
 
@@ -39,7 +39,7 @@ Implemented as `Scaffolder`, which supports:
 - workflow proposal preview, approval, and supersession
 - iterative workflow refinement
 
-Internally, `0.1.7` keeps `Scaffolder` as the facade while separating:
+Internally, `0.1.8` keeps `Scaffolder` as the facade while separating:
 
 - workflow mutation helpers
 - proposal lifecycle helpers
@@ -66,6 +66,12 @@ The dispatch result contains:
 - `errors`
 
 Preview flows can also store proposal records without mutating the live workflow. Proposal lifecycle state is explicit: `pending`, `under_discussion`, `approved`, `superseded`, and `rejected`.
+
+Persisted proposal artifacts are now part of the supported workflow-review model:
+
+- proposals can be validated independently
+- proposals can be saved and loaded outside a live `Scaffolder`
+- proposals can be visualized directly as graph-ready data
 
 ## Workflow Output
 
