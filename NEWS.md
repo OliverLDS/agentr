@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.1
+
+Released: 2026-04-01
+
+- Hardened `AgentSpec` and `SubsystemSpec` validation with stronger subsystem-to-workflow consistency checks, including validation of node subsystem labels against the selected subsystem set.
+- Added explicit persistence helpers for the new public design objects: `save_agent_spec()`, `load_agent_spec()`, `save_subsystem_spec()`, and `load_subsystem_spec()`.
+- Improved interactive ergonomics by adding compact print methods for subsystem configs, `SubsystemSpec`, `AgentSpec`, `AgentScaffoldState`, and `IntelligentAgent`.
+- Expanded test coverage for mixed config payloads, explicit design-object persistence, and validation failures around inconsistent subsystem selections.
+
 ## agentr 0.2.0
 
 Released: 2026-04-01

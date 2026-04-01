@@ -41,6 +41,7 @@ Lightweight configuration for the cognitive layer inside \code{RWM}.
 \item \href{#method-CognitiveConfig-new}{\code{CognitiveConfig$new()}}
 \item \href{#method-CognitiveConfig-validate}{\code{CognitiveConfig$validate()}}
 \item \href{#method-CognitiveConfig-as_list}{\code{CognitiveConfig$as_list()}}
+\item \href{#method-CognitiveConfig-print}{\code{CognitiveConfig$print()}}
 \item \href{#method-CognitiveConfig-clone}{\code{CognitiveConfig$clone()}}
 }
 }
@@ -94,6 +95,23 @@ Return a serializable representation.
 \if{html}{\out{<div class="r">}}\preformatted{CognitiveConfig$as_list()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CognitiveConfig-print"></a>}}
+\if{latex}{\out{\hypertarget{method-CognitiveConfig-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact config summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CognitiveConfig$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CognitiveConfig-clone"></a>}}

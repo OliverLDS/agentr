@@ -39,6 +39,7 @@ Configuration for the action-execution subsystem.
 \item \href{#method-AEConfig-new}{\code{AEConfig$new()}}
 \item \href{#method-AEConfig-validate}{\code{AEConfig$validate()}}
 \item \href{#method-AEConfig-as_list}{\code{AEConfig$as_list()}}
+\item \href{#method-AEConfig-print}{\code{AEConfig$print()}}
 \item \href{#method-AEConfig-clone}{\code{AEConfig$clone()}}
 }
 }
@@ -89,6 +90,23 @@ Return a serializable representation.
 \if{html}{\out{<div class="r">}}\preformatted{AEConfig$as_list()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AEConfig-print"></a>}}
+\if{latex}{\out{\hypertarget{method-AEConfig-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact config summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AEConfig$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-AEConfig-clone"></a>}}

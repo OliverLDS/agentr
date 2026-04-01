@@ -41,6 +41,7 @@ Lightweight configuration for the affective layer inside \code{RWM}.
 \item \href{#method-AffectiveConfig-new}{\code{AffectiveConfig$new()}}
 \item \href{#method-AffectiveConfig-validate}{\code{AffectiveConfig$validate()}}
 \item \href{#method-AffectiveConfig-as_list}{\code{AffectiveConfig$as_list()}}
+\item \href{#method-AffectiveConfig-print}{\code{AffectiveConfig$print()}}
 \item \href{#method-AffectiveConfig-clone}{\code{AffectiveConfig$clone()}}
 }
 }
@@ -94,6 +95,23 @@ Return a serializable representation.
 \if{html}{\out{<div class="r">}}\preformatted{AffectiveConfig$as_list()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AffectiveConfig-print"></a>}}
+\if{latex}{\out{\hypertarget{method-AffectiveConfig-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact config summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AffectiveConfig$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-AffectiveConfig-clone"></a>}}

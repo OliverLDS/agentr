@@ -41,6 +41,7 @@ Configuration for lightweight learning and adaptation.
 \item \href{#method-LAConfig-new}{\code{LAConfig$new()}}
 \item \href{#method-LAConfig-validate}{\code{LAConfig$validate()}}
 \item \href{#method-LAConfig-as_list}{\code{LAConfig$as_list()}}
+\item \href{#method-LAConfig-print}{\code{LAConfig$print()}}
 \item \href{#method-LAConfig-clone}{\code{LAConfig$clone()}}
 }
 }
@@ -94,6 +95,23 @@ Return a serializable representation.
 \if{html}{\out{<div class="r">}}\preformatted{LAConfig$as_list()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LAConfig-print"></a>}}
+\if{latex}{\out{\hypertarget{method-LAConfig-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact config summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LAConfig$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-LAConfig-clone"></a>}}

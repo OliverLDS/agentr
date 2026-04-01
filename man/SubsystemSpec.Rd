@@ -51,6 +51,7 @@ Sparse inventory of the selected agent subsystems.
 \item \href{#method-SubsystemSpec-communication_requirements}{\code{SubsystemSpec$communication_requirements()}}
 \item \href{#method-SubsystemSpec-summary}{\code{SubsystemSpec$summary()}}
 \item \href{#method-SubsystemSpec-as_list}{\code{SubsystemSpec$as_list()}}
+\item \href{#method-SubsystemSpec-print}{\code{SubsystemSpec$print()}}
 \item \href{#method-SubsystemSpec-clone}{\code{SubsystemSpec$clone()}}
 }
 }
@@ -147,6 +148,23 @@ Return a serializable representation.
 \if{html}{\out{<div class="r">}}\preformatted{SubsystemSpec$as_list()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-SubsystemSpec-print"></a>}}
+\if{latex}{\out{\hypertarget{method-SubsystemSpec-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact subsystem summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SubsystemSpec$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SubsystemSpec-clone"></a>}}

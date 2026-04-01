@@ -39,6 +39,7 @@ Configuration for the planning and goal-management subsystem.
 \item \href{#method-PGConfig-new}{\code{PGConfig$new()}}
 \item \href{#method-PGConfig-validate}{\code{PGConfig$validate()}}
 \item \href{#method-PGConfig-as_list}{\code{PGConfig$as_list()}}
+\item \href{#method-PGConfig-print}{\code{PGConfig$print()}}
 \item \href{#method-PGConfig-clone}{\code{PGConfig$clone()}}
 }
 }
@@ -89,6 +90,23 @@ Return a serializable representation.
 \if{html}{\out{<div class="r">}}\preformatted{PGConfig$as_list()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PGConfig-print"></a>}}
+\if{latex}{\out{\hypertarget{method-PGConfig-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact config summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PGConfig$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PGConfig-clone"></a>}}

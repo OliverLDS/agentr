@@ -88,6 +88,10 @@ agent_spec <- scaffolder$approve_agent_spec(
   agent_name = "release-agent",
   summary = "Sparse planner/executor for package releases."
 )
+
+agent_spec$print()
+save_agent_spec(agent_spec, "agent_spec.rds")
+reloaded_spec <- load_agent_spec("agent_spec.rds")
 ```
 
 ## LLM Scaffolding Bridge

@@ -80,6 +80,10 @@
 | Function | Purpose |
 | --- | --- |
 | `save_agent()` | Save a supported `agentr` object, including agent-spec objects |
+| `save_agent_spec()` | Save an `AgentSpec` explicitly |
+| `load_agent_spec()` | Load an `AgentSpec` explicitly |
+| `save_subsystem_spec()` | Save a `SubsystemSpec` explicitly |
+| `load_subsystem_spec()` | Load a `SubsystemSpec` explicitly |
 | `load_agent()` | Load a supported `agentr` object |
 | `backup_agent()` | Save a timestamped backup |
 | `load_json_file()` | Load JSON files |

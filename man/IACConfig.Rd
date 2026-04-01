@@ -39,6 +39,7 @@ Configuration for interaction and communication.
 \item \href{#method-IACConfig-new}{\code{IACConfig$new()}}
 \item \href{#method-IACConfig-validate}{\code{IACConfig$validate()}}
 \item \href{#method-IACConfig-as_list}{\code{IACConfig$as_list()}}
+\item \href{#method-IACConfig-print}{\code{IACConfig$print()}}
 \item \href{#method-IACConfig-clone}{\code{IACConfig$clone()}}
 }
 }
@@ -89,6 +90,23 @@ Return a serializable representation.
 \if{html}{\out{<div class="r">}}\preformatted{IACConfig$as_list()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IACConfig-print"></a>}}
+\if{latex}{\out{\hypertarget{method-IACConfig-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact config summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IACConfig$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IACConfig-clone"></a>}}

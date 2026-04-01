@@ -57,6 +57,7 @@ Public agent-design artifact combining subsystem selection and workflow.
 \item \href{#method-AgentSpec-design_summary}{\code{AgentSpec$design_summary()}}
 \item \href{#method-AgentSpec-as_list}{\code{AgentSpec$as_list()}}
 \item \href{#method-AgentSpec-save}{\code{AgentSpec$save()}}
+\item \href{#method-AgentSpec-print}{\code{AgentSpec$print()}}
 \item \href{#method-AgentSpec-clone}{\code{AgentSpec$clone()}}
 }
 }
@@ -166,6 +167,23 @@ Save the object with \code{save_agent()}.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{file_path}}{Output path used by \verb{$save()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AgentSpec-print"></a>}}
+\if{latex}{\out{\hypertarget{method-AgentSpec-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact agent-design summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AgentSpec$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
 }
 \if{html}{\out{</div>}}
 }

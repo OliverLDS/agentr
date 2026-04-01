@@ -43,6 +43,7 @@ Configuration for the reflective working-memory subsystem.
 \item \href{#method-RWMConfig-validate}{\code{RWMConfig$validate()}}
 \item \href{#method-RWMConfig-selected_layers}{\code{RWMConfig$selected_layers()}}
 \item \href{#method-RWMConfig-as_list}{\code{RWMConfig$as_list()}}
+\item \href{#method-RWMConfig-print}{\code{RWMConfig$print()}}
 \item \href{#method-RWMConfig-clone}{\code{RWMConfig$clone()}}
 }
 }
@@ -106,6 +107,23 @@ Return a serializable representation.
 \if{html}{\out{<div class="r">}}\preformatted{RWMConfig$as_list()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RWMConfig-print"></a>}}
+\if{latex}{\out{\hypertarget{method-RWMConfig-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact config summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RWMConfig$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-RWMConfig-clone"></a>}}

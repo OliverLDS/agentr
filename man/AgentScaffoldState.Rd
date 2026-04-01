@@ -43,6 +43,7 @@ Top-level state container for approved agent designs and nested workflow state.
 \item \href{#method-AgentScaffoldState-set_approved_agent_spec}{\code{AgentScaffoldState$set_approved_agent_spec()}}
 \item \href{#method-AgentScaffoldState-approved_workflow}{\code{AgentScaffoldState$approved_workflow()}}
 \item \href{#method-AgentScaffoldState-as_list}{\code{AgentScaffoldState$as_list()}}
+\item \href{#method-AgentScaffoldState-print}{\code{AgentScaffoldState$print()}}
 \item \href{#method-AgentScaffoldState-clone}{\code{AgentScaffoldState$clone()}}
 }
 }
@@ -120,6 +121,23 @@ Return a serializable representation.
 \if{html}{\out{<div class="r">}}\preformatted{AgentScaffoldState$as_list()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AgentScaffoldState-print"></a>}}
+\if{latex}{\out{\hypertarget{method-AgentScaffoldState-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact state summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AgentScaffoldState$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-AgentScaffoldState-clone"></a>}}

@@ -108,6 +108,82 @@ save_agent <- function(agent, file_path) {
   invisible(TRUE)
 }
 
+#' Save an `AgentSpec` to a file
+#'
+#' Saves an [`AgentSpec`] object to a specified `.rds` file.
+#'
+#' @param spec An [`AgentSpec`] object.
+#' @param file_path File path where the object should be saved.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_agent_spec <- function(spec, file_path) {
+  if (!inherits(spec, "AgentSpec")) {
+    stop("`spec` must be an `AgentSpec`.", call. = FALSE)
+  }
+  spec$validate()
+  .safe_save_rds(spec, file_path)
+  invisible(TRUE)
+}
+
+#' Load an `AgentSpec` from a file
+#'
+#' Loads a saved [`AgentSpec`] object from an `.rds` file.
+#'
+#' @param file_path File path from which to load the object.
+#'
+#' @return An [`AgentSpec`] object.
+#' @export
+load_agent_spec <- function(file_path) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  spec <- .safe_read_rds(file_path)
+  if (!inherits(spec, "AgentSpec")) {
+    stop("Loaded object is not an `AgentSpec`.", call. = FALSE)
+  }
+  spec$validate()
+  spec
+}
+
+#' Save a `SubsystemSpec` to a file
+#'
+#' Saves a [`SubsystemSpec`] object to a specified `.rds` file.
+#'
+#' @param spec A [`SubsystemSpec`] object.
+#' @param file_path File path where the object should be saved.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_subsystem_spec <- function(spec, file_path) {
+  if (!inherits(spec, "SubsystemSpec")) {
+    stop("`spec` must be a `SubsystemSpec`.", call. = FALSE)
+  }
+  spec$validate()
+  .safe_save_rds(spec, file_path)
+  invisible(TRUE)
+}
+
+#' Load a `SubsystemSpec` from a file
+#'
+#' Loads a saved [`SubsystemSpec`] object from an `.rds` file.
+#'
+#' @param file_path File path from which to load the object.
+#'
+#' @return A [`SubsystemSpec`] object.
+#' @export
+load_subsystem_spec <- function(file_path) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  spec <- .safe_read_rds(file_path)
+  if (!inherits(spec, "SubsystemSpec")) {
+    stop("Loaded object is not a `SubsystemSpec`.", call. = FALSE)
+  }
+  spec$validate()
+  spec
+}
+
 #' Load an `agentr` object from a file
 #'
 #' Loads an `agentr` core object from a saved `.rds` file.

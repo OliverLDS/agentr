@@ -37,6 +37,11 @@
 }
 
 #' @keywords internal
+.subsystem_names <- function() {
+  c("rwm", "pg", "ae", "iac", "la")
+}
+
+#' @keywords internal
 .validate_node_subsystems <- function(labels, nodes = NULL) {
   if (is.null(labels)) {
     return(list())
@@ -66,7 +71,7 @@
     if (!length(value)) {
       return(character())
     }
-    allowed <- c("rwm", "pg", "ae", "iac", "la")
+    allowed <- .subsystem_names()
     invalid <- setdiff(value, allowed)
     if (length(invalid)) {
       stop(
@@ -100,6 +105,31 @@
 }
 
 #' @keywords internal
+.validate_scalar_logical <- function(x, label) {
+  if (!is.logical(x) || length(x) != 1L || is.na(x)) {
+    stop("`", label, "` must be a single non-missing logical value.", call. = FALSE)
+  }
+  invisible(x)
+}
+
+#' @keywords internal
+.validate_non_empty_character <- function(x, label) {
+  if (!is.character(x) || any(is.na(x)) || any(!nzchar(x))) {
+    stop("`", label, "` must contain non-empty strings.", call. = FALSE)
+  }
+  invisible(x)
+}
+
+#' @keywords internal
+.validate_named_list_fields <- function(x, label) {
+  .validate_metadata_list(x, label = label)
+  if (length(x) && (is.null(names(x)) || any(!nzchar(names(x))))) {
+    stop("`", label, "` entries must be named.", call. = FALSE)
+  }
+  invisible(x)
+}
+
+#' @keywords internal
 .coerce_workflow_or_null <- function(workflow) {
   if (is.null(workflow)) {
     return(NULL)
@@ -121,6 +151,7 @@
 #' @param memory_types Character vector of memory categories to keep.
 #' @param summary Optional one-line summary.
 #' @param metadata Free-form metadata list.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(enabled = TRUE, persistence = "session", memory_types = character(), summary = NULL, metadata = list())`}{Create a cognitive-layer config.}
@@ -157,15 +188,13 @@ CognitiveConfig <- R6::R6Class(
     #' @description
     #' Validate the config.
     validate = function() {
-      if (!is.logical(self$enabled) || length(self$enabled) != 1L) {
-        stop("`enabled` must be a single logical value.", call. = FALSE)
-      }
+      .validate_scalar_logical(self$enabled, "enabled")
       allowed <- c("none", "session", "persistent")
       if (!(self$persistence %in% allowed)) {
         stop("Cognitive persistence must be one of: none, session, persistent.", call. = FALSE)
       }
-      if (!is.character(self$memory_types)) {
-        stop("`memory_types` must be character.", call. = FALSE)
+      if (!is.character(self$memory_types) || any(is.na(self$memory_types))) {
+        stop("`memory_types` must be a character vector without missing values.", call. = FALSE)
       }
       .validate_metadata_list(self$metadata)
       invisible(self)
@@ -182,6 +211,17 @@ CognitiveConfig <- R6::R6Class(
         summary = self$summary,
         metadata = self$metadata
       )
+    },
+
+    #' @description
+    #' Print a compact config summary.
+    print = function(...) {
+      self$validate()
+      cat("<CognitiveConfig>\n")
+      cat("Enabled:", self$enabled, "\n")
+      cat("Persistence:", self$persistence, "\n")
+      cat("Memory types:", if (length(self$memory_types)) paste(self$memory_types, collapse = ", ") else "<none>", "\n")
+      invisible(self)
     }
   )
 )
@@ -200,6 +240,7 @@ CognitiveConfig <- R6::R6Class(
 #' @param persistence Persistence mode for affective state.
 #' @param summary Optional one-line summary.
 #' @param metadata Free-form metadata list.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(enabled = TRUE, style = "lightweight", persistence = "session", summary = NULL, metadata = list())`}{Create an affective-layer config.}
@@ -236,9 +277,7 @@ AffectiveConfig <- R6::R6Class(
     #' @description
     #' Validate the config.
     validate = function() {
-      if (!is.logical(self$enabled) || length(self$enabled) != 1L) {
-        stop("`enabled` must be a single logical value.", call. = FALSE)
-      }
+      .validate_scalar_logical(self$enabled, "enabled")
       if (!self$style %in% c("none", "lightweight", "expressive")) {
         stop("Affective style must be one of: none, lightweight, expressive.", call. = FALSE)
       }
@@ -260,6 +299,17 @@ AffectiveConfig <- R6::R6Class(
         summary = self$summary,
         metadata = self$metadata
       )
+    },
+
+    #' @description
+    #' Print a compact config summary.
+    print = function(...) {
+      self$validate()
+      cat("<AffectiveConfig>\n")
+      cat("Enabled:", self$enabled, "\n")
+      cat("Style:", self$style, "\n")
+      cat("Persistence:", self$persistence, "\n")
+      invisible(self)
     }
   )
 )
@@ -278,6 +328,7 @@ AffectiveConfig <- R6::R6Class(
 #' @param persistence Persistence mode for the overall subsystem.
 #' @param summary Optional one-line summary.
 #' @param metadata Free-form metadata list.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(cognitive = CognitiveConfig$new(), affective = NULL, persistence = "session", summary = NULL, metadata = list())`}{Create an `RWM` config.}
@@ -321,6 +372,9 @@ RWMConfig <- R6::R6Class(
       if (!self$persistence %in% c("none", "session", "persistent")) {
         stop("RWM persistence must be one of: none, session, persistent.", call. = FALSE)
       }
+      if (!length(self$selected_layers())) {
+        stop("`RWMConfig` must enable at least one inner layer.", call. = FALSE)
+      }
       .validate_metadata_list(self$metadata)
       invisible(self)
     },
@@ -349,6 +403,16 @@ RWMConfig <- R6::R6Class(
         summary = self$summary,
         metadata = self$metadata
       )
+    },
+
+    #' @description
+    #' Print a compact config summary.
+    print = function(...) {
+      self$validate()
+      cat("<RWMConfig>\n")
+      cat("Layers:", paste(self$selected_layers(), collapse = ", "), "\n")
+      cat("Persistence:", self$persistence, "\n")
+      invisible(self)
     }
   )
 )
@@ -365,6 +429,7 @@ RWMConfig <- R6::R6Class(
 #' @param planning_mode Planning mode label.
 #' @param decomposition_style Workflow decomposition style.
 #' @param metadata Free-form metadata list.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(enabled = TRUE, planning_mode = "task_decomposition", decomposition_style = "dag", metadata = list())`}{Create a planning and goal-management config.}
@@ -398,9 +463,7 @@ PGConfig <- R6::R6Class(
     #' @description
     #' Validate the config.
     validate = function() {
-      if (!is.logical(self$enabled) || length(self$enabled) != 1L) {
-        stop("`enabled` must be a single logical value.", call. = FALSE)
-      }
+      .validate_scalar_logical(self$enabled, "enabled")
       .validate_metadata_list(self$metadata)
       invisible(self)
     },
@@ -415,6 +478,17 @@ PGConfig <- R6::R6Class(
         decomposition_style = self$decomposition_style,
         metadata = self$metadata
       )
+    },
+
+    #' @description
+    #' Print a compact config summary.
+    print = function(...) {
+      self$validate()
+      cat("<PGConfig>\n")
+      cat("Enabled:", self$enabled, "\n")
+      cat("Planning mode:", self$planning_mode, "\n")
+      cat("Decomposition style:", self$decomposition_style, "\n")
+      invisible(self)
     }
   )
 )
@@ -431,6 +505,7 @@ PGConfig <- R6::R6Class(
 #' @param execution_mode Execution-mode label.
 #' @param tool_budget Optional tool budget label.
 #' @param metadata Free-form metadata list.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(enabled = TRUE, execution_mode = "guided", tool_budget = "standard", metadata = list())`}{Create an action-execution config.}
@@ -464,9 +539,7 @@ AEConfig <- R6::R6Class(
     #' @description
     #' Validate the config.
     validate = function() {
-      if (!is.logical(self$enabled) || length(self$enabled) != 1L) {
-        stop("`enabled` must be a single logical value.", call. = FALSE)
-      }
+      .validate_scalar_logical(self$enabled, "enabled")
       .validate_metadata_list(self$metadata)
       invisible(self)
     },
@@ -481,6 +554,17 @@ AEConfig <- R6::R6Class(
         tool_budget = self$tool_budget,
         metadata = self$metadata
       )
+    },
+
+    #' @description
+    #' Print a compact config summary.
+    print = function(...) {
+      self$validate()
+      cat("<AEConfig>\n")
+      cat("Enabled:", self$enabled, "\n")
+      cat("Execution mode:", self$execution_mode, "\n")
+      cat("Tool budget:", self$tool_budget, "\n")
+      invisible(self)
     }
   )
 )
@@ -497,6 +581,7 @@ AEConfig <- R6::R6Class(
 #' @param channels Character vector of communication channels.
 #' @param structured_io Whether strongly structured I/O is required.
 #' @param metadata Free-form metadata list.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(enabled = TRUE, channels = character(), structured_io = TRUE, metadata = list())`}{Create an interaction and communication config.}
@@ -530,9 +615,11 @@ IACConfig <- R6::R6Class(
     #' @description
     #' Validate the config.
     validate = function() {
-      if (!is.logical(self$enabled) || length(self$enabled) != 1L) {
-        stop("`enabled` must be a single logical value.", call. = FALSE)
+      .validate_scalar_logical(self$enabled, "enabled")
+      if (!is.character(self$channels) || any(is.na(self$channels)) || any(!nzchar(self$channels))) {
+        stop("`channels` must contain non-empty strings.", call. = FALSE)
       }
+      .validate_scalar_logical(self$structured_io, "structured_io")
       .validate_metadata_list(self$metadata)
       invisible(self)
     },
@@ -547,6 +634,17 @@ IACConfig <- R6::R6Class(
         structured_io = self$structured_io,
         metadata = self$metadata
       )
+    },
+
+    #' @description
+    #' Print a compact config summary.
+    print = function(...) {
+      self$validate()
+      cat("<IACConfig>\n")
+      cat("Enabled:", self$enabled, "\n")
+      cat("Channels:", if (length(self$channels)) paste(self$channels, collapse = ", ") else "<none>", "\n")
+      cat("Structured IO:", self$structured_io, "\n")
+      invisible(self)
     }
   )
 )
@@ -565,6 +663,7 @@ IACConfig <- R6::R6Class(
 #' @param feedback_sources Character vector of feedback sources.
 #' @param persistence Persistence mode for learned artifacts.
 #' @param metadata Free-form metadata list.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(enabled = TRUE, learning_mode = "feedback_driven", feedback_sources = character(), persistence = "session", metadata = list())`}{Create a learning and adaptation config.}
@@ -601,11 +700,12 @@ LAConfig <- R6::R6Class(
     #' @description
     #' Validate the config.
     validate = function() {
-      if (!is.logical(self$enabled) || length(self$enabled) != 1L) {
-        stop("`enabled` must be a single logical value.", call. = FALSE)
-      }
+      .validate_scalar_logical(self$enabled, "enabled")
       if (!self$persistence %in% c("none", "session", "persistent")) {
         stop("LA persistence must be one of: none, session, persistent.", call. = FALSE)
+      }
+      if (!is.character(self$feedback_sources) || any(is.na(self$feedback_sources))) {
+        stop("`feedback_sources` must be a character vector without missing values.", call. = FALSE)
       }
       .validate_metadata_list(self$metadata)
       invisible(self)
@@ -622,6 +722,17 @@ LAConfig <- R6::R6Class(
         persistence = self$persistence,
         metadata = self$metadata
       )
+    },
+
+    #' @description
+    #' Print a compact config summary.
+    print = function(...) {
+      self$validate()
+      cat("<LAConfig>\n")
+      cat("Enabled:", self$enabled, "\n")
+      cat("Learning mode:", self$learning_mode, "\n")
+      cat("Persistence:", self$persistence, "\n")
+      invisible(self)
     }
   )
 )
@@ -642,6 +753,7 @@ LAConfig <- R6::R6Class(
 #' @param iac An `IACConfig` object or list payload.
 #' @param la A `LAConfig` object or list payload.
 #' @param metadata Free-form metadata list.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(rwm = NULL, pg = NULL, ae = NULL, iac = NULL, la = NULL, metadata = list())`}{Create a sparse subsystem inventory.}
@@ -686,6 +798,10 @@ SubsystemSpec <- R6::R6Class(
     #' Validate the subsystem selection.
     validate = function() {
       .validate_metadata_list(self$metadata)
+      self$selected_subsystems()
+      if (!is.null(self$iac)) {
+        self$iac$validate()
+      }
       invisible(self)
     },
 
@@ -747,6 +863,24 @@ SubsystemSpec <- R6::R6Class(
         la = if (is.null(self$la)) NULL else self$la$as_list(),
         metadata = self$metadata
       )
+    },
+
+    #' @description
+    #' Print a compact subsystem summary.
+    print = function(...) {
+      self$validate()
+      selected <- self$selected_subsystems()
+      cat("<SubsystemSpec>\n")
+      cat("Selected:", if (length(selected)) paste(selected, collapse = ", ") else "<none>", "\n")
+      comms <- self$communication_requirements()
+      if (length(comms)) {
+        cat("Communication:", paste(comms, collapse = ", "), "\n")
+      }
+      persistence <- self$persistence_requirements()
+      if (length(persistence)) {
+        cat("Persistence:", paste(names(persistence), persistence, sep = "=", collapse = ", "), "\n")
+      }
+      invisible(self)
     }
   )
 )
@@ -774,6 +908,7 @@ SubsystemSpec <- R6::R6Class(
 #' @param implementation_targets Free-form list of implementation targets.
 #' @param metadata Free-form metadata list.
 #' @param file_path Output path used by `$save()`.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(task, agent_name = "agentr-agent", summary = NULL, subsystems = SubsystemSpec$new(), workflow = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list())`}{Create an agent-design artifact.}
@@ -836,13 +971,30 @@ AgentSpec <- R6::R6Class(
         stop("`subsystems` must be a `SubsystemSpec`.", call. = FALSE)
       }
       self$subsystems$validate()
+      selected <- self$selected_subsystems()
       if (!is.null(self$workflow)) {
         validate_workflow_spec(self$workflow)
-        .validate_node_subsystems(self$metadata$node_subsystems, nodes = self$workflow$nodes)
+        node_subsystems <- .validate_node_subsystems(self$metadata$node_subsystems, nodes = self$workflow$nodes)
+        if (length(node_subsystems)) {
+          labeled <- unique(unlist(node_subsystems, use.names = FALSE))
+          inconsistent <- setdiff(labeled, selected)
+          if (length(inconsistent)) {
+            stop(
+              "Node subsystem labels require unselected subsystems: ",
+              paste(inconsistent, collapse = ", "),
+              call. = FALSE
+            )
+          }
+        }
+      } else if (!is.null(self$metadata$node_subsystems)) {
+        stop("`metadata$node_subsystems` requires a non-NULL workflow.", call. = FALSE)
+      }
+      .validate_named_list_fields(self$interfaces, "interfaces")
+      .validate_named_list_fields(self$implementation_targets, "implementation_targets")
+      if (length(self$interfaces) && !("iac" %in% selected)) {
+        stop("Non-empty `interfaces` require the `iac` subsystem.", call. = FALSE)
       }
       .validate_metadata_list(self$state_requirements, "state_requirements")
-      .validate_metadata_list(self$interfaces, "interfaces")
-      .validate_metadata_list(self$implementation_targets, "implementation_targets")
       .validate_metadata_list(self$metadata)
       invisible(self)
     },
@@ -893,8 +1045,21 @@ AgentSpec <- R6::R6Class(
     #' @description
     #' Save the object with `save_agent()`.
     save = function(file_path) {
-      save_agent(self, file_path)
+      save_agent_spec(self, file_path)
       invisible(TRUE)
+    },
+
+    #' @description
+    #' Print a compact agent-design summary.
+    print = function(...) {
+      self$validate()
+      cat("<AgentSpec>\n")
+      cat("Name:", self$agent_name, "\n")
+      cat("Task:", self$task, "\n")
+      selected <- self$selected_subsystems()
+      cat("Subsystems:", if (length(selected)) paste(selected, collapse = ", ") else "<none>", "\n")
+      cat("Workflow nodes:", if (is.null(self$workflow)) 0L else nrow(self$workflow$nodes), "\n")
+      invisible(self)
     }
   )
 )
@@ -912,6 +1077,7 @@ AgentSpec <- R6::R6Class(
 #' @param workflow_state A `WorkflowProposalState` object.
 #' @param metadata Free-form metadata list.
 #' @param spec Agent spec used by `$set_approved_agent_spec()`.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(approved_agent_spec = NULL, proposal_state = list(status = "draft", proposals = list()), workflow_state = WorkflowProposalState$new(), metadata = list())`}{Create an agent scaffold state container.}
@@ -991,6 +1157,16 @@ AgentScaffoldState <- R6::R6Class(
         workflow_state = self$workflow_state$as_list(),
         metadata = self$metadata
       )
+    },
+
+    #' @description
+    #' Print a compact state summary.
+    print = function(...) {
+      self$validate()
+      cat("<AgentScaffoldState>\n")
+      cat("Proposal status:", self$proposal_state$status %||% "<unknown>", "\n")
+      cat("Approved agent spec:", if (is.null(self$approved_agent_spec)) "<none>" else self$approved_agent_spec$agent_name, "\n")
+      invisible(self)
     }
   )
 )
@@ -1013,6 +1189,7 @@ AgentScaffoldState <- R6::R6Class(
 #' @param subsystems Selected `SubsystemSpec` object.
 #' @param runtime_state Free-form runtime state list.
 #' @param metadata Free-form metadata list.
+#' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(id = "intelligent-agent", name = NULL, spec, workflow = NULL, subsystems = NULL, runtime_state = list(), metadata = list())`}{Create a runtime-oriented agent container from an `AgentSpec`.}
@@ -1068,6 +1245,10 @@ IntelligentAgent <- R6::R6Class(
       }
       if (!is.null(self$workflow)) {
         validate_workflow_spec(self$workflow)
+        if (!is.null(self$spec$workflow) &&
+            !identical(self$workflow$nodes$id, self$spec$workflow$nodes$id)) {
+          stop("`workflow` must stay aligned with `spec$workflow` node ids.", call. = FALSE)
+        }
       }
       .validate_metadata_list(self$runtime_state, "runtime_state")
       .validate_metadata_list(self$metadata)
@@ -1093,6 +1274,18 @@ IntelligentAgent <- R6::R6Class(
         runtime_state = self$runtime_state,
         metadata = self$metadata
       )
+    },
+
+    #' @description
+    #' Print a compact runtime summary.
+    print = function(...) {
+      self$validate()
+      cat("<IntelligentAgent>\n")
+      cat("Id:", self$id, "\n")
+      cat("Name:", self$name, "\n")
+      cat("Subsystems:", paste(self$selected_subsystems(), collapse = ", "), "\n")
+      cat("Workflow nodes:", if (is.null(self$workflow)) 0L else nrow(self$workflow$nodes), "\n")
+      invisible(self)
     }
   )
 )

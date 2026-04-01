@@ -47,6 +47,7 @@ Runtime-oriented container for an approved agent design.
 \item \href{#method-IntelligentAgent-validate}{\code{IntelligentAgent$validate()}}
 \item \href{#method-IntelligentAgent-selected_subsystems}{\code{IntelligentAgent$selected_subsystems()}}
 \item \href{#method-IntelligentAgent-snapshot}{\code{IntelligentAgent$snapshot()}}
+\item \href{#method-IntelligentAgent-print}{\code{IntelligentAgent$print()}}
 \item \href{#method-IntelligentAgent-clone}{\code{IntelligentAgent$clone()}}
 }
 }
@@ -116,6 +117,23 @@ Return a serializable runtime snapshot.
 \if{html}{\out{<div class="r">}}\preformatted{IntelligentAgent$snapshot()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IntelligentAgent-print"></a>}}
+\if{latex}{\out{\hypertarget{method-IntelligentAgent-print}{}}}
+\subsection{Method \code{print()}}{
+Print a compact runtime summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IntelligentAgent$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IntelligentAgent-clone"></a>}}

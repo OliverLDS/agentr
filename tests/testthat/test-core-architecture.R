@@ -52,6 +52,100 @@ test_that("SubsystemSpec stays sparse by default and AgentSpec stores agent desi
   expect_true(identical(spec$design_summary()$workflow_nodes, 1L))
 })
 
+test_that("SubsystemSpec accepts mixed config payloads and explicit persistence helpers", {
+  subsystem_path <- tempfile(fileext = ".rds")
+  agent_path <- tempfile(fileext = ".rds")
+  on.exit(unlink(c(subsystem_path, agent_path)), add = TRUE)
+
+  subsystems <- SubsystemSpec$new(
+    rwm = list(
+      cognitive = list(memory_types = c("episodic", "semantic")),
+      affective = list(style = "lightweight"),
+      persistence = "persistent"
+    ),
+    pg = PGConfig$new(),
+    iac = list(channels = c("terminal", "github"))
+  )
+  spec <- AgentSpec$new(
+    task = "Mixed payload agent",
+    agent_name = "mixed-agent",
+    subsystems = subsystems,
+    workflow = new_workflow_spec(
+      nodes = workflow_node("node_1", "Coordinate"),
+      edges = .empty_workflow_edges(),
+      task = "Mixed payload agent"
+    ),
+    interfaces = list(primary = c("terminal", "github")),
+    metadata = list(node_subsystems = list(node_1 = c("pg", "iac")))
+  )
+
+  save_subsystem_spec(subsystems, subsystem_path)
+  save_agent_spec(spec, agent_path)
+  loaded_subsystems <- load_subsystem_spec(subsystem_path)
+  loaded_spec <- load_agent_spec(agent_path)
+
+  expect_equal(loaded_subsystems$selected_subsystems(), c("rwm", "pg", "iac"))
+  expect_equal(loaded_subsystems$rwm$selected_layers(), c("cognitive", "affective"))
+  expect_true(inherits(loaded_spec, "AgentSpec"))
+  expect_equal(loaded_spec$selected_subsystems(), c("rwm", "pg", "iac"))
+})
+
+test_that("AgentSpec enforces subsystem and workflow consistency", {
+  workflow <- new_workflow_spec(
+    nodes = workflow_node("node_1", "Coordinate"),
+    edges = .empty_workflow_edges(),
+    task = "Consistency checks"
+  )
+
+  expect_error(
+    AgentSpec$new(
+      task = "Consistency checks",
+      subsystems = SubsystemSpec$new(pg = PGConfig$new()),
+      workflow = workflow,
+      metadata = list(node_subsystems = list(node_1 = c("ae")))
+    ),
+    "Node subsystem labels require unselected subsystems"
+  )
+
+  expect_error(
+    AgentSpec$new(
+      task = "Consistency checks",
+      subsystems = SubsystemSpec$new(pg = PGConfig$new()),
+      interfaces = list(primary = c("terminal"))
+    ),
+    "Non-empty `interfaces` require the `iac` subsystem"
+  )
+
+  expect_error(
+    RWMConfig$new(
+      cognitive = list(enabled = FALSE),
+      affective = list(enabled = FALSE)
+    ),
+    "must enable at least one inner layer"
+  )
+})
+
+test_that("Print methods expose compact interactive summaries", {
+  subsystems <- SubsystemSpec$new(pg = PGConfig$new(), ae = AEConfig$new())
+  spec <- AgentSpec$new(
+    task = "Print preview",
+    agent_name = "print-agent",
+    subsystems = subsystems
+  )
+  runtime <- IntelligentAgent$new(spec = spec)
+
+  subsystem_output <- paste(capture.output(subsystems$print()), collapse = "\n")
+  spec_output <- paste(capture.output(spec$print()), collapse = "\n")
+  runtime_output <- paste(capture.output(runtime$print()), collapse = "\n")
+
+  expect_true(grepl("<SubsystemSpec>", subsystem_output, fixed = TRUE))
+  expect_true(grepl("Selected: pg, ae", subsystem_output, fixed = TRUE))
+  expect_true(grepl("<AgentSpec>", spec_output, fixed = TRUE))
+  expect_true(grepl("Name: print-agent", spec_output, fixed = TRUE))
+  expect_true(grepl("<IntelligentAgent>", runtime_output, fixed = TRUE))
+  expect_true(grepl("Name: print-agent", runtime_output, fixed = TRUE))
+})
+
 test_that("IntelligentAgent and save_agent support agent-spec objects", {
   path <- tempfile(fileext = ".rds")
   on.exit(unlink(path), add = TRUE)
