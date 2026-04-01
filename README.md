@@ -1,8 +1,8 @@
 # agentr
 
-`agentr` is an R package for the cognitive and human-interaction core of agentic workflows. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and generates workflow specifications such as DAG-like plans and implementation-ready structures.
+`agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and now centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.1.9` keeps that narrowed scope and introduces public dedicated proposal and state classes so proposal lifecycle handling matches the package's R6-style object model. `agentr` remains the core reasoning/scaffolding layer, not the transport or execution layer.
+Version `0.2.0` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -10,7 +10,8 @@ Version `0.1.9` keeps that narrowed scope and introduces public dedicated propos
 
 - R6 state objects for cognition and affect
 - a minimal `AgentCore` container
-- a `Scaffolder` interface for human-guided workflow elicitation
+- public agent-design objects such as `AgentSpec`, `SubsystemSpec`, and `IntelligentAgent`
+- a `Scaffolder` interface for human-guided intelligent-agent scaffolding
 - an LLM-facing prompt and action bridge for scaffolding decisions
 - workflow-spec helpers for DAG-like outputs and persistence
 - terminal scaffolding helpers
@@ -52,22 +53,42 @@ spec <- scaffolder$workflow_spec()
 spec
 ```
 
-`0.1.9` also exposes:
+`0.2.0` also exposes:
 
 - `WorkflowProposal` for one persisted proposal and its lifecycle
 - `WorkflowProposalState` for approved workflow plus proposal history
+- `AgentSpec` for the approved agent design
+- `SubsystemSpec` for sparse subsystem selection
+- `AgentScaffoldState` for approved agent-design state
+- `IntelligentAgent` for the runtime-oriented abstraction
 
 ## Lifecycle Stages
 
 `agentr` now treats scaffolding work as three explicit stages:
 
-1. workflow elicitation
+1. agent design and subsystem selection
 2. workflow proposal review and approval
 3. implementation and extraction handoff
 
-## Workflow Elicitation
+## Agent Design And Workflow Elicitation
 
-Use `Scaffolder` plus the constrained LLM bridge to evaluate tasks, discuss open questions, and build or edit workflow structure.
+Use `Scaffolder` plus the constrained LLM bridge to evaluate tasks, recommend sparse subsystems, label workflow ownership, and build or edit workflow structure.
+
+```r
+scaffolder$evaluate_task("Design a sparse release agent for an R package.")
+scaffolder$decompose_task(candidates = c("Plan release", "Execute release"))
+scaffolder$recommend_subsystems()
+scaffolder$select_subsystems(c("pg", "ae"))
+scaffolder$label_workflow_subsystems(list(
+  node_1 = c("pg"),
+  node_2 = c("ae")
+))
+
+agent_spec <- scaffolder$approve_agent_spec(
+  agent_name = "release-agent",
+  summary = "Sparse planner/executor for package releases."
+)
+```
 
 ## LLM Scaffolding Bridge
 
@@ -175,6 +196,15 @@ implementation_prompt <- build_implementation_prompt(
   target_agent = "codex",
   runtime = "R package",
   constraints = c("Prefer testthat", "Keep changes modular")
+)
+```
+
+If you want the design prompt to reason about subsystems first and workflow second, use:
+
+```r
+agent_design_prompt <- build_agent_design_prompt(
+  scaffolder,
+  format = "markdown"
 )
 ```
 

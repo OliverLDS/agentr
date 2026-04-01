@@ -17,7 +17,8 @@ build_implementation_prompt(
 }
 \arguments{
 \item{x}{A \code{\link{Scaffolder}} instance, workflow specification, or
-implementation-spec-like list.}
+implementation-spec-like list. \code{AgentSpec} and \code{IntelligentAgent}
+inputs are also supported.}
 
 \item{language}{Target implementation language, for example \code{"R"} or
 \code{"Python"}.}

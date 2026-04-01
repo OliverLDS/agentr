@@ -16,5 +16,7 @@ Invisibly returns \code{TRUE}.
 }
 \description{
 Saves an \code{\link{AgentCore}}, \code{\link{CognitiveState}}, \code{\link{AffectiveState}}, or
-\code{\link{Scaffolder}} object to a specified \code{.rds} file.
+\code{\link{Scaffolder}} object to a specified \code{.rds} file. \code{AgentSpec},
+\code{SubsystemSpec}, \code{AgentScaffoldState}, and \code{IntelligentAgent} are also
+supported.
 }

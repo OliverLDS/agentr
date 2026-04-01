@@ -1,19 +1,19 @@
 Package: agentr
 Type: Package
 Title: Cognitive Core for Agentic Workflows in R
-Version: 0.1.9
+Version: 0.2.0
 Authors@R: 
     person(given = "Oliver", 
            family = "Zhou",
            email = "oliver.yxzhou@gmail.com",
            role = c("aut", "cre"))
 Description: 
-    Cognitive and human-interaction core for agentic workflows.
+    Cognitive and human-interaction core for intelligent-agent scaffolding.
     The package represents agent state, supports human-in-the-loop scaffolding,
-    and generates workflow specifications such as DAG-like plans and
-    implementation-ready structures. It intentionally excludes communication
-    backends and provider-specific LLM client code so that workflow reasoning
-    can remain cleanly separated from execution and transport layers.
+    and now centers agent-spec design with workflow specifications kept as a
+    nested planning artifact. It intentionally excludes communication backends
+    and provider-specific LLM client code so that reasoning, design, and
+    execution transport remain cleanly separated.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)

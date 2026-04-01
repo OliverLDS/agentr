@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.0
+
+Released: 2026-04-01
+
+- Shifted the package toward agent-spec-first scaffolding by adding public `AgentSpec`, `SubsystemSpec`, `AgentScaffoldState`, and `IntelligentAgent` classes.
+- Added public subsystem configuration classes for sparse subsystem selection: `RWMConfig`, `PGConfig`, `AEConfig`, `IACConfig`, `LAConfig`, `CognitiveConfig`, and `AffectiveConfig`.
+- Extended `Scaffolder` with subsystem recommendation, subsystem selection, workflow node subsystem labeling, and approved agent-spec state while preserving the existing workflow-first APIs.
+- Added `build_agent_design_prompt()` and extended implementation-prompt normalization so `AgentSpec` and `IntelligentAgent` inputs can drive implementation handoff directly.
+- Expanded persistence support and tests to cover sparse agent design flows alongside the existing workflow proposal lifecycle.
+
 ## agentr 0.1.9
 
 Released: 2026-03-31

@@ -347,6 +347,7 @@
 #' @field task Current task text.
 #' @field workflow Current workflow specification.
 #' @field workflow_state Public workflow proposal state container.
+#' @field agent_state Public agent scaffold state container.
 #' @field proposal_log Stored workflow proposals across pending, discussion,
 #'   approved, superseded, and rejected lifecycle states.
 #' @field interaction_log List of scaffolding interactions.
@@ -386,6 +387,15 @@
 #' @param payload Interaction payload used by `$record_interaction()`.
 #' @param workflow Proposed workflow used by proposal methods.
 #' @param proposal_id Workflow proposal identifier.
+#' @param subsystems Selected subsystems used by `$select_subsystems()`.
+#' @param labels Named node-to-subsystem assignments used by
+#'   `$label_workflow_subsystems()`.
+#' @param agent_name Agent name used by `$approve_agent_spec()`.
+#' @param state_requirements State requirements used by `$approve_agent_spec()`.
+#' @param interfaces Interfaces used by `$approve_agent_spec()`.
+#' @param implementation_targets Implementation targets used by
+#'   `$approve_agent_spec()`.
+#' @param metadata Agent-spec metadata used by `$approve_agent_spec()`.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(agent = NULL, completion_threshold = 0.75)`}{Create a scaffolder with empty workflow state and review metadata.}
@@ -399,6 +409,12 @@
 #'   \item{`$review_node(node_id, status = "pending", notes = NULL, confidence = NA_real_, complete = NULL)`}{Store node-level correctness or completion review state.}
 #'   \item{`$edit_workflow(add = NULL, insert = NULL, remove = NULL, add_edges = NULL, remove_edges = NULL, rule_specs = list(), confidence = list())`}{Apply first-class node and edge edits to the current workflow.}
 #'   \item{`$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())`}{Compatibility wrapper for structured human workflow edits.}
+#'   \item{`$recommend_subsystems(task = self$task)`}{Recommend a sparse subsystem set for the current task and workflow.}
+#'   \item{`$select_subsystems(subsystems)`}{Store the selected subsystem configuration.}
+#'   \item{`$selected_subsystems()`}{Return the currently selected subsystem names.}
+#'   \item{`$label_workflow_subsystems(labels)`}{Assign subsystem owners to workflow nodes.}
+#'   \item{`$approve_agent_spec(agent_name = "agentr-agent", summary = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list())`}{Approve an `AgentSpec` built from the current task, subsystem selection, and workflow.}
+#'   \item{`$agent_spec()`}{Return the approved agent spec or a draft spec built from current state.}
 #'   \item{`$propose_workflow(workflow, source = "model", notes = NULL)`}{Store a pending workflow proposal for preview and review.}
 #'   \item{`$list_workflow_proposals(status = NULL)`}{Return a summary table of stored workflow proposals.}
 #'   \item{`$get_workflow_proposal(proposal_id)`}{Return a stored `WorkflowProposal` object by identifier.}
@@ -419,6 +435,7 @@ Scaffolder <- R6::R6Class(
     task = NULL,
     workflow = NULL,
     workflow_state = NULL,
+    agent_state = NULL,
     proposal_log = NULL,
     interaction_log = NULL,
     completion_threshold = NULL,
@@ -429,8 +446,8 @@ Scaffolder <- R6::R6Class(
       agent = NULL,
       completion_threshold = 0.75
     ) {
-      if (!is.null(agent)) {
-        stopifnot(inherits(agent, "AgentCore"))
+      if (!is.null(agent) && !inherits(agent, "AgentCore") && !inherits(agent, "IntelligentAgent")) {
+        stop("`agent` must inherit from `AgentCore` or `IntelligentAgent`.", call. = FALSE)
       }
       self$agent <- agent
       self$completion_threshold <- completion_threshold
@@ -446,6 +463,13 @@ Scaffolder <- R6::R6Class(
       )
       self$workflow_state <- WorkflowProposalState$new(
         approved_workflow = self$workflow
+      )
+      self$agent_state <- AgentScaffoldState$new(
+        workflow_state = self$workflow_state,
+        metadata = list(
+          draft_subsystems = SubsystemSpec$new(),
+          subsystem_recommendations = list()
+        )
       )
       self$proposal_log <- list()
       self$interaction_log <- list()
@@ -467,7 +491,9 @@ Scaffolder <- R6::R6Class(
       self$task <- task
       self$workflow$task <- task
 
-      if (!is.null(self$agent)) {
+      if (!is.null(self$agent) &&
+          !is.null(self$agent$cognition) &&
+          is.function(self$agent$cognition$set_context)) {
         self$agent$cognition$set_context(
           active_task = task,
           task_summary = summary %||% task
@@ -722,6 +748,117 @@ Scaffolder <- R6::R6Class(
         )
       )
       invisible(self$workflow)
+    },
+
+    #' @description
+    #' Recommend a sparse subsystem set for the current task and workflow.
+    recommend_subsystems = function(task = self$task) {
+      recommendations <- .scaffolder_recommend_subsystems(self, task = task)
+      self$record_interaction(
+        "recommend_subsystems",
+        list(task = task, recommendations = recommendations)
+      )
+      recommendations
+    },
+
+    #' @description
+    #' Store the selected subsystem configuration.
+    select_subsystems = function(subsystems) {
+      spec <- .coerce_subsystem_selection(subsystems)
+      self$agent_state$metadata$draft_subsystems <- spec
+      self$record_interaction(
+        "select_subsystems",
+        list(selected = spec$selected_subsystems())
+      )
+      invisible(spec)
+    },
+
+    #' @description
+    #' Return the currently selected subsystem names.
+    selected_subsystems = function() {
+      .scaffolder_draft_subsystems(self)$selected_subsystems()
+    },
+
+    #' @description
+    #' Assign subsystem owners to workflow nodes.
+    label_workflow_subsystems = function(labels) {
+      self$workflow$metadata$node_subsystems <-
+        .validate_node_subsystems(labels, nodes = self$workflow$nodes)
+      if (!is.null(self$agent_state$approved_agent_spec)) {
+        self$agent_state$approved_agent_spec$metadata$node_subsystems <-
+          self$workflow$metadata$node_subsystems
+      }
+      self$record_interaction(
+        "label_workflow_subsystems",
+        list(node_subsystems = self$workflow$metadata$node_subsystems)
+      )
+      invisible(self$workflow$metadata$node_subsystems)
+    },
+
+    #' @description
+    #' Approve an agent spec built from the current scaffolding state.
+    approve_agent_spec = function(
+      agent_name = "agentr-agent",
+      summary = NULL,
+      state_requirements = list(),
+      interfaces = list(),
+      implementation_targets = list(),
+      metadata = list()
+    ) {
+      if (is.null(self$task) || !nzchar(self$task)) {
+        stop("A task must be evaluated before approving an agent spec.", call. = FALSE)
+      }
+
+      spec <- AgentSpec$new(
+        task = self$task,
+        agent_name = agent_name,
+        summary = summary %||% self$workflow$metadata$evaluation$summary %||% self$task,
+        subsystems = .scaffolder_draft_subsystems(self),
+        workflow = self$workflow,
+        state_requirements = state_requirements,
+        interfaces = interfaces,
+        implementation_targets = implementation_targets,
+        metadata = utils::modifyList(
+          list(
+            node_subsystems = self$workflow$metadata$node_subsystems %||% list(),
+            subsystem_recommendations = self$agent_state$metadata$subsystem_recommendations %||% list(),
+            approved_at = Sys.time()
+          ),
+          metadata
+        )
+      )
+
+      self$agent_state$set_approved_agent_spec(spec)
+      self$record_interaction(
+        "approve_agent_spec",
+        list(
+          agent_name = agent_name,
+          selected_subsystems = spec$selected_subsystems()
+        )
+      )
+      invisible(spec)
+    },
+
+    #' @description
+    #' Return the approved agent spec or a draft spec built from current state.
+    agent_spec = function() {
+      if (!is.null(self$agent_state$approved_agent_spec)) {
+        return(self$agent_state$approved_agent_spec)
+      }
+      if (is.null(self$task) || !nzchar(self$task)) {
+        stop("A task must be evaluated before creating an agent spec.", call. = FALSE)
+      }
+      AgentSpec$new(
+        task = self$task,
+        agent_name = "agentr-agent",
+        summary = self$workflow$metadata$evaluation$summary %||% self$task,
+        subsystems = .scaffolder_draft_subsystems(self),
+        workflow = self$workflow,
+        metadata = list(
+          node_subsystems = self$workflow$metadata$node_subsystems %||% list(),
+          subsystem_recommendations = self$agent_state$metadata$subsystem_recommendations %||% list()
+        )
+      )
     },
 
     #' @description

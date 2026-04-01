@@ -30,6 +30,12 @@ explicit lifecycle state.
 \item{\verb{$review_node(node_id, status = "pending", notes = NULL, confidence = NA_real_, complete = NULL)}}{Store node-level correctness or completion review state.}
 \item{\verb{$edit_workflow(add = NULL, insert = NULL, remove = NULL, add_edges = NULL, remove_edges = NULL, rule_specs = list(), confidence = list())}}{Apply first-class node and edge edits to the current workflow.}
 \item{\verb{$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())}}{Compatibility wrapper for structured human workflow edits.}
+\item{\verb{$recommend_subsystems(task = self$task)}}{Recommend a sparse subsystem set for the current task and workflow.}
+\item{\verb{$select_subsystems(subsystems)}}{Store the selected subsystem configuration.}
+\item{\verb{$selected_subsystems()}}{Return the currently selected subsystem names.}
+\item{\verb{$label_workflow_subsystems(labels)}}{Assign subsystem owners to workflow nodes.}
+\item{\verb{$approve_agent_spec(agent_name = "agentr-agent", summary = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list())}}{Approve an \code{AgentSpec} built from the current task, subsystem selection, and workflow.}
+\item{\verb{$agent_spec()}}{Return the approved agent spec or a draft spec built from current state.}
 \item{\verb{$propose_workflow(workflow, source = "model", notes = NULL)}}{Store a pending workflow proposal for preview and review.}
 \item{\verb{$list_workflow_proposals(status = NULL)}}{Return a summary table of stored workflow proposals.}
 \item{\verb{$get_workflow_proposal(proposal_id)}}{Return a stored \code{WorkflowProposal} object by identifier.}
@@ -54,6 +60,8 @@ explicit lifecycle state.
 
 \item{\code{workflow_state}}{Public workflow proposal state container.}
 
+\item{\code{agent_state}}{Public agent scaffold state container.}
+
 \item{\code{proposal_log}}{Stored workflow proposals across pending, discussion,
 approved, superseded, and rejected lifecycle states.}
 
@@ -77,6 +85,12 @@ approved, superseded, and rejected lifecycle states.}
 \item \href{#method-Scaffolder-review_node}{\code{Scaffolder$review_node()}}
 \item \href{#method-Scaffolder-edit_workflow}{\code{Scaffolder$edit_workflow()}}
 \item \href{#method-Scaffolder-apply_human_feedback}{\code{Scaffolder$apply_human_feedback()}}
+\item \href{#method-Scaffolder-recommend_subsystems}{\code{Scaffolder$recommend_subsystems()}}
+\item \href{#method-Scaffolder-select_subsystems}{\code{Scaffolder$select_subsystems()}}
+\item \href{#method-Scaffolder-selected_subsystems}{\code{Scaffolder$selected_subsystems()}}
+\item \href{#method-Scaffolder-label_workflow_subsystems}{\code{Scaffolder$label_workflow_subsystems()}}
+\item \href{#method-Scaffolder-approve_agent_spec}{\code{Scaffolder$approve_agent_spec()}}
+\item \href{#method-Scaffolder-agent_spec}{\code{Scaffolder$agent_spec()}}
 \item \href{#method-Scaffolder-propose_workflow}{\code{Scaffolder$propose_workflow()}}
 \item \href{#method-Scaffolder-list_workflow_proposals}{\code{Scaffolder$list_workflow_proposals()}}
 \item \href{#method-Scaffolder-get_workflow_proposal}{\code{Scaffolder$get_workflow_proposal()}}
@@ -383,6 +397,113 @@ Apply legacy structured human feedback to the workflow.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-recommend_subsystems"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-recommend_subsystems}{}}}
+\subsection{Method \code{recommend_subsystems()}}{
+Recommend a sparse subsystem set for the current task and workflow.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$recommend_subsystems(task = self$task)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{task}}{Task text used by \verb{$evaluate_task()} and \verb{$decompose_task()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-select_subsystems"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-select_subsystems}{}}}
+\subsection{Method \code{select_subsystems()}}{
+Store the selected subsystem configuration.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$select_subsystems(subsystems)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{subsystems}}{Selected subsystems used by \verb{$select_subsystems()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-selected_subsystems"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-selected_subsystems}{}}}
+\subsection{Method \code{selected_subsystems()}}{
+Return the currently selected subsystem names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$selected_subsystems()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-label_workflow_subsystems"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-label_workflow_subsystems}{}}}
+\subsection{Method \code{label_workflow_subsystems()}}{
+Assign subsystem owners to workflow nodes.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$label_workflow_subsystems(labels)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{labels}}{Named node-to-subsystem assignments used by
+\verb{$label_workflow_subsystems()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-approve_agent_spec"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-approve_agent_spec}{}}}
+\subsection{Method \code{approve_agent_spec()}}{
+Approve an agent spec built from the current scaffolding state.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$approve_agent_spec(
+  agent_name = "agentr-agent",
+  summary = NULL,
+  state_requirements = list(),
+  interfaces = list(),
+  implementation_targets = list(),
+  metadata = list()
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{agent_name}}{Agent name used by \verb{$approve_agent_spec()}.}
+
+\item{\code{summary}}{Optional task summary used by \verb{$evaluate_task()}.}
+
+\item{\code{state_requirements}}{State requirements used by \verb{$approve_agent_spec()}.}
+
+\item{\code{interfaces}}{Interfaces used by \verb{$approve_agent_spec()}.}
+
+\item{\code{implementation_targets}}{Implementation targets used by
+\verb{$approve_agent_spec()}.}
+
+\item{\code{metadata}}{Agent-spec metadata used by \verb{$approve_agent_spec()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-agent_spec"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-agent_spec}{}}}
+\subsection{Method \code{agent_spec()}}{
+Return the approved agent spec or a draft spec built from current state.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$agent_spec()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Scaffolder-propose_workflow"></a>}}

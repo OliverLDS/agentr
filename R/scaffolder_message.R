@@ -13,6 +13,10 @@ scaffolder_action_methods <- function() {
     "review_workflow",
     "review_node",
     "edit_workflow",
+    "recommend_subsystems",
+    "select_subsystems",
+    "label_workflow_subsystems",
+    "approve_agent_spec",
     "ask_human_complete",
     "ask_human_changes",
     "ask_human_rule",
@@ -145,6 +149,17 @@ scaffolder_action_methods <- function() {
     review_workflow = c("status", "notes", "confidence"),
     review_node = c("node_id", "status", "notes", "confidence", "complete"),
     edit_workflow = c("add", "insert", "remove", "add_edges", "remove_edges", "rule_specs", "confidence"),
+    recommend_subsystems = c("task"),
+    select_subsystems = c("subsystems"),
+    label_workflow_subsystems = c("labels"),
+    approve_agent_spec = c(
+      "agent_name",
+      "summary",
+      "state_requirements",
+      "interfaces",
+      "implementation_targets",
+      "metadata"
+    ),
     ask_human_complete = c("node_id"),
     ask_human_changes = character(),
     ask_human_rule = c("node_id"),
@@ -172,6 +187,36 @@ scaffolder_action_methods <- function() {
     feedback_arg <- .arg_get(args, "feedback")
     if (!is.character(feedback_arg) || length(feedback_arg) != 1L || !nzchar(feedback_arg)) {
       stop("`discuss_task` requires a non-empty `feedback` string.", call. = FALSE)
+    }
+  }
+
+  if (identical(method, "recommend_subsystems")) {
+    task_arg <- .arg_get(args, "task")
+    if (!is.null(task_arg) &&
+        (!is.character(task_arg) || length(task_arg) != 1L || !nzchar(task_arg))) {
+      stop("`recommend_subsystems.task` must be a non-empty string when provided.", call. = FALSE)
+    }
+  }
+
+  if (identical(method, "select_subsystems")) {
+    selected_arg <- .arg_get(args, "subsystems")
+    if (is.null(selected_arg)) {
+      stop("`select_subsystems` requires a `subsystems` argument.", call. = FALSE)
+    }
+    if (!inherits(selected_arg, "SubsystemSpec") &&
+        !is.character(selected_arg) &&
+        !is.list(selected_arg)) {
+      stop(
+        "`select_subsystems.subsystems` must be a `SubsystemSpec`, character vector, or named list.",
+        call. = FALSE
+      )
+    }
+  }
+
+  if (identical(method, "label_workflow_subsystems")) {
+    labels_arg <- .arg_get(args, "labels")
+    if (!is.list(labels_arg)) {
+      stop("`label_workflow_subsystems.labels` must be a named list.", call. = FALSE)
     }
   }
 
@@ -339,6 +384,13 @@ scaffolder_action_methods <- function() {
     stop("Unknown workflow node reference: ", node_id_arg, call. = FALSE)
   }
 
+  if (identical(method, "label_workflow_subsystems")) {
+    labels_arg <- .arg_get(args, "labels")
+    if (!is.null(labels_arg)) {
+      .validate_node_subsystems(labels_arg, nodes = scaffolder$workflow$nodes)
+    }
+  }
+
   if (method %in% c("edit_workflow", "apply_human_feedback")) {
     targets <- .extract_edit_targets(args = args, existing_ids = existing_ids)
     combined_ids <- unique(c(existing_ids, targets$added_ids, targets$inserted_ids))
@@ -435,6 +487,18 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
     edges = workflow$edges,
     metadata = workflow$metadata
   )
+  agent_payload <- if (is.null(scaffolder$task) || !nzchar(scaffolder$task)) {
+    list(
+      task = NULL,
+      agent_name = NULL,
+      summary = NULL,
+      subsystems = SubsystemSpec$new()$as_list(),
+      workflow = workflow_payload,
+      metadata = list()
+    )
+  } else {
+    scaffolder$agent_spec()$as_list()
+  }
 
   action_schema <- list(
     actions = list(
@@ -464,6 +528,12 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
           status = "needs_revision",
           notes = "Parallel QA branch is still missing."
         )
+      ),
+      list(
+        method = "select_subsystems",
+        args = list(
+          subsystems = c("pg", "ae")
+        )
       )
     ),
     notes = "Optional short reasoning note."
@@ -492,6 +562,10 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
     review_workflow = "Record workflow-level completeness or revision status.",
     review_node = "Record node-level correctness or completion status.",
     edit_workflow = "Apply first-class node and edge edits, including insertions.",
+    recommend_subsystems = "Recommend a sparse subsystem set for the current task and workflow.",
+    select_subsystems = "Store the selected subsystem configuration.",
+    label_workflow_subsystems = "Assign subsystem owners to workflow nodes.",
+    approve_agent_spec = "Approve an agent spec from the current task, workflow, and subsystem state.",
     ask_human_complete = "Ask whether a node is complete.",
     ask_human_changes = "Ask what workflow or edge changes should happen next.",
     ask_human_rule = "Ask for a node-specific rule.",
@@ -515,6 +589,7 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
       method_semantics = method_semantics,
       decision_policy = decision_policy,
       current_workflow = workflow_payload,
+      current_agent_design = agent_payload,
       response_requirements = list(
         format = "json",
         rules = c(
@@ -553,6 +628,11 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
     workflow_json,
     "```",
     "",
+    "## Current Agent Design State",
+    "```json",
+    jsonlite::toJSON(agent_payload, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"),
+    "```",
+    "",
     "## Response Requirements",
     "- Produce the response as a downloadable `.json` file or attachment link for the user.",
     "- The file contents must be machine-readable JSON only.",
@@ -564,6 +644,153 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
     "## Expected JSON Shape",
     "```json",
     schema_json,
+    "```",
+    sep = "\n"
+  )
+}
+
+#' Build an LLM prompt for agent design decisions
+#'
+#' Creates a prompt that targets subsystem-first agent design while keeping the
+#' workflow as a nested component inside the proposed agent specification.
+#'
+#' @param scaffolder A [`Scaffolder`] instance.
+#' @param format Prompt payload format. Use `"json"` or `"markdown"`.
+#'
+#' @return Character string prompt.
+#' @export
+build_agent_design_prompt <- function(scaffolder, format = "json") {
+  stopifnot(inherits(scaffolder, "Scaffolder"))
+  format <- match.arg(format, choices = c("json", "markdown"))
+
+  agent_spec <- if (is.null(scaffolder$task) || !nzchar(scaffolder$task)) {
+    list(
+      task = NULL,
+      agent_name = NULL,
+      summary = NULL,
+      subsystems = SubsystemSpec$new()$as_list(),
+      workflow = NULL,
+      metadata = list()
+    )
+  } else {
+    scaffolder$agent_spec()$as_list()
+  }
+  workflow <- scaffolder$workflow_spec()
+  contract <- new_prompt_contract(
+    input_type = "Scaffolder",
+    target_role = "agent_design_reasoner",
+    expected_output = "JSON object with `actions` and optional `notes`."
+  )
+  allowed_methods <- intersect(
+    scaffolder_action_methods(),
+    c(
+      "evaluate_task",
+      "discuss_task",
+      "decompose_task",
+      "recommend_subsystems",
+      "select_subsystems",
+      "label_workflow_subsystems",
+      "approve_agent_spec",
+      "review_workflow",
+      "review_node",
+      "edit_workflow",
+      "ask_human_complete",
+      "ask_human_changes",
+      "ask_human_rule"
+    )
+  )
+
+  action_schema <- list(
+    actions = list(
+      list(method = "recommend_subsystems", args = list()),
+      list(method = "select_subsystems", args = list(subsystems = c("pg", "ae"))),
+      list(
+        method = "label_workflow_subsystems",
+        args = list(labels = list(node_1 = c("pg"), node_2 = c("ae")))
+      ),
+      list(
+        method = "approve_agent_spec",
+        args = list(
+          agent_name = "release-agent",
+          summary = "Sparse agent for release planning and execution."
+        )
+      )
+    ),
+    notes = "Optional short reasoning note."
+  )
+
+  instructions <- c(
+    "Treat subsystem selection as a separate design axis from workflow structure.",
+    "Default to sparse agents and avoid enabling subsystems without justification.",
+    "Model RWM through cognitive and affective layers when memory or affect is truly needed.",
+    "Keep workflow-first compatibility by using the current workflow as a nested artifact inside the agent design.",
+    "Approve the agent spec only after subsystem selection and workflow ownership labels are coherent."
+  )
+
+  payload <- .prompt_contract_payload(contract, list(
+    role = "agent_design_reasoner",
+    task = scaffolder$task %||% "<unspecified>",
+    available_methods = allowed_methods,
+    instructions = instructions,
+    current_agent_design = agent_spec,
+    current_workflow = list(
+      task = workflow$task,
+      nodes = workflow$nodes,
+      edges = workflow$edges,
+      metadata = workflow$metadata
+    ),
+    response_requirements = list(
+      format = "json",
+      rules = c(
+        "Return machine-readable JSON only.",
+        "The top-level object must contain `actions` and may contain `notes`.",
+        "Use only the provided method names.",
+        "Prefer subsystem selection before approving the agent spec."
+      ),
+      schema = action_schema
+    )
+  ))
+
+  if (identical(format, "json")) {
+    return(.prompt_json(payload))
+  }
+
+  paste(
+    "# Agent Design Prompt",
+    "",
+    "You are designing an intelligent agent, not only a workflow.",
+    "Treat subsystem choice and workflow structure as separate axes.",
+    "",
+    "## Instructions",
+    paste(paste0("- ", instructions), collapse = "\n"),
+    "",
+    "## Current Agent Design",
+    "```json",
+    jsonlite::toJSON(agent_spec, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"),
+    "```",
+    "",
+    "## Current Workflow",
+    "```json",
+    jsonlite::toJSON(
+      list(task = workflow$task, nodes = workflow$nodes, edges = workflow$edges, metadata = workflow$metadata),
+      auto_unbox = TRUE,
+      pretty = TRUE,
+      null = "null",
+      na = "null"
+    ),
+    "```",
+    "",
+    "## Available Methods",
+    paste(paste0("- `", allowed_methods, "`"), collapse = "\n"),
+    "",
+    "## Response Requirements",
+    "- Return raw JSON only.",
+    "- The JSON must contain an `actions` array.",
+    "- Use sparse subsystem selections unless the task clearly justifies more.",
+    "",
+    "## Expected JSON Shape",
+    "```json",
+    jsonlite::toJSON(action_schema, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"),
     "```",
     sep = "\n"
   )

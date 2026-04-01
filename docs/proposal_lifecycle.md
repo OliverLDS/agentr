@@ -1,21 +1,24 @@
 # Proposal Lifecycle
 
-`agentr` separates workflow work into three stages:
+`agentr` separates scaffolding work into three stages:
 
-1. workflow elicitation
+1. agent design and workflow elicitation
 2. workflow proposal review and approval
 3. implementation and extraction handoff
 
-## 1. Workflow Elicitation
+## 1. Agent Design And Workflow Elicitation
 
 During elicitation, `Scaffolder` is used to:
 
 - evaluate the task
+- recommend sparse subsystems
+- select subsystem configs
+- label workflow-node subsystem ownership
 - discuss open questions
 - decompose the task into workflow nodes and edges
 - collect review and rule information
 
-At this stage, the active workflow is still the approved working state inside the `Scaffolder`.
+At this stage, the active workflow is still the approved working state inside the `Scaffolder`. The higher-level design target is an approved `AgentSpec`, with workflow kept as one nested planning component.
 
 ## 2. Workflow Proposal Review And Approval
 
@@ -41,10 +44,11 @@ Key behavior:
 
 Once a workflow is approved, use:
 
-- `build_implementation_prompt()` to hand the approved workflow to a coding agent
+- `build_agent_design_prompt()` to reason about subsystem-first agent design
+- `build_implementation_prompt()` to hand the approved agent design or approved workflow to a coding agent
 - `build_workflow_extraction_prompt()` to infer a workflow from existing code before preview and approval
 
-Implementation handoff uses the approved workflow only. Pending or discussed proposals do not affect implementation prompts until approval happens.
+Implementation handoff uses approved state only. Pending or discussed proposals do not affect implementation prompts until approval happens.
 
 ## Persistence
 
@@ -75,4 +79,20 @@ state <- WorkflowProposalState$new(
 )
 state$add_proposal(proposal)
 latest <- state$latest_proposal()
+```
+
+If you want to approve the higher-level agent design, use the agent-spec path:
+
+```r
+scaffolder$recommend_subsystems()
+scaffolder$select_subsystems(c("pg", "ae"))
+scaffolder$label_workflow_subsystems(list(
+  node_1 = c("pg"),
+  node_2 = c("ae")
+))
+
+agent_spec <- scaffolder$approve_agent_spec(
+  agent_name = "release-agent",
+  summary = "Sparse planner/executor"
+)
 ```

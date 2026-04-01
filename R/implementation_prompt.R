@@ -10,21 +10,52 @@
     return(x$implementation_spec())
   }
 
+  if (inherits(x, "IntelligentAgent")) {
+    x$validate()
+    x <- x$spec
+  }
+
+  if (inherits(x, "AgentSpec")) {
+    x$validate()
+    workflow <- x$workflow %||% new_workflow_spec(
+      nodes = .empty_workflow_nodes(),
+      edges = .empty_workflow_edges(),
+      task = x$task
+    )
+    return(list(
+      task = x$task,
+      agent_name = x$agent_name,
+      selected_subsystems = x$selected_subsystems(),
+      node_subsystems = x$metadata$node_subsystems %||% list(),
+      nodes = workflow$nodes[, c("id", "label", "rule_spec", "implementation_hint"), drop = FALSE],
+      human_required = workflow$nodes[workflow$nodes$human_required, "id", drop = TRUE]
+    ))
+  }
+
   if (inherits(x, "agentr_workflow_spec")) {
     validate_workflow_spec(x)
     return(list(
       task = x$task,
+      agent_name = NA_character_,
+      selected_subsystems = character(),
+      node_subsystems = list(),
       nodes = x$nodes[, c("id", "label", "rule_spec", "implementation_hint"), drop = FALSE],
       human_required = x$nodes[x$nodes$human_required, "id", drop = TRUE]
     ))
   }
 
   if (is.list(x) && all(c("task", "nodes", "human_required") %in% names(x))) {
+    x$agent_name <- x$agent_name %||% NA_character_
+    x$selected_subsystems <- x$selected_subsystems %||% character()
+    x$node_subsystems <- x$node_subsystems %||% list()
     return(x)
   }
 
   stop(
-    "`x` must be a Scaffolder, an `agentr_workflow_spec`, or an implementation spec list.",
+    paste(
+      "`x` must be a Scaffolder, IntelligentAgent, AgentSpec,",
+      "an `agentr_workflow_spec`, or an implementation spec list."
+    ),
     call. = FALSE
   )
 }
@@ -35,7 +66,8 @@
 #' implementation-oriented handoff for a coding agent such as Codex.
 #'
 #' @param x A [`Scaffolder`] instance, workflow specification, or
-#'   implementation-spec-like list.
+#'   implementation-spec-like list. `AgentSpec` and `IntelligentAgent`
+#'   inputs are also supported.
 #' @param language Target implementation language, for example `"R"` or
 #'   `"Python"`.
 #' @param format Prompt payload format. Use `"json"` for SDK-facing structured
@@ -61,7 +93,7 @@ build_implementation_prompt <- function(
 ) {
   format <- match.arg(format, choices = c("json", "markdown"))
   contract <- new_prompt_contract(
-    input_type = "Scaffolder|agentr_workflow_spec|implementation_spec_list",
+    input_type = "Scaffolder|IntelligentAgent|AgentSpec|agentr_workflow_spec|implementation_spec_list",
     target_role = "implementation_planner",
     expected_output = "JSON object with `implementation_plan`."
   )

@@ -24,6 +24,54 @@ test_that("AffectiveState updates with inertia and stays bounded", {
   expect_true(all(state$primary <= 1))
 })
 
+test_that("SubsystemSpec stays sparse by default and AgentSpec stores agent design", {
+  subsystems <- SubsystemSpec$new(
+    pg = PGConfig$new(),
+    ae = AEConfig$new()
+  )
+  workflow <- new_workflow_spec(
+    nodes = workflow_node("node_1", "Execute"),
+    edges = .empty_workflow_edges(),
+    task = "Sparse runtime"
+  )
+  spec <- AgentSpec$new(
+    task = "Build a sparse agent",
+    agent_name = "sparse-agent",
+    summary = "Minimal planning and execution",
+    subsystems = subsystems,
+    workflow = workflow,
+    metadata = list(node_subsystems = list(node_1 = c("ae")))
+  )
+
+  expect_true(inherits(subsystems, "SubsystemSpec"))
+  expect_equal(subsystems$selected_subsystems(), c("pg", "ae"))
+  expect_true(is.null(subsystems$rwm))
+  expect_true(inherits(spec, "AgentSpec"))
+  expect_equal(spec$selected_subsystems(), c("pg", "ae"))
+  expect_true(identical(spec$metadata$node_subsystems$node_1, "ae"))
+  expect_true(identical(spec$design_summary()$workflow_nodes, 1L))
+})
+
+test_that("IntelligentAgent and save_agent support agent-spec objects", {
+  path <- tempfile(fileext = ".rds")
+  on.exit(unlink(path), add = TRUE)
+
+  spec <- AgentSpec$new(
+    task = "Ship a focused agent",
+    agent_name = "focused-agent",
+    subsystems = SubsystemSpec$new(pg = PGConfig$new(), ae = AEConfig$new())
+  )
+  agent <- IntelligentAgent$new(spec = spec)
+
+  save_agent(agent, path)
+  loaded <- load_agent(path)
+
+  expect_true(inherits(agent, "IntelligentAgent"))
+  expect_equal(agent$selected_subsystems(), c("pg", "ae"))
+  expect_true(inherits(loaded, "IntelligentAgent"))
+  expect_equal(loaded$spec$agent_name, "focused-agent")
+})
+
 test_that("Scaffolder supports discussion, review, and graph editing", {
   agent <- AgentCore$new()
   scaffolder <- Scaffolder$new(agent = agent)
@@ -76,6 +124,35 @@ test_that("Scaffolder supports discussion, review, and graph editing", {
   expect_true(identical(length(spec$metadata$discussion_rounds), 1L))
   expect_true(identical(nrow(spec$edges), 3L))
   expect_true(identical(nrow(scaffolder$low_confidence_nodes()), 2L))
+})
+
+test_that("Scaffolder supports sparse subsystem selection and agent-spec approval", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Design an approval-aware release agent")
+  scaffolder$decompose_task(suggestions = list(
+    nodes = list(
+      list(id = "node_1", label = "Plan release"),
+      list(id = "node_2", label = "Execute release", depends_on = "node_1")
+    )
+  ))
+
+  recommendations <- scaffolder$recommend_subsystems()
+  scaffolder$select_subsystems(list(pg = TRUE, ae = TRUE, iac = FALSE, la = FALSE, rwm = FALSE))
+  scaffolder$label_workflow_subsystems(list(
+    node_1 = c("pg"),
+    node_2 = c("ae")
+  ))
+  spec <- scaffolder$approve_agent_spec(
+    agent_name = "release-agent",
+    summary = "Sparse release planner/executor"
+  )
+
+  expect_true(is.list(recommendations))
+  expect_true(inherits(spec, "AgentSpec"))
+  expect_equal(scaffolder$selected_subsystems(), c("pg", "ae"))
+  expect_equal(spec$metadata$node_subsystems$node_1, "pg")
+  expect_equal(spec$metadata$node_subsystems$node_2, "ae")
+  expect_equal(scaffolder$agent_state$approved_agent_spec$agent_name, "release-agent")
 })
 
 test_that("save_agent and load_agent round-trip core objects", {
@@ -180,12 +257,29 @@ test_that("build_scaffolder_prompt supports json and markdown outputs", {
   expect_true(grepl("\"available_methods\"", prompt_json, fixed = TRUE))
   expect_true(grepl("\"response_requirements\"", prompt_json, fixed = TRUE))
   expect_true(grepl("\"discuss_task\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"current_agent_design\"", prompt_json, fixed = TRUE))
   expect_true(grepl("# Scaffolding Reasoning Prompt", prompt_markdown, fixed = TRUE))
   expect_true(grepl("## Available Scaffolder Methods", prompt_markdown, fixed = TRUE))
   expect_true(grepl("edit_workflow", prompt_markdown, fixed = TRUE))
   expect_true(grepl("downloadable `.json` file or attachment link", prompt_markdown, fixed = TRUE))
   expect_true(grepl("The file contents must be machine-readable JSON only", prompt_markdown, fixed = TRUE))
   expect_true(grepl("Use discuss_task to preserve free-form human or model reasoning before committing graph edits", prompt_markdown, fixed = TRUE))
+})
+
+test_that("build_agent_design_prompt supports json and markdown outputs", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Design a sparse operations agent")
+  scaffolder$decompose_task(candidates = c("Plan", "Execute"))
+  scaffolder$select_subsystems(c("pg", "ae"))
+
+  prompt_json <- build_agent_design_prompt(scaffolder, format = "json")
+  prompt_markdown <- build_agent_design_prompt(scaffolder, format = "markdown")
+
+  expect_true(grepl("\"agent_design_reasoner\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"select_subsystems\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"approve_agent_spec\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("# Agent Design Prompt", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("sparse agents", prompt_markdown, fixed = TRUE))
 })
 
 test_that("build_implementation_prompt supports scaffolder and workflow inputs", {
@@ -219,6 +313,30 @@ test_that("build_implementation_prompt supports scaffolder and workflow inputs",
   expect_true(grepl("Target coding agent: `codex`.", prompt_markdown, fixed = TRUE))
   expect_true(grepl("## Workflow Input", prompt_markdown, fixed = TRUE))
   expect_true(grepl("machine-readable JSON only", prompt_markdown, fixed = TRUE))
+})
+
+test_that("build_implementation_prompt supports AgentSpec inputs", {
+  workflow <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node("node_1", "Plan"),
+      workflow_node("node_2", "Execute")
+    ),
+    edges = workflow_edge("node_1", "node_2"),
+    task = "Agent implementation"
+  )
+  spec <- AgentSpec$new(
+    task = "Agent implementation",
+    agent_name = "impl-agent",
+    subsystems = SubsystemSpec$new(pg = PGConfig$new(), ae = AEConfig$new()),
+    workflow = workflow,
+    metadata = list(node_subsystems = list(node_1 = c("pg"), node_2 = c("ae")))
+  )
+
+  prompt_json <- build_implementation_prompt(spec, language = "R")
+
+  expect_true(grepl("\"agent_name\": \"impl-agent\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"selected_subsystems\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"node_subsystems\"", prompt_json, fixed = TRUE))
 })
 
 test_that("build_workflow_extraction_prompt supports json and markdown outputs", {
@@ -324,6 +442,14 @@ test_that("apply_scaffolder_message dispatches actions to scaffolder methods", {
           rule_specs = list(node_2 = "Require a final review"),
           add_edges = list(list(from = "node_1", to = "node_2", relation = "depends_on"))
         )
+      ),
+      list(
+        method = "select_subsystems",
+        args = list(subsystems = c("pg", "ae"))
+      ),
+      list(
+        method = "label_workflow_subsystems",
+        args = list(labels = list(node_1 = c("pg"), node_2 = c("ae")))
       )
     )
   )
@@ -335,7 +461,7 @@ test_that("apply_scaffolder_message dispatches actions to scaffolder methods", {
     names(out),
     c("applied_actions", "workflow_after", "human_prompts", "errors")
   ))
-  expect_true(identical(length(out$applied_actions), 4L))
+  expect_true(identical(length(out$applied_actions), 6L))
   expect_true(identical(scaffolder$task, "Draft a workflow"))
   expect_true(identical(nrow(scaffolder$workflow$nodes), 2L))
   expect_true(identical(length(scaffolder$workflow$metadata$discussion_rounds), 1L))
@@ -347,6 +473,8 @@ test_that("apply_scaffolder_message dispatches actions to scaffolder methods", {
     scaffolder$workflow$nodes$rule_spec[scaffolder$workflow$nodes$id == "node_2"],
     "Require a final review"
   ))
+  expect_equal(scaffolder$selected_subsystems(), c("pg", "ae"))
+  expect_equal(scaffolder$workflow$metadata$node_subsystems$node_2, "ae")
   expect_true(identical(length(out$errors), 0L))
 })
 

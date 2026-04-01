@@ -81,7 +81,9 @@
 #' Save an `agentr` object to a file
 #'
 #' Saves an [`AgentCore`], [`CognitiveState`], [`AffectiveState`], or
-#' [`Scaffolder`] object to a specified `.rds` file.
+#' [`Scaffolder`] object to a specified `.rds` file. `AgentSpec`,
+#' `SubsystemSpec`, `AgentScaffoldState`, and `IntelligentAgent` are also
+#' supported.
 #'
 #' @param agent An object created by `agentr`.
 #' @param file_path File path where the object should be saved.
@@ -89,7 +91,16 @@
 #' @return Invisibly returns `TRUE`.
 #' @export
 save_agent <- function(agent, file_path) {
-  valid_classes <- c("AgentCore", "CognitiveState", "AffectiveState", "Scaffolder")
+  valid_classes <- c(
+    "AgentCore",
+    "CognitiveState",
+    "AffectiveState",
+    "Scaffolder",
+    "AgentSpec",
+    "SubsystemSpec",
+    "AgentScaffoldState",
+    "IntelligentAgent"
+  )
   if (!any(vapply(valid_classes, function(class_name) inherits(agent, class_name), logical(1)))) {
     stop("Object is not a supported `agentr` core object.", call. = FALSE)
   }
@@ -110,7 +121,16 @@ load_agent <- function(file_path) {
     stop("File does not exist: ", file_path, call. = FALSE)
   }
   agent <- .safe_read_rds(file_path)
-  valid_classes <- c("AgentCore", "CognitiveState", "AffectiveState", "Scaffolder")
+  valid_classes <- c(
+    "AgentCore",
+    "CognitiveState",
+    "AffectiveState",
+    "Scaffolder",
+    "AgentSpec",
+    "SubsystemSpec",
+    "AgentScaffoldState",
+    "IntelligentAgent"
+  )
   if (!any(vapply(valid_classes, function(class_name) inherits(agent, class_name), logical(1)))) {
     stop("Loaded object is not a supported `agentr` core object.", call. = FALSE)
   }

@@ -7,7 +7,18 @@
 | `CognitiveState` | Minimal cognitive state container with update hooks |
 | `AffectiveState` | Affective layer with inertia-aware updates |
 | `AgentCore` | Minimal agent container for cognition, affect, and scaffolding |
-| `Scaffolder` | Human-in-the-loop workflow elicitation interface |
+| `CognitiveConfig` | Cognitive-layer config for `RWM` |
+| `AffectiveConfig` | Affective-layer config for `RWM` |
+| `RWMConfig` | Reflective working-memory config |
+| `PGConfig` | Planning and goal-management config |
+| `AEConfig` | Action-execution config |
+| `IACConfig` | Interaction and communication config |
+| `LAConfig` | Learning and adaptation config |
+| `SubsystemSpec` | Sparse subsystem inventory for an agent design |
+| `AgentSpec` | Public intelligent-agent design artifact |
+| `AgentScaffoldState` | Approved agent-design state container |
+| `IntelligentAgent` | Runtime-oriented container around an `AgentSpec` |
+| `Scaffolder` | Human-in-the-loop intelligent-agent scaffolding interface |
 | `WorkflowProposal` | Public workflow proposal lifecycle object |
 | `WorkflowProposalState` | Public approved-workflow and proposal-history state container |
 
@@ -33,6 +44,7 @@
 | --- | --- |
 | `scaffolder_action_methods()` | List the methods an LLM may request |
 | `build_scaffolder_prompt()` | Build a prompt that describes task, workflow state, and allowed actions |
+| `build_agent_design_prompt()` | Build a prompt focused on subsystem-first agent design |
 | `build_implementation_prompt()` | Build an implementation-planning prompt for a coding agent |
 | `build_workflow_extraction_prompt()` | Build a prompt to reverse-engineer existing code into an agentr workflow spec |
 | `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
@@ -67,8 +79,8 @@
 
 | Function | Purpose |
 | --- | --- |
-| `save_agent()` | Save an `agentr` core object |
-| `load_agent()` | Load an `agentr` core object |
+| `save_agent()` | Save a supported `agentr` object, including agent-spec objects |
+| `load_agent()` | Load a supported `agentr` object |
 | `backup_agent()` | Save a timestamped backup |
 | `load_json_file()` | Load JSON files |
 | `load_yaml_file()` | Load YAML files |
