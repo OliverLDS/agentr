@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.2
+
+Released: 2026-04-01
+
+- Added first-class draft agent-design proposal flow inside `Scaffolder`, including proposal creation, listing, discussion, and approval methods.
+- Added a clearer bridge from workflow proposals into agent-spec approval so a linked workflow proposal can seed and be approved alongside an agent-spec proposal.
+- Improved subsystem recommendation usability with explicit rationale accessors and richer prompt payloads that surface recommendation records and draft design proposals.
+- Added incremental workflow-node ownership editing through `edit_workflow_subsystems()`, making subsystem ownership changes easier than full replacement.
+- Expanded tests to cover the draft design workflow, incremental ownership editing, and workflow-proposal-to-agent-spec approval bridging.
+
 ## agentr 0.2.1
 
 Released: 2026-04-01

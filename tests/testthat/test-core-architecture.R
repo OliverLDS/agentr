@@ -249,6 +249,79 @@ test_that("Scaffolder supports sparse subsystem selection and agent-spec approva
   expect_equal(scaffolder$agent_state$approved_agent_spec$agent_name, "release-agent")
 })
 
+test_that("Scaffolder supports draft agent-spec proposals and ownership editing", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Design a review-aware agent")
+  scaffolder$decompose_task(suggestions = list(
+    nodes = list(
+      list(id = "node_1", label = "Plan"),
+      list(id = "node_2", label = "Execute", depends_on = "node_1"),
+      list(id = "node_3", label = "Review", depends_on = "node_2")
+    )
+  ))
+  scaffolder$recommend_subsystems()
+  scaffolder$select_subsystems(list(pg = TRUE, ae = TRUE, iac = TRUE))
+  scaffolder$edit_workflow_subsystems(add = list(
+    node_1 = c("pg"),
+    node_2 = c("ae"),
+    node_3 = c("iac")
+  ))
+  scaffolder$edit_workflow_subsystems(add = list(node_3 = c("ae")))
+  scaffolder$edit_workflow_subsystems(remove = list(node_3 = c("iac")))
+
+  proposal <- scaffolder$propose_agent_spec(
+    agent_name = "review-agent",
+    summary = "Draft review-aware agent",
+    interfaces = list(primary = c("terminal"))
+  )
+
+  expect_equal(scaffolder$workflow$metadata$node_subsystems$node_3, "ae")
+  expect_true(inherits(proposal$agent_spec, "AgentSpec"))
+  expect_equal(proposal$status, "draft")
+  expect_equal(scaffolder$list_agent_spec_proposals()$agent_name[[1]], "review-agent")
+  expect_match(
+    scaffolder$subsystem_recommendation_rationale("pg"),
+    "planning",
+    ignore.case = TRUE
+  )
+
+  scaffolder$discuss_agent_spec_proposal(proposal$id, "Need tighter review language.")
+  proposal_after <- scaffolder$get_agent_spec_proposal(proposal$id)
+  expect_equal(proposal_after$status, "under_discussion")
+  expect_equal(length(proposal_after$discussion_rounds), 1L)
+})
+
+test_that("Scaffolder bridges workflow proposals into agent-spec approval", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Bridge workflow and agent approval")
+  scaffolder$select_subsystems(c("pg", "ae"))
+
+  workflow_proposal <- scaffolder$propose_workflow(
+    new_workflow_spec(
+      nodes = rbind(
+        workflow_node("node_1", "Plan"),
+        workflow_node("node_2", "Execute")
+      ),
+      edges = workflow_edge("node_1", "node_2"),
+      task = "Bridge workflow and agent approval",
+      metadata = list(node_subsystems = list(node_1 = c("pg"), node_2 = c("ae")))
+    ),
+    notes = "Candidate workflow"
+  )
+
+  proposal <- scaffolder$propose_agent_spec(
+    workflow_proposal_id = workflow_proposal$id,
+    agent_name = "bridge-agent",
+    summary = "Bridge workflow proposal into agent approval"
+  )
+  approved <- scaffolder$approve_agent_spec_proposal(proposal$id)
+
+  expect_true(inherits(approved, "AgentSpec"))
+  expect_equal(scaffolder$get_workflow_proposal(workflow_proposal$id)$status, "approved")
+  expect_equal(scaffolder$agent_state$approved_agent_spec$agent_name, "bridge-agent")
+  expect_equal(scaffolder$workflow$nodes$label[[2]], "Execute")
+})
+
 test_that("save_agent and load_agent round-trip core objects", {
   path <- tempfile(fileext = ".rds")
   on.exit(unlink(path), add = TRUE)
@@ -371,7 +444,8 @@ test_that("build_agent_design_prompt supports json and markdown outputs", {
 
   expect_true(grepl("\"agent_design_reasoner\"", prompt_json, fixed = TRUE))
   expect_true(grepl("\"select_subsystems\"", prompt_json, fixed = TRUE))
-  expect_true(grepl("\"approve_agent_spec\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"propose_agent_spec\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"approve_agent_spec_proposal\"", prompt_json, fixed = TRUE))
   expect_true(grepl("# Agent Design Prompt", prompt_markdown, fixed = TRUE))
   expect_true(grepl("sparse agents", prompt_markdown, fixed = TRUE))
 })
@@ -544,6 +618,14 @@ test_that("apply_scaffolder_message dispatches actions to scaffolder methods", {
       list(
         method = "label_workflow_subsystems",
         args = list(labels = list(node_1 = c("pg"), node_2 = c("ae")))
+      ),
+      list(
+        method = "propose_agent_spec",
+        args = list(
+          agent_name = "message-agent",
+          summary = "Draft message-driven design",
+          source = "model"
+        )
       )
     )
   )
@@ -555,7 +637,7 @@ test_that("apply_scaffolder_message dispatches actions to scaffolder methods", {
     names(out),
     c("applied_actions", "workflow_after", "human_prompts", "errors")
   ))
-  expect_true(identical(length(out$applied_actions), 6L))
+  expect_true(identical(length(out$applied_actions), 7L))
   expect_true(identical(scaffolder$task, "Draft a workflow"))
   expect_true(identical(nrow(scaffolder$workflow$nodes), 2L))
   expect_true(identical(length(scaffolder$workflow$metadata$discussion_rounds), 1L))
@@ -569,6 +651,7 @@ test_that("apply_scaffolder_message dispatches actions to scaffolder methods", {
   ))
   expect_equal(scaffolder$selected_subsystems(), c("pg", "ae"))
   expect_equal(scaffolder$workflow$metadata$node_subsystems$node_2, "ae")
+  expect_equal(scaffolder$list_agent_spec_proposals()$agent_name[[1]], "message-agent")
   expect_true(identical(length(out$errors), 0L))
 })
 

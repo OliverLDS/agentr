@@ -12,6 +12,210 @@
 }
 
 #' @keywords internal
+.agent_spec_proposal_statuses <- function() {
+  c("draft", "under_discussion", "approved", "superseded", "rejected")
+}
+
+#' @keywords internal
+.normalize_agent_spec_proposal_status <- function(status) {
+  match.arg(status, choices = .agent_spec_proposal_statuses())
+}
+
+#' @keywords internal
+.next_agent_spec_proposal_id <- function(scaffolder) {
+  proposals <- scaffolder$agent_state$proposal_state$proposals %||% list()
+  paste0("agent_proposal_", length(proposals) + 1L)
+}
+
+#' @keywords internal
+.new_agent_spec_proposal <- function(
+  id,
+  agent_spec,
+  status = "draft",
+  source = "model",
+  notes = NULL,
+  workflow_proposal_id = NULL,
+  discussion_rounds = list(),
+  created_at = Sys.time(),
+  updated_at = created_at,
+  approved_at = as.POSIXct(NA),
+  superseded_by = NA_character_,
+  supersedes = NA_character_,
+  rejected_at = as.POSIXct(NA)
+) {
+  if (!inherits(agent_spec, "AgentSpec")) {
+    stop("`agent_spec` must be an `AgentSpec`.", call. = FALSE)
+  }
+  agent_spec$validate()
+  proposal <- list(
+    id = as.character(id)[1],
+    status = .normalize_agent_spec_proposal_status(status),
+    source = .normalize_scaffolder_source(source),
+    notes = if (is.null(notes)) NA_character_ else as.character(notes)[1],
+    agent_spec = agent_spec,
+    workflow_proposal_id = if (is.null(workflow_proposal_id)) NA_character_ else as.character(workflow_proposal_id)[1],
+    discussion_rounds = discussion_rounds %||% list(),
+    created_at = as.POSIXct(created_at)[1],
+    updated_at = as.POSIXct(updated_at)[1],
+    approved_at = .proposal_time_or_na(approved_at),
+    superseded_by = if (is.null(superseded_by)) NA_character_ else as.character(superseded_by)[1],
+    supersedes = if (is.null(supersedes)) NA_character_ else as.character(supersedes)[1],
+    rejected_at = .proposal_time_or_na(rejected_at)
+  )
+  class(proposal) <- c("agentr_agent_spec_proposal", class(proposal))
+  .validate_agent_spec_proposal(proposal)
+}
+
+#' @keywords internal
+.validate_agent_spec_proposal <- function(x) {
+  required_fields <- c(
+    "id", "status", "source", "notes", "agent_spec", "workflow_proposal_id",
+    "discussion_rounds", "created_at", "updated_at", "approved_at",
+    "superseded_by", "supersedes", "rejected_at"
+  )
+  if (!is.list(x) || !all(required_fields %in% names(x))) {
+    stop("Agent spec proposal must contain the required proposal fields.", call. = FALSE)
+  }
+  if (!is.character(x$id) || length(x$id) != 1L || !nzchar(x$id)) {
+    stop("Agent spec proposal `id` must be a non-empty string.", call. = FALSE)
+  }
+  .normalize_agent_spec_proposal_status(x$status)
+  if (!inherits(x$agent_spec, "AgentSpec")) {
+    stop("Agent spec proposal `agent_spec` must be an `AgentSpec`.", call. = FALSE)
+  }
+  x$agent_spec$validate()
+  if (!is.list(x$discussion_rounds)) {
+    stop("Agent spec proposal `discussion_rounds` must be a list.", call. = FALSE)
+  }
+  invisible(x)
+}
+
+#' @keywords internal
+.agent_spec_proposal_summary <- function(x) {
+  .validate_agent_spec_proposal(x)
+  data.frame(
+    id = x$id,
+    status = x$status,
+    source = x$source,
+    notes = x$notes,
+    agent_name = x$agent_spec$agent_name,
+    selected_subsystems = paste(x$agent_spec$selected_subsystems(), collapse = ", "),
+    workflow_nodes = if (is.null(x$agent_spec$workflow)) 0L else nrow(x$agent_spec$workflow$nodes),
+    workflow_proposal_id = x$workflow_proposal_id,
+    created_at = x$created_at,
+    updated_at = x$updated_at,
+    approved_at = x$approved_at,
+    superseded_by = x$superseded_by,
+    supersedes = x$supersedes,
+    stringsAsFactors = FALSE
+  )
+}
+
+#' @keywords internal
+.agent_spec_proposal_can_transition <- function(proposal, to_status) {
+  .validate_agent_spec_proposal(proposal)
+  to_status <- .normalize_agent_spec_proposal_status(to_status)
+  if (identical(proposal$status, to_status)) {
+    return(TRUE)
+  }
+  allowed <- list(
+    draft = c("under_discussion", "approved", "superseded", "rejected"),
+    under_discussion = c("approved", "superseded", "rejected"),
+    approved = character(),
+    superseded = character(),
+    rejected = character()
+  )
+  to_status %in% allowed[[proposal$status]]
+}
+
+#' @keywords internal
+.transition_agent_spec_proposal <- function(
+  proposal,
+  to_status,
+  timestamp = Sys.time(),
+  superseded_by = NULL,
+  supersedes = NULL
+) {
+  .validate_agent_spec_proposal(proposal)
+  to_status <- .normalize_agent_spec_proposal_status(to_status)
+  if (!.agent_spec_proposal_can_transition(proposal, to_status)) {
+    stop(
+      "Invalid agent spec proposal transition from `",
+      proposal$status,
+      "` to `",
+      to_status,
+      "`.",
+      call. = FALSE
+    )
+  }
+  timestamp <- as.POSIXct(timestamp)[1]
+  proposal$status <- to_status
+  proposal$updated_at <- timestamp
+  if (identical(to_status, "approved")) {
+    proposal$approved_at <- timestamp
+    proposal$rejected_at <- as.POSIXct(NA)
+  }
+  if (identical(to_status, "rejected")) {
+    proposal$rejected_at <- timestamp
+  }
+  if (identical(to_status, "superseded")) {
+    proposal$superseded_by <- if (is.null(superseded_by)) NA_character_ else as.character(superseded_by)[1]
+  }
+  if (!is.null(supersedes)) {
+    proposal$supersedes <- as.character(supersedes)[1]
+  }
+  .validate_agent_spec_proposal(proposal)
+  proposal
+}
+
+#' @keywords internal
+.append_agent_spec_proposal_discussion <- function(
+  proposal,
+  feedback,
+  source = "human",
+  confidence = NA_real_,
+  timestamp = Sys.time()
+) {
+  .validate_agent_spec_proposal(proposal)
+  if (!is.character(feedback) || length(feedback) != 1L || !nzchar(feedback)) {
+    stop("`feedback` must be a non-empty string.", call. = FALSE)
+  }
+  if (identical(proposal$status, "approved")) {
+    stop("Cannot discuss an approved agent spec proposal directly.", call. = FALSE)
+  }
+  round <- list(
+    source = .normalize_scaffolder_source(source),
+    feedback = feedback,
+    confidence = .as_optional_confidence(confidence),
+    discussed_at = as.POSIXct(timestamp)[1]
+  )
+  proposal$discussion_rounds <- c(proposal$discussion_rounds, list(round))
+  proposal$updated_at <- round$discussed_at
+  if (identical(proposal$status, "draft")) {
+    proposal <- .transition_agent_spec_proposal(
+      proposal,
+      to_status = "under_discussion",
+      timestamp = round$discussed_at
+    )
+  }
+  list(proposal = proposal, round = round)
+}
+
+#' @keywords internal
+.scaffolder_agent_spec_proposals <- function(scaffolder) {
+  scaffolder$agent_state$proposal_state$proposals %||% list()
+}
+
+#' @keywords internal
+.scaffolder_store_agent_spec_proposal <- function(scaffolder, proposal) {
+  .validate_agent_spec_proposal(proposal)
+  proposals <- .scaffolder_agent_spec_proposals(scaffolder)
+  proposals[[proposal$id]] <- proposal
+  scaffolder$agent_state$proposal_state$proposals <- proposals
+  invisible(proposal)
+}
+
+#' @keywords internal
 .scaffolder_edit_workflow <- function(
   scaffolder,
   add = NULL,
@@ -118,6 +322,108 @@
     scaffolder$agent_state$approved_agent_spec$validate()
   }
   .scaffolder_sync_legacy_state(scaffolder)
+}
+
+#' @keywords internal
+.node_subsystem_labels <- function(scaffolder) {
+  scaffolder$workflow$metadata$node_subsystems %||% list()
+}
+
+#' @keywords internal
+.scaffolder_edit_workflow_subsystems <- function(
+  scaffolder,
+  set = NULL,
+  add = NULL,
+  remove = NULL,
+  clear = NULL
+) {
+  stopifnot(inherits(scaffolder, "Scaffolder"))
+  labels <- .node_subsystem_labels(scaffolder)
+  selected <- scaffolder$selected_subsystems()
+
+  if (!is.null(set)) {
+    labels <- .validate_node_subsystems(set, nodes = scaffolder$workflow$nodes)
+  }
+
+  if (!is.null(add)) {
+    add <- .validate_node_subsystems(add, nodes = scaffolder$workflow$nodes)
+    for (node_id in names(add)) {
+      labels[[node_id]] <- unique(c(labels[[node_id]] %||% character(), add[[node_id]]))
+    }
+  }
+
+  if (!is.null(remove)) {
+    remove <- .validate_node_subsystems(remove, nodes = scaffolder$workflow$nodes)
+    for (node_id in names(remove)) {
+      current <- labels[[node_id]] %||% character()
+      labels[[node_id]] <- setdiff(current, remove[[node_id]])
+      if (!length(labels[[node_id]])) {
+        labels[[node_id]] <- character()
+      }
+    }
+  }
+
+  if (!is.null(clear)) {
+    clear <- as.character(unlist(clear, use.names = FALSE))
+    if (length(clear) && any(!(clear %in% scaffolder$workflow$nodes$id))) {
+      stop("`clear` contains unknown workflow node ids.", call. = FALSE)
+    }
+    for (node_id in clear) {
+      labels[[node_id]] <- character()
+    }
+  }
+
+  if (length(labels)) {
+    invalid <- setdiff(unique(unlist(labels, use.names = FALSE)), selected)
+    if (length(invalid)) {
+      stop(
+        "Workflow node ownership requires selected subsystems only: ",
+        paste(invalid, collapse = ", "),
+        call. = FALSE
+      )
+    }
+  }
+
+  scaffolder$workflow$metadata$node_subsystems <- labels
+  if (!is.null(scaffolder$agent_state$approved_agent_spec)) {
+    scaffolder$agent_state$approved_agent_spec$metadata$node_subsystems <- labels
+  }
+  labels
+}
+
+#' @keywords internal
+.scaffolder_build_agent_spec <- function(
+  scaffolder,
+  agent_name = "agentr-agent",
+  summary = NULL,
+  subsystems = .scaffolder_draft_subsystems(scaffolder),
+  workflow = scaffolder$workflow,
+  state_requirements = list(),
+  interfaces = list(),
+  implementation_targets = list(),
+  metadata = list()
+) {
+  if (is.null(scaffolder$task) || !nzchar(scaffolder$task)) {
+    stop("A task must be evaluated before creating an agent spec.", call. = FALSE)
+  }
+  AgentSpec$new(
+    task = scaffolder$task,
+    agent_name = agent_name,
+    summary = summary %||% scaffolder$workflow$metadata$evaluation$summary %||% scaffolder$task,
+    subsystems = subsystems,
+    workflow = workflow,
+    state_requirements = state_requirements,
+    interfaces = interfaces,
+    implementation_targets = implementation_targets,
+    metadata = utils::modifyList(
+      list(
+        node_subsystems = workflow$metadata$node_subsystems %||% list(),
+        subsystem_recommendations = scaffolder$agent_state$metadata$subsystem_recommendations %||% list(),
+        approved_at = Sys.time()
+      ),
+      metadata
+    )
+  )
 }
 
 #' @keywords internal

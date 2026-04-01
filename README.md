@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and now centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.0` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.2` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -53,7 +53,7 @@ spec <- scaffolder$workflow_spec()
 spec
 ```
 
-`0.2.0` also exposes:
+`0.2.2` also exposes:
 
 - `WorkflowProposal` for one persisted proposal and its lifecycle
 - `WorkflowProposalState` for approved workflow plus proposal history
@@ -94,9 +94,29 @@ save_agent_spec(agent_spec, "agent_spec.rds")
 reloaded_spec <- load_agent_spec("agent_spec.rds")
 ```
 
+If you want a proposal-oriented design loop before final approval, use the draft agent-spec path:
+
+```r
+workflow_preview <- preview_scaffolder_message(scaffolder, response_json)
+
+design_proposal <- scaffolder$propose_agent_spec(
+  workflow_proposal_id = workflow_preview$proposal_id,
+  agent_name = "release-agent",
+  summary = "Draft release-agent design from the previewed workflow"
+)
+
+scaffolder$discuss_agent_spec_proposal(
+  design_proposal$id,
+  "Keep the agent sparse and make publication explicitly human-gated."
+)
+
+# Approves the linked workflow proposal first, then the agent design proposal.
+approved_spec <- scaffolder$approve_agent_spec_proposal(design_proposal$id)
+```
+
 ## LLM Scaffolding Bridge
 
-`0.1.9` provides a constrained bridge for letting an external LLM reason about scaffolding actions without exposing arbitrary code execution.
+`0.2.2` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)
@@ -137,7 +157,9 @@ scaffolder$discuss_workflow_proposal(
 
 Proposal discussion moves a stored proposal from `pending` to `under_discussion`. The live workflow stays unchanged until `approve_workflow_proposal()` is called, and implementation prompts continue to use the approved workflow only.
 
-## Workflow Proposal Review And Approval
+Agent-design proposals follow a parallel flow: draft first, discussion when needed, then approval. When an agent-spec proposal is linked to a workflow proposal, `approve_agent_spec_proposal()` can approve both in one coherent step.
+
+## Workflow And Agent-Design Proposal Review And Approval
 
 Proposal objects can be saved and reloaded independently of the full `Scaffolder`:
 
@@ -169,6 +191,8 @@ proposal <- WorkflowProposal$new(
 proposal$discuss("Needs an explicit publication checkpoint.")
 proposal$transition("under_discussion")
 ```
+
+For the higher-level design loop, `Scaffolder$propose_agent_spec()`, `Scaffolder$discuss_agent_spec_proposal()`, and `Scaffolder$approve_agent_spec_proposal()` provide the same draft-to-approval structure for agent designs.
 
 The LLM is constrained to a validated set of scaffolder methods and must return machine-readable JSON. The dispatch result is normalized into:
 

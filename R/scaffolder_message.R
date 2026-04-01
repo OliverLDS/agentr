@@ -16,6 +16,9 @@ scaffolder_action_methods <- function() {
     "recommend_subsystems",
     "select_subsystems",
     "label_workflow_subsystems",
+    "edit_workflow_subsystems",
+    "propose_agent_spec",
+    "approve_agent_spec_proposal",
     "approve_agent_spec",
     "ask_human_complete",
     "ask_human_changes",
@@ -152,6 +155,20 @@ scaffolder_action_methods <- function() {
     recommend_subsystems = c("task"),
     select_subsystems = c("subsystems"),
     label_workflow_subsystems = c("labels"),
+    edit_workflow_subsystems = c("set", "add", "remove", "clear"),
+    propose_agent_spec = c(
+      "agent_name",
+      "summary",
+      "subsystems",
+      "workflow_proposal_id",
+      "state_requirements",
+      "interfaces",
+      "implementation_targets",
+      "metadata",
+      "source",
+      "notes"
+    ),
+    approve_agent_spec_proposal = c("proposal_id", "approve_linked_workflow"),
     approve_agent_spec = c(
       "agent_name",
       "summary",
@@ -220,6 +237,41 @@ scaffolder_action_methods <- function() {
     }
   }
 
+  if (identical(method, "edit_workflow_subsystems")) {
+    for (name in c("set", "add", "remove")) {
+      value <- .arg_get(args, name)
+      if (!is.null(value) && !is.list(value)) {
+        stop("`edit_workflow_subsystems.", name, "` must be a named list.", call. = FALSE)
+      }
+    }
+    clear_arg <- .arg_get(args, "clear")
+    if (!is.null(clear_arg) && !is.character(unlist(clear_arg, use.names = FALSE))) {
+      stop("`edit_workflow_subsystems.clear` must be character.", call. = FALSE)
+    }
+  }
+
+  if (identical(method, "propose_agent_spec")) {
+    agent_name_arg <- .arg_get(args, "agent_name")
+    if (!is.null(agent_name_arg) &&
+        (!is.character(agent_name_arg) || length(agent_name_arg) != 1L || !nzchar(agent_name_arg))) {
+      stop("`propose_agent_spec.agent_name` must be a non-empty string when provided.", call. = FALSE)
+    }
+    source_arg <- .arg_get(args, "source")
+    if (!is.null(source_arg)) {
+      .normalize_scaffolder_source(source_arg)
+    }
+    selected_arg <- .arg_get(args, "subsystems")
+    if (!is.null(selected_arg) &&
+        !inherits(selected_arg, "SubsystemSpec") &&
+        !is.character(selected_arg) &&
+        !is.list(selected_arg)) {
+      stop(
+        "`propose_agent_spec.subsystems` must be a `SubsystemSpec`, character vector, or named list.",
+        call. = FALSE
+      )
+    }
+  }
+
   if (identical(method, "decompose_task")) {
     task_arg <- .arg_get(args, "task")
     candidates_arg <- .arg_get(args, "candidates")
@@ -256,6 +308,13 @@ scaffolder_action_methods <- function() {
     node_id_arg <- .arg_get(args, "node_id")
     if (!is.character(node_id_arg) || length(node_id_arg) != 1L || !nzchar(node_id_arg)) {
       stop("`", method, "` requires a non-empty `node_id` string.", call. = FALSE)
+    }
+  }
+
+  if (identical(method, "approve_agent_spec_proposal")) {
+    proposal_id_arg <- .arg_get(args, "proposal_id")
+    if (!is.character(proposal_id_arg) || length(proposal_id_arg) != 1L || !nzchar(proposal_id_arg)) {
+      stop("`approve_agent_spec_proposal` requires a non-empty `proposal_id` string.", call. = FALSE)
     }
   }
 
@@ -391,6 +450,41 @@ scaffolder_action_methods <- function() {
     }
   }
 
+  if (identical(method, "edit_workflow_subsystems")) {
+    for (name in c("set", "add", "remove")) {
+      value <- .arg_get(args, name)
+      if (!is.null(value)) {
+        .validate_node_subsystems(value, nodes = scaffolder$workflow$nodes)
+      }
+    }
+    clear_arg <- .arg_get(args, "clear")
+    if (!is.null(clear_arg)) {
+      clear_ids <- unlist(clear_arg, use.names = FALSE)
+      if (length(clear_ids) && any(!(clear_ids %in% existing_ids))) {
+        stop("`clear` contains unknown workflow node ids.", call. = FALSE)
+      }
+    }
+  }
+
+  if (identical(method, "propose_agent_spec")) {
+    workflow_proposal_id_arg <- .arg_get(args, "workflow_proposal_id")
+    if (!is.null(workflow_proposal_id_arg) &&
+        !is.null(scaffolder$workflow_state$proposals[[workflow_proposal_id_arg]])) {
+      return(invisible(TRUE))
+    }
+    if (!is.null(workflow_proposal_id_arg)) {
+      stop("Unknown workflow proposal reference: ", workflow_proposal_id_arg, call. = FALSE)
+    }
+  }
+
+  if (identical(method, "approve_agent_spec_proposal")) {
+    proposal_id_arg <- .arg_get(args, "proposal_id")
+    proposal <- scaffolder$agent_state$proposal_state$proposals[[proposal_id_arg]] %||% NULL
+    if (is.null(proposal)) {
+      stop("Unknown agent spec proposal reference: ", proposal_id_arg, call. = FALSE)
+    }
+  }
+
   if (method %in% c("edit_workflow", "apply_human_feedback")) {
     targets <- .extract_edit_targets(args = args, existing_ids = existing_ids)
     combined_ids <- unique(c(existing_ids, targets$added_ids, targets$inserted_ids))
@@ -487,6 +581,7 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
     edges = workflow$edges,
     metadata = workflow$metadata
   )
+  agent_proposals <- scaffolder$list_agent_spec_proposals()
   agent_payload <- if (is.null(scaffolder$task) || !nzchar(scaffolder$task)) {
     list(
       task = NULL,
@@ -494,10 +589,18 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
       summary = NULL,
       subsystems = SubsystemSpec$new()$as_list(),
       workflow = workflow_payload,
-      metadata = list()
+      metadata = list(),
+      recommendations = list(),
+      proposals = list()
     )
   } else {
-    scaffolder$agent_spec()$as_list()
+    c(
+      scaffolder$agent_spec()$as_list(),
+      list(
+        recommendations = scaffolder$subsystem_recommendations(),
+        proposals = if (nrow(agent_proposals)) agent_proposals else list()
+      )
+    )
   }
 
   action_schema <- list(
@@ -534,6 +637,20 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
         args = list(
           subsystems = c("pg", "ae")
         )
+      ),
+      list(
+        method = "propose_agent_spec",
+        args = list(
+          agent_name = "qa-agent",
+          summary = "Draft QA-oriented agent design.",
+          source = "model"
+        )
+      ),
+      list(
+        method = "approve_agent_spec_proposal",
+        args = list(
+          proposal_id = "agent_proposal_1"
+        )
       )
     ),
     notes = "Optional short reasoning note."
@@ -565,6 +682,9 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
     recommend_subsystems = "Recommend a sparse subsystem set for the current task and workflow.",
     select_subsystems = "Store the selected subsystem configuration.",
     label_workflow_subsystems = "Assign subsystem owners to workflow nodes.",
+    edit_workflow_subsystems = "Edit subsystem ownership on workflow nodes incrementally.",
+    propose_agent_spec = "Store a draft agent-spec proposal from the current or proposed workflow state.",
+    approve_agent_spec_proposal = "Approve a stored agent-spec proposal and optionally approve its linked workflow proposal.",
     approve_agent_spec = "Approve an agent spec from the current task, workflow, and subsystem state.",
     ask_human_complete = "Ask whether a node is complete.",
     ask_human_changes = "Ask what workflow or edge changes should happen next.",
@@ -670,10 +790,21 @@ build_agent_design_prompt <- function(scaffolder, format = "json") {
       summary = NULL,
       subsystems = SubsystemSpec$new()$as_list(),
       workflow = NULL,
-      metadata = list()
+      metadata = list(),
+      recommendations = list(),
+      proposals = list()
     )
   } else {
-    scaffolder$agent_spec()$as_list()
+    c(
+      scaffolder$agent_spec()$as_list(),
+      list(
+        recommendations = scaffolder$subsystem_recommendations(),
+        proposals = {
+          proposals <- scaffolder$list_agent_spec_proposals()
+          if (nrow(proposals)) proposals else list()
+        }
+      )
+    )
   }
   workflow <- scaffolder$workflow_spec()
   contract <- new_prompt_contract(
@@ -705,27 +836,32 @@ build_agent_design_prompt <- function(scaffolder, format = "json") {
       list(method = "recommend_subsystems", args = list()),
       list(method = "select_subsystems", args = list(subsystems = c("pg", "ae"))),
       list(
-        method = "label_workflow_subsystems",
-        args = list(labels = list(node_1 = c("pg"), node_2 = c("ae")))
+        method = "edit_workflow_subsystems",
+        args = list(add = list(node_1 = c("pg"), node_2 = c("ae")))
       ),
       list(
-        method = "approve_agent_spec",
+        method = "propose_agent_spec",
         args = list(
           agent_name = "release-agent",
           summary = "Sparse agent for release planning and execution."
         )
+      ),
+      list(
+        method = "approve_agent_spec_proposal",
+        args = list(proposal_id = "agent_proposal_1")
       )
     ),
     notes = "Optional short reasoning note."
   )
 
   instructions <- c(
-    "Treat subsystem selection as a separate design axis from workflow structure.",
-    "Default to sparse agents and avoid enabling subsystems without justification.",
-    "Model RWM through cognitive and affective layers when memory or affect is truly needed.",
-    "Keep workflow-first compatibility by using the current workflow as a nested artifact inside the agent design.",
-    "Approve the agent spec only after subsystem selection and workflow ownership labels are coherent."
-  )
+      "Treat subsystem selection as a separate design axis from workflow structure.",
+      "Default to sparse agents and avoid enabling subsystems without justification.",
+      "Model RWM through cognitive and affective layers when memory or affect is truly needed.",
+      "Keep workflow-first compatibility by using the current workflow as a nested artifact inside the agent design.",
+      "Use draft agent-spec proposals to preserve design iterations before final approval.",
+      "Approve the agent spec only after subsystem selection and workflow ownership labels are coherent."
+    )
 
   payload <- .prompt_contract_payload(contract, list(
     role = "agent_design_reasoner",

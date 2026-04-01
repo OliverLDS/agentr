@@ -390,12 +390,24 @@
 #' @param subsystems Selected subsystems used by `$select_subsystems()`.
 #' @param labels Named node-to-subsystem assignments used by
 #'   `$label_workflow_subsystems()`.
+#' @param set Named node-to-subsystem assignments used by
+#'   `$edit_workflow_subsystems()`.
+#' @param clear Character vector of node ids whose ownership labels should be
+#'   cleared by `$edit_workflow_subsystems()`.
 #' @param agent_name Agent name used by `$approve_agent_spec()`.
 #' @param state_requirements State requirements used by `$approve_agent_spec()`.
 #' @param interfaces Interfaces used by `$approve_agent_spec()`.
 #' @param implementation_targets Implementation targets used by
 #'   `$approve_agent_spec()`.
 #' @param metadata Agent-spec metadata used by `$approve_agent_spec()`.
+#' @param source Proposal source used by proposal methods.
+#' @param notes Optional proposal notes.
+#' @param workflow_proposal_id Workflow proposal id used to seed an agent-spec
+#'   proposal.
+#' @param approve_linked_workflow Whether linked workflow proposals should be
+#'   approved when approving an agent-spec proposal.
+#' @param subsystem Optional subsystem name used by
+#'   `$subsystem_recommendation_rationale()`.
 #' @section Methods:
 #' \describe{
 #'   \item{`$initialize(agent = NULL, completion_threshold = 0.75)`}{Create a scaffolder with empty workflow state and review metadata.}
@@ -410,9 +422,17 @@
 #'   \item{`$edit_workflow(add = NULL, insert = NULL, remove = NULL, add_edges = NULL, remove_edges = NULL, rule_specs = list(), confidence = list())`}{Apply first-class node and edge edits to the current workflow.}
 #'   \item{`$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())`}{Compatibility wrapper for structured human workflow edits.}
 #'   \item{`$recommend_subsystems(task = self$task)`}{Recommend a sparse subsystem set for the current task and workflow.}
+#'   \item{`$subsystem_recommendations()`}{Return the current subsystem recommendation records.}
+#'   \item{`$subsystem_recommendation_rationale(subsystem = NULL)`}{Return stored recommendation rationale for one subsystem or all subsystems.}
 #'   \item{`$select_subsystems(subsystems)`}{Store the selected subsystem configuration.}
 #'   \item{`$selected_subsystems()`}{Return the currently selected subsystem names.}
 #'   \item{`$label_workflow_subsystems(labels)`}{Assign subsystem owners to workflow nodes.}
+#'   \item{`$edit_workflow_subsystems(set = NULL, add = NULL, remove = NULL, clear = NULL)`}{Edit workflow-node subsystem ownership incrementally.}
+#'   \item{`$propose_agent_spec(agent_name = "agentr-agent", summary = NULL, subsystems = NULL, workflow = NULL, workflow_proposal_id = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list(), source = "model", notes = NULL)`}{Store a draft agent-spec proposal.}
+#'   \item{`$list_agent_spec_proposals(status = NULL)`}{Return stored agent-spec proposal summaries.}
+#'   \item{`$get_agent_spec_proposal(proposal_id)`}{Return a stored agent-spec proposal by id.}
+#'   \item{`$discuss_agent_spec_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)`}{Attach discussion feedback to a draft agent-spec proposal.}
+#'   \item{`$approve_agent_spec_proposal(proposal_id, approve_linked_workflow = TRUE)`}{Approve a stored agent-spec proposal and optionally approve its linked workflow proposal.}
 #'   \item{`$approve_agent_spec(agent_name = "agentr-agent", summary = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list())`}{Approve an `AgentSpec` built from the current task, subsystem selection, and workflow.}
 #'   \item{`$agent_spec()`}{Return the approved agent spec or a draft spec built from current state.}
 #'   \item{`$propose_workflow(workflow, source = "model", notes = NULL)`}{Store a pending workflow proposal for preview and review.}
@@ -468,7 +488,8 @@ Scaffolder <- R6::R6Class(
         workflow_state = self$workflow_state,
         metadata = list(
           draft_subsystems = SubsystemSpec$new(),
-          subsystem_recommendations = list()
+          subsystem_recommendations = list(),
+          draft_agent_spec = NULL
         )
       )
       self$proposal_log <- list()
@@ -762,6 +783,23 @@ Scaffolder <- R6::R6Class(
     },
 
     #' @description
+    #' Return the current subsystem recommendation records.
+    subsystem_recommendations = function() {
+      self$agent_state$metadata$subsystem_recommendations %||% list()
+    },
+
+    #' @description
+    #' Return stored recommendation rationale.
+    subsystem_recommendation_rationale = function(subsystem = NULL) {
+      recommendations <- self$subsystem_recommendations()
+      if (is.null(subsystem)) {
+        return(lapply(recommendations, `[[`, "rationale"))
+      }
+      subsystem <- match.arg(subsystem, choices = .subsystem_names())
+      recommendations[[subsystem]]$rationale %||% NA_character_
+    },
+
+    #' @description
     #' Store the selected subsystem configuration.
     select_subsystems = function(subsystems) {
       spec <- .coerce_subsystem_selection(subsystems)
@@ -782,17 +820,198 @@ Scaffolder <- R6::R6Class(
     #' @description
     #' Assign subsystem owners to workflow nodes.
     label_workflow_subsystems = function(labels) {
-      self$workflow$metadata$node_subsystems <-
-        .validate_node_subsystems(labels, nodes = self$workflow$nodes)
-      if (!is.null(self$agent_state$approved_agent_spec)) {
-        self$agent_state$approved_agent_spec$metadata$node_subsystems <-
-          self$workflow$metadata$node_subsystems
-      }
+      self$workflow$metadata$node_subsystems <- .scaffolder_edit_workflow_subsystems(
+        scaffolder = self,
+        set = labels
+      )
       self$record_interaction(
         "label_workflow_subsystems",
         list(node_subsystems = self$workflow$metadata$node_subsystems)
       )
       invisible(self$workflow$metadata$node_subsystems)
+    },
+
+    #' @description
+    #' Edit workflow-node subsystem ownership incrementally.
+    edit_workflow_subsystems = function(set = NULL, add = NULL, remove = NULL, clear = NULL) {
+      labels <- .scaffolder_edit_workflow_subsystems(
+        scaffolder = self,
+        set = set,
+        add = add,
+        remove = remove,
+        clear = clear
+      )
+      self$record_interaction(
+        "edit_workflow_subsystems",
+        list(set = set, add = add, remove = remove, clear = clear, node_subsystems = labels)
+      )
+      invisible(labels)
+    },
+
+    #' @description
+    #' Store a draft agent-spec proposal.
+    propose_agent_spec = function(
+      agent_name = "agentr-agent",
+      summary = NULL,
+      subsystems = NULL,
+      workflow = NULL,
+      workflow_proposal_id = NULL,
+      state_requirements = list(),
+      interfaces = list(),
+      implementation_targets = list(),
+      metadata = list(),
+      source = "model",
+      notes = NULL
+    ) {
+      workflow <- workflow %||% self$workflow
+      if (!is.null(workflow_proposal_id)) {
+        workflow <- self$get_workflow_proposal(workflow_proposal_id)$workflow
+      }
+      spec <- .scaffolder_build_agent_spec(
+        scaffolder = self,
+        agent_name = agent_name,
+        summary = summary,
+        subsystems = subsystems %||% .scaffolder_draft_subsystems(self),
+        workflow = workflow,
+        state_requirements = state_requirements,
+        interfaces = interfaces,
+        implementation_targets = implementation_targets,
+        metadata = metadata
+      )
+      proposal <- .new_agent_spec_proposal(
+        id = .next_agent_spec_proposal_id(self),
+        agent_spec = spec,
+        source = source,
+        notes = notes,
+        workflow_proposal_id = workflow_proposal_id
+      )
+      .scaffolder_store_agent_spec_proposal(self, proposal)
+      self$agent_state$metadata$draft_agent_spec <- spec
+      self$record_interaction(
+        "propose_agent_spec",
+        list(
+          proposal_id = proposal$id,
+          workflow_proposal_id = workflow_proposal_id,
+          selected_subsystems = spec$selected_subsystems()
+        )
+      )
+      invisible(proposal)
+    },
+
+    #' @description
+    #' Return stored agent-spec proposal summaries.
+    list_agent_spec_proposals = function(status = NULL) {
+      proposals <- unname(.scaffolder_agent_spec_proposals(self))
+      if (!is.null(status)) {
+        status <- .normalize_agent_spec_proposal_status(status)
+        proposals <- Filter(function(item) identical(item$status, status), proposals)
+      }
+      if (!length(proposals)) {
+        return(data.frame(
+          id = character(),
+          status = character(),
+          source = character(),
+          notes = character(),
+          agent_name = character(),
+          selected_subsystems = character(),
+          workflow_nodes = integer(),
+          workflow_proposal_id = character(),
+          created_at = as.POSIXct(character()),
+          updated_at = as.POSIXct(character()),
+          approved_at = as.POSIXct(character()),
+          superseded_by = character(),
+          supersedes = character(),
+          stringsAsFactors = FALSE
+        ))
+      }
+      do.call(rbind, lapply(proposals, .agent_spec_proposal_summary))
+    },
+
+    #' @description
+    #' Return a stored agent-spec proposal by id.
+    get_agent_spec_proposal = function(proposal_id) {
+      proposal <- .scaffolder_agent_spec_proposals(self)[[proposal_id]]
+      if (is.null(proposal)) {
+        stop("Unknown agent spec proposal: ", proposal_id, call. = FALSE)
+      }
+      proposal
+    },
+
+    #' @description
+    #' Attach discussion feedback to a draft agent-spec proposal.
+    discuss_agent_spec_proposal = function(
+      proposal_id,
+      feedback,
+      source = "human",
+      confidence = NA_real_
+    ) {
+      proposal <- self$get_agent_spec_proposal(proposal_id)
+      out <- .append_agent_spec_proposal_discussion(
+        proposal = proposal,
+        feedback = feedback,
+        source = source,
+        confidence = confidence
+      )
+      .scaffolder_store_agent_spec_proposal(self, out$proposal)
+      self$record_interaction(
+        "discuss_agent_spec_proposal",
+        list(proposal_id = proposal_id, feedback = feedback, source = out$round$source)
+      )
+      invisible(out$proposal)
+    },
+
+    #' @description
+    #' Approve a stored agent-spec proposal and optionally approve its linked
+    #' workflow proposal.
+    approve_agent_spec_proposal = function(proposal_id, approve_linked_workflow = TRUE) {
+      proposal <- self$get_agent_spec_proposal(proposal_id)
+      latest <- tail(unname(.scaffolder_agent_spec_proposals(self)), 1L)[[1]]
+      timestamp <- Sys.time()
+
+      if (isTRUE(approve_linked_workflow) &&
+          !is.na(proposal$workflow_proposal_id) &&
+          !identical(proposal$workflow_proposal_id, "")) {
+        linked <- self$get_workflow_proposal(proposal$workflow_proposal_id)
+        if (!identical(linked$status, "approved")) {
+          self$approve_workflow_proposal(proposal$workflow_proposal_id)
+        }
+      } else if (!is.null(proposal$agent_spec$workflow)) {
+        self$workflow <- proposal$agent_spec$workflow
+        .scaffolder_sync_approved_workflow(self)
+      }
+
+      proposal <- .transition_agent_spec_proposal(
+        proposal,
+        to_status = "approved",
+        timestamp = timestamp,
+        supersedes = if (is.null(latest) || identical(latest$id, proposal_id)) NULL else latest$id
+      )
+      .scaffolder_store_agent_spec_proposal(self, proposal)
+
+      for (other_id in names(.scaffolder_agent_spec_proposals(self))) {
+        if (identical(other_id, proposal_id)) {
+          next
+        }
+        other <- self$get_agent_spec_proposal(other_id)
+        if (!(other$status %in% c("draft", "under_discussion"))) {
+          next
+        }
+        other <- .transition_agent_spec_proposal(
+          other,
+          to_status = "superseded",
+          timestamp = timestamp,
+          superseded_by = proposal_id
+        )
+        .scaffolder_store_agent_spec_proposal(self, other)
+      }
+
+      self$agent_state$set_approved_agent_spec(proposal$agent_spec)
+      self$agent_state$metadata$draft_agent_spec <- proposal$agent_spec
+      self$record_interaction(
+        "approve_agent_spec_proposal",
+        list(proposal_id = proposal_id, workflow_proposal_id = proposal$workflow_proposal_id)
+      )
+      invisible(proposal$agent_spec)
     },
 
     #' @description
@@ -805,30 +1024,20 @@ Scaffolder <- R6::R6Class(
       implementation_targets = list(),
       metadata = list()
     ) {
-      if (is.null(self$task) || !nzchar(self$task)) {
-        stop("A task must be evaluated before approving an agent spec.", call. = FALSE)
-      }
-
-      spec <- AgentSpec$new(
-        task = self$task,
+      spec <- .scaffolder_build_agent_spec(
+        scaffolder = self,
         agent_name = agent_name,
-        summary = summary %||% self$workflow$metadata$evaluation$summary %||% self$task,
+        summary = summary,
         subsystems = .scaffolder_draft_subsystems(self),
         workflow = self$workflow,
         state_requirements = state_requirements,
         interfaces = interfaces,
         implementation_targets = implementation_targets,
-        metadata = utils::modifyList(
-          list(
-            node_subsystems = self$workflow$metadata$node_subsystems %||% list(),
-            subsystem_recommendations = self$agent_state$metadata$subsystem_recommendations %||% list(),
-            approved_at = Sys.time()
-          ),
-          metadata
-        )
+        metadata = metadata
       )
 
       self$agent_state$set_approved_agent_spec(spec)
+      self$agent_state$metadata$draft_agent_spec <- spec
       self$record_interaction(
         "approve_agent_spec",
         list(
@@ -845,13 +1054,12 @@ Scaffolder <- R6::R6Class(
       if (!is.null(self$agent_state$approved_agent_spec)) {
         return(self$agent_state$approved_agent_spec)
       }
-      if (is.null(self$task) || !nzchar(self$task)) {
-        stop("A task must be evaluated before creating an agent spec.", call. = FALSE)
+      if (inherits(self$agent_state$metadata$draft_agent_spec, "AgentSpec")) {
+        return(self$agent_state$metadata$draft_agent_spec)
       }
-      AgentSpec$new(
-        task = self$task,
+      .scaffolder_build_agent_spec(
+        scaffolder = self,
         agent_name = "agentr-agent",
-        summary = self$workflow$metadata$evaluation$summary %||% self$task,
         subsystems = .scaffolder_draft_subsystems(self),
         workflow = self$workflow,
         metadata = list(

@@ -3,7 +3,7 @@
 `agentr` separates scaffolding work into three stages:
 
 1. agent design and workflow elicitation
-2. workflow proposal review and approval
+2. workflow and agent-design proposal review and approval
 3. implementation and extraction handoff
 
 ## 1. Agent Design And Workflow Elicitation
@@ -20,7 +20,7 @@ During elicitation, `Scaffolder` is used to:
 
 At this stage, the active workflow is still the approved working state inside the `Scaffolder`. The higher-level design target is an approved `AgentSpec`, with workflow kept as one nested planning component.
 
-## 2. Workflow Proposal Review And Approval
+## 2. Workflow And Agent-Design Proposal Review And Approval
 
 When a model or human suggests a new workflow shape, use `preview_scaffolder_message()`, `Scaffolder$propose_workflow()`, or `WorkflowProposal$new()` to create a proposal without mutating the live workflow.
 
@@ -39,6 +39,24 @@ Key behavior:
 - approval promotes the proposal workflow into the live approved workflow
 - approving a newer proposal supersedes older active proposals
 - approved proposals are not reopened by direct discussion
+
+When a model or human suggests a higher-level agent design, use `Scaffolder$propose_agent_spec()` to create a draft agent-spec proposal without mutating the approved agent design.
+
+Agent-spec proposal lifecycle statuses are:
+
+- `draft`
+- `under_discussion`
+- `approved`
+- `superseded`
+- `rejected`
+
+Key behavior:
+
+- a draft agent-spec proposal can be linked to a workflow proposal id
+- discussion moves a draft agent-spec proposal into `under_discussion`
+- approval promotes the proposal agent spec into the live approved agent design
+- approval can also approve the linked workflow proposal first when the two are meant to advance together
+- approved agent-spec proposals are not reopened by direct discussion
 
 ## 3. Implementation And Extraction Handoff
 
@@ -95,4 +113,21 @@ agent_spec <- scaffolder$approve_agent_spec(
   agent_name = "release-agent",
   summary = "Sparse planner/executor"
 )
+```
+
+If you want a proposal-oriented design loop before final approval, use:
+
+```r
+design_proposal <- scaffolder$propose_agent_spec(
+  workflow_proposal_id = preview$proposal_id,
+  agent_name = "release-agent",
+  summary = "Draft release-agent design"
+)
+
+scaffolder$discuss_agent_spec_proposal(
+  design_proposal$id,
+  "Keep the agent sparse and preserve human approval gates."
+)
+
+approved_spec <- scaffolder$approve_agent_spec_proposal(design_proposal$id)
 ```

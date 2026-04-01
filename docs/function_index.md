@@ -90,3 +90,16 @@
 | `load_yaml_file()` | Load YAML files |
 | `inferencer_available()` | Detect optional `inferencer` availability |
 | `inferencer_integration()` | Build optional integration metadata |
+
+## Scaffolder Design Flow
+
+| Method | Purpose |
+| --- | --- |
+| `Scaffolder$subsystem_recommendations()` | Return stored subsystem recommendation records |
+| `Scaffolder$subsystem_recommendation_rationale()` | Return recommendation rationale for one or all subsystems |
+| `Scaffolder$edit_workflow_subsystems()` | Edit workflow-node subsystem ownership incrementally |
+| `Scaffolder$propose_agent_spec()` | Store a draft agent-spec proposal |
+| `Scaffolder$list_agent_spec_proposals()` | List draft and approved agent-spec proposals |
+| `Scaffolder$get_agent_spec_proposal()` | Fetch one stored agent-spec proposal |
+| `Scaffolder$discuss_agent_spec_proposal()` | Attach discussion to a draft agent-spec proposal |
+| `Scaffolder$approve_agent_spec_proposal()` | Approve a draft agent-spec proposal and optionally its linked workflow proposal |

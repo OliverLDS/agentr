@@ -1,4 +1,4 @@
-# agentr 0.2.0 Architecture
+# agentr 0.2.2 Architecture
 
 `agentr` is the agent core, not the execution layer.
 
@@ -38,11 +38,12 @@ Implemented as `Scaffolder`, which supports:
 - workflow-level review
 - node-level review
 - first-class node and edge editing
-- approved agent-spec state
+- draft and approved agent-spec state
 - workflow proposal preview, approval, and supersession
+- draft agent-spec proposal creation, discussion, and approval
 - iterative workflow refinement
 
-Internally, `0.2.0` keeps `Scaffolder` as the facade while separating:
+Internally, `0.2.2` keeps `Scaffolder` as the facade while separating:
 
 - workflow mutation helpers
 - proposal lifecycle helpers
@@ -99,6 +100,12 @@ Persisted proposal artifacts and proposal state objects are now part of the supp
 - proposals can be saved and loaded outside a live `Scaffolder`
 - proposals can be visualized directly as graph-ready data
 
+Agent-design proposals now sit alongside workflow proposals inside the scaffolder design loop:
+
+- workflow proposals preserve candidate workflow structure before approval
+- agent-spec proposals preserve candidate agent designs before approval
+- linked approval can promote both the workflow and the higher-level agent design together
+
 ## Agent Output
 
 `AgentSpec` is now the top-level design artifact. It contains:
@@ -140,7 +147,7 @@ Workflow specs can also be:
 - saved and loaded independently
 - exported as graph-ready tables for packages such as `igraph`
 
-Within `0.2.0`, workflow ownership labels live in workflow metadata so workflow-first compatibility remains intact while agent designs can still mark which subsystem owns each node.
+Within `0.2.2`, workflow ownership labels live in workflow metadata so workflow-first compatibility remains intact while agent designs can still mark which subsystem owns each node. Those ownership labels can now be edited incrementally rather than only replaced wholesale.
 
 ## Package Boundaries
 
