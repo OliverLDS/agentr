@@ -225,3 +225,137 @@ print.agentr_workflow_spec <- function(x, ...) {
   cat("Edges:", nrow(x$edges), "\n")
   invisible(x)
 }
+
+#' Build a workflow specification from extracted JSON
+#'
+#' Converts reasoning-model output produced from
+#' [build_workflow_extraction_prompt()] into a validated
+#' `agentr_workflow_spec` object.
+#'
+#' @param x Parsed list, raw JSON string, or path to a `.json` file.
+#'
+#' @return A validated workflow specification.
+#' @export
+workflow_spec_from_json <- function(x) {
+  if (is.character(x) && length(x) == 1L && nzchar(x)) {
+    if (file.exists(x)) {
+      if (!grepl("\\.json$", x, ignore.case = TRUE)) {
+        stop("Workflow JSON files must use a `.json` extension.", call. = FALSE)
+      }
+      x <- load_json_file(x, simplifyVector = FALSE)
+    } else {
+      x <- tryCatch(
+        jsonlite::fromJSON(x, simplifyVector = FALSE),
+        error = function(e) {
+          stop("Could not parse workflow JSON.", call. = FALSE)
+        }
+      )
+    }
+  }
+
+  if (!is.list(x) || !all(c("task", "nodes", "edges", "metadata") %in% names(x))) {
+    stop(
+      "Workflow JSON must contain top-level `task`, `nodes`, `edges`, and `metadata` fields.",
+      call. = FALSE
+    )
+  }
+  if (!is.list(x$nodes) || !length(x$nodes)) {
+    stop("Workflow JSON must contain a non-empty `nodes` list.", call. = FALSE)
+  }
+  if (!is.list(x$edges)) {
+    stop("Workflow JSON `edges` must be a list.", call. = FALSE)
+  }
+
+  nodes <- do.call(rbind, lapply(x$nodes, function(item) {
+    workflow_node(
+      id = item$id,
+      label = item$label,
+      confidence = item$confidence %||% NA_real_,
+      human_required = item$human_required %||% TRUE,
+      rule_spec = item$rule_spec %||% NA_character_,
+      implementation_hint = item$implementation_hint %||% NA_character_,
+      complete = item$complete %||% FALSE,
+      review_status = item$review_status %||% "pending",
+      review_notes = item$review_notes %||% NA_character_,
+      review_confidence = item$review_confidence %||% NA_real_
+    )
+  }))
+
+  edges <- if (length(x$edges)) {
+    do.call(rbind, lapply(x$edges, function(item) {
+      workflow_edge(
+        from = item$from,
+        to = item$to,
+        relation = item$relation %||% "depends_on",
+        confidence = item$confidence %||% NA_real_,
+        notes = item$notes %||% NA_character_
+      )
+    }))
+  } else {
+    .empty_workflow_edges()
+  }
+
+  new_workflow_spec(
+    nodes = nodes,
+    edges = edges,
+    task = x$task,
+    metadata = x$metadata %||% list()
+  )
+}
+
+#' Import extracted workflow JSON into agentr
+#'
+#' Imports workflow JSON from a reasoning model into a workflow specification and
+#' optionally stores it as a workflow proposal on a [`Scaffolder`].
+#'
+#' @param x Parsed list, raw JSON string, or path to a `.json` file.
+#' @param scaffolder Optional [`Scaffolder`] instance.
+#' @param source Proposal source used when storing on a scaffolder.
+#' @param notes Optional proposal notes.
+#' @param store_proposal Whether to store a workflow proposal when a scaffolder
+#'   is supplied.
+#' @param approve Whether to approve the stored proposal immediately.
+#'
+#' @return A workflow specification or a list containing `workflow`,
+#'   `proposal_id`, and `proposal`.
+#' @export
+import_extracted_workflow <- function(
+  x,
+  scaffolder = NULL,
+  source = "model",
+  notes = NULL,
+  store_proposal = !is.null(scaffolder),
+  approve = FALSE
+) {
+  workflow <- workflow_spec_from_json(x)
+
+  if (is.null(scaffolder)) {
+    return(workflow)
+  }
+  if (!inherits(scaffolder, "Scaffolder")) {
+    stop("`scaffolder` must be `NULL` or a `Scaffolder`.", call. = FALSE)
+  }
+
+  if (!isTRUE(store_proposal)) {
+    return(list(
+      workflow = workflow,
+      proposal_id = NULL,
+      proposal = NULL
+    ))
+  }
+
+  proposal <- scaffolder$propose_workflow(
+    workflow = workflow,
+    source = source,
+    notes = notes
+  )
+  if (isTRUE(approve)) {
+    scaffolder$approve_workflow_proposal(proposal$id)
+  }
+
+  list(
+    workflow = workflow,
+    proposal_id = proposal$id,
+    proposal = proposal
+  )
+}

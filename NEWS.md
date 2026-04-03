@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.3
+
+Released: 2026-04-03
+
+- Added `workflow_spec_from_json()` so workflow-extraction JSON can be converted directly into a validated `agentr_workflow_spec`.
+- Added `import_extracted_workflow()` to bridge extracted JSON into the normal `Scaffolder` proposal and approval flow.
+- Added `render_workflow_graphviz()` for Graphviz DOT and optional `DiagrammeR` rendering of inferred workflows.
+- Added `plot_workflow_graph()` for improved DAG-oriented visualization using `igraph`.
+- Expanded README examples, function-index docs, generated manual pages, and tests for workflow import and rendering helpers.
+
 ## agentr 0.2.2
 
 Released: 2026-04-01

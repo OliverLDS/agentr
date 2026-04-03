@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and now centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.2` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.3` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -53,7 +53,7 @@ spec <- scaffolder$workflow_spec()
 spec
 ```
 
-`0.2.2` also exposes:
+`0.2.3` also exposes:
 
 - `WorkflowProposal` for one persisted proposal and its lifecycle
 - `WorkflowProposalState` for approved workflow plus proposal history
@@ -116,7 +116,7 @@ approved_spec <- scaffolder$approve_agent_spec_proposal(design_proposal$id)
 
 ## LLM Scaffolding Bridge
 
-`0.2.2` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
+`0.2.3` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)
@@ -249,6 +249,30 @@ extraction_prompt <- build_workflow_extraction_prompt(
   language = "R",
   format = "markdown"
 )
+```
+
+After the reasoning model returns JSON, import it directly with:
+
+```r
+workflow <- workflow_spec_from_json(response_json)
+
+# or store it on a scaffolder as a proposal immediately
+imported <- import_extracted_workflow(
+  response_json,
+  scaffolder = scaffolder,
+  source = "model"
+)
+```
+
+To inspect the inferred DAG visually, you can render Graphviz DOT or plot with `igraph`:
+
+```r
+dot <- render_workflow_graphviz(workflow, as = "dot")
+cat(dot)
+
+# Optional backends:
+# render_workflow_graphviz(workflow, as = "diagrammer")
+# plot_workflow_graph(workflow, layout = "sugiyama")
 ```
 
 ## Implementation And Extraction Handoff

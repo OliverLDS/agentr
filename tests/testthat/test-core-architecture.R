@@ -925,6 +925,110 @@ test_that("workflow_graph_data returns igraph-ready vertices and edges", {
   expect_true("edge_label" %in% names(graph_data$edges))
 })
 
+test_that("workflow_spec_from_json imports extracted workflow JSON", {
+  json_text <- jsonlite::toJSON(
+    list(
+      task = "Imported workflow",
+      nodes = list(
+        list(id = "node_1", label = "Clarify", confidence = 0.9, human_required = TRUE),
+        list(id = "node_2", label = "Translate", confidence = 0.8, human_required = FALSE)
+      ),
+      edges = list(
+        list(from = "node_1", to = "node_2", relation = "depends_on", confidence = 0.85)
+      ),
+      metadata = list(source = "workflow_extraction")
+    ),
+    auto_unbox = TRUE
+  )
+
+  workflow <- workflow_spec_from_json(json_text)
+
+  expect_s3_class(workflow, "agentr_workflow_spec")
+  expect_equal(workflow$task, "Imported workflow")
+  expect_equal(nrow(workflow$nodes), 2L)
+  expect_equal(nrow(workflow$edges), 1L)
+})
+
+test_that("import_extracted_workflow can store and approve a proposal", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Imported workflow proposal")
+  json_text <- jsonlite::toJSON(
+    list(
+      task = "Imported workflow proposal",
+      nodes = list(
+        list(id = "node_1", label = "Clarify"),
+        list(id = "node_2", label = "Translate", human_required = FALSE)
+      ),
+      edges = list(
+        list(from = "node_1", to = "node_2", relation = "depends_on")
+      ),
+      metadata = list(source = "workflow_extraction")
+    ),
+    auto_unbox = TRUE
+  )
+
+  imported <- import_extracted_workflow(
+    json_text,
+    scaffolder = scaffolder,
+    source = "model",
+    approve = TRUE
+  )
+
+  expect_true(is.list(imported))
+  expect_true(inherits(imported$proposal, "WorkflowProposal"))
+  expect_equal(scaffolder$workflow$task, "Imported workflow proposal")
+  expect_equal(scaffolder$get_workflow_proposal(imported$proposal_id)$status, "approved")
+})
+
+test_that("render_workflow_graphviz returns DOT and optional diagrammer rendering", {
+  workflow <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node("node_1", "Clarify"),
+      workflow_node("node_2", "Translate")
+    ),
+    edges = workflow_edge("node_1", "node_2"),
+    task = "Graphviz render"
+  )
+
+  dot <- render_workflow_graphviz(workflow, as = "dot")
+
+  expect_true(is.character(dot))
+  expect_true(grepl("digraph workflow", dot, fixed = TRUE))
+  expect_true(grepl("\"node_1\" -> \"node_2\"", dot, fixed = TRUE))
+
+  if (requireNamespace("DiagrammeR", quietly = TRUE)) {
+    rendered <- render_workflow_graphviz(workflow, as = "diagrammer")
+    expect_true(inherits(rendered, "grViz"))
+  } else {
+    expect_error(
+      render_workflow_graphviz(workflow, as = "diagrammer"),
+      "requires the `DiagrammeR` package"
+    )
+  }
+})
+
+test_that("plot_workflow_graph returns an igraph-backed result when available", {
+  workflow <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node("node_1", "Clarify"),
+      workflow_node("node_2", "Translate")
+    ),
+    edges = workflow_edge("node_1", "node_2"),
+    task = "igraph render"
+  )
+
+  if (!requireNamespace("igraph", quietly = TRUE)) {
+    expect_error(
+      plot_workflow_graph(workflow),
+      "requires the `igraph` package"
+    )
+  } else {
+    out <- plot_workflow_graph(workflow)
+    expect_true(is.list(out))
+    expect_true(all(c("graph", "layout") %in% names(out)))
+  }
+})
+
 test_that("validate_scaffolder_message enforces method-specific arguments", {
   expect_error(
     validate_scaffolder_message(list(

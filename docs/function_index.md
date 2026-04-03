@@ -29,10 +29,14 @@
 | `workflow_node()` | Create a workflow node record |
 | `workflow_edge()` | Create a workflow edge record |
 | `new_workflow_spec()` | Build a workflow specification object |
+| `workflow_spec_from_json()` | Build a workflow specification from extracted JSON |
+| `import_extracted_workflow()` | Import extracted workflow JSON and optionally store it on a `Scaffolder` |
 | `validate_workflow_spec()` | Validate workflow structure |
 | `save_workflow_spec()` | Save a workflow specification |
 | `load_workflow_spec()` | Load a workflow specification |
 | `workflow_graph_data()` | Export graph-ready node and edge tables |
+| `render_workflow_graphviz()` | Render a workflow as Graphviz DOT or a DiagrammeR graph |
+| `plot_workflow_graph()` | Plot a workflow graph with `igraph` |
 | `validate_workflow_proposal()` | Validate a workflow proposal object |
 | `save_workflow_proposal()` | Save a workflow proposal |
 | `load_workflow_proposal()` | Load a workflow proposal |
