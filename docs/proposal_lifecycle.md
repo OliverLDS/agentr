@@ -1,5 +1,7 @@
 # Proposal Lifecycle
 
+For a diagram of the workflow proposal path and artifact portability, see [conceptual_figures.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/conceptual_figures.md).
+
 `agentr` separates scaffolding work into three stages:
 
 1. agent design and workflow elicitation

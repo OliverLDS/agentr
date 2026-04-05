@@ -2,6 +2,8 @@
 
 `agentr` is the agent core, not the execution layer.
 
+For diagram-oriented summaries of the architecture and lifecycle, see [conceptual_figures.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/conceptual_figures.md).
+
 ## Layers
 
 ### Cognitive layer

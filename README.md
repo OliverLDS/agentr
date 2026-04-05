@@ -70,6 +70,8 @@ spec
 2. workflow proposal review and approval
 3. implementation and extraction handoff
 
+For conceptual diagrams of the transition from human workflow to approved agent design, see [docs/conceptual_figures.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/conceptual_figures.md).
+
 ## Agent Design And Workflow Elicitation
 
 Use `Scaffolder` plus the constrained LLM bridge to evaluate tasks, recommend sparse subsystems, label workflow ownership, and build or edit workflow structure.
