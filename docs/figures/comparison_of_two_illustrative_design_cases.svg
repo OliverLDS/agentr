@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1540" height="760" viewBox="0 0 1540 760" role="img" aria-labelledby="title desc">
+  <title id="title">Comparison of two illustrative design cases</title>
+  <desc id="desc">A side-by-side conceptual comparison between an economic analysis, data mining, and visualization case and a market investment suggestion writing case, showing likely subsystem mix, tacit knowledge, and key human gates.</desc>
+  <style>
+    .title { font: 600 28px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .panel { fill: none; stroke: #a7a7a7; stroke-width: 1.5; rx: 16; ry: 16; }
+    .panelTitle { font: 600 19px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .section { fill: #f7f7f7; stroke: #777; stroke-width: 1.5; rx: 10; ry: 10; }
+    .subsystem { fill: #edf3fb; stroke: #4a6ea9; stroke-width: 1.7; rx: 10; ry: 10; }
+    .tacit { fill: #fbf4df; stroke: #a78622; stroke-width: 1.7; rx: 10; ry: 10; }
+    .gate { fill: #f8e8e8; stroke: #b25b5b; stroke-width: 1.7; rx: 10; ry: 10; }
+    .label { font: 600 15px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .body { font: 400 14px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #333; }
+  </style>
+
+  <text x="770" y="42" text-anchor="middle" class="title">Comparison of two illustrative design cases</text>
+
+  <rect x="40" y="80" width="700" height="620" class="panel"/>
+  <text x="70" y="112" class="panelTitle">Panel A. Economic analysis, data mining, and visualization</text>
+
+  <rect x="80" y="145" width="220" height="40" class="section"/>
+  <text x="190" y="170" text-anchor="middle" class="label">Likely subsystem mix</text>
+  <rect x="80" y="205" width="180" height="42" class="subsystem"/>
+  <text x="170" y="231" text-anchor="middle" class="body">PG strong</text>
+  <rect x="80" y="260" width="180" height="42" class="subsystem"/>
+  <text x="170" y="286" text-anchor="middle" class="body">AE strong</text>
+  <rect x="80" y="315" width="180" height="42" class="subsystem"/>
+  <text x="170" y="341" text-anchor="middle" class="body">RWM optional or light</text>
+  <rect x="80" y="370" width="180" height="42" class="subsystem"/>
+  <text x="170" y="396" text-anchor="middle" class="body">IAC limited</text>
+  <rect x="80" y="425" width="180" height="42" class="subsystem"/>
+  <text x="170" y="451" text-anchor="middle" class="body">LA minimal</text>
+
+  <rect x="330" y="145" width="220" height="40" class="section"/>
+  <text x="440" y="170" text-anchor="middle" class="label">Main tacit knowledge</text>
+  <rect x="330" y="205" width="320" height="54" class="tacit"/>
+  <text x="490" y="237" text-anchor="middle" class="body">indicator selection</text>
+  <rect x="330" y="275" width="320" height="54" class="tacit"/>
+  <text x="490" y="307" text-anchor="middle" class="body">chart choice and comparison logic</text>
+  <rect x="330" y="345" width="320" height="54" class="tacit"/>
+  <text x="490" y="377" text-anchor="middle" class="body">quality and interpretability rules</text>
+
+  <rect x="330" y="445" width="220" height="40" class="section"/>
+  <text x="440" y="470" text-anchor="middle" class="label">Key human gates</text>
+  <rect x="330" y="505" width="320" height="54" class="gate"/>
+  <text x="490" y="537" text-anchor="middle" class="body">review of assumptions</text>
+  <rect x="330" y="575" width="320" height="54" class="gate"/>
+  <text x="490" y="607" text-anchor="middle" class="body">review of visual communication</text>
+  <rect x="330" y="645" width="320" height="40" class="gate"/>
+  <text x="490" y="670" text-anchor="middle" class="body">publication approval</text>
+
+  <rect x="800" y="80" width="700" height="620" class="panel"/>
+  <text x="830" y="112" class="panelTitle">Panel B. Market investment suggestion writing</text>
+
+  <rect x="840" y="145" width="220" height="40" class="section"/>
+  <text x="950" y="170" text-anchor="middle" class="label">Likely subsystem mix</text>
+  <rect x="840" y="205" width="180" height="42" class="subsystem"/>
+  <text x="930" y="231" text-anchor="middle" class="body">PG moderate</text>
+  <rect x="840" y="260" width="180" height="42" class="subsystem"/>
+  <text x="930" y="286" text-anchor="middle" class="body">AE moderate</text>
+  <rect x="840" y="315" width="180" height="42" class="subsystem"/>
+  <text x="930" y="341" text-anchor="middle" class="body">RWM stronger</text>
+  <rect x="840" y="370" width="180" height="42" class="subsystem"/>
+  <text x="930" y="396" text-anchor="middle" class="body">IAC stronger</text>
+  <rect x="840" y="425" width="180" height="42" class="subsystem"/>
+  <text x="930" y="451" text-anchor="middle" class="body">LA possible</text>
+
+  <rect x="1090" y="145" width="220" height="40" class="section"/>
+  <text x="1200" y="170" text-anchor="middle" class="label">Main tacit knowledge</text>
+  <rect x="1090" y="205" width="330" height="54" class="tacit"/>
+  <text x="1255" y="237" text-anchor="middle" class="body">risk framing</text>
+  <rect x="1090" y="275" width="330" height="54" class="tacit"/>
+  <text x="1255" y="307" text-anchor="middle" class="body">regulatory and compliance caution</text>
+  <rect x="1090" y="345" width="330" height="54" class="tacit"/>
+  <text x="1255" y="377" text-anchor="middle" class="body">tone and recommendation boundaries</text>
+
+  <rect x="1090" y="445" width="220" height="40" class="section"/>
+  <text x="1200" y="470" text-anchor="middle" class="label">Key human gates</text>
+  <rect x="1090" y="505" width="330" height="54" class="gate"/>
+  <text x="1255" y="537" text-anchor="middle" class="body">review of claims and uncertainty</text>
+  <rect x="1090" y="575" width="330" height="54" class="gate"/>
+  <text x="1255" y="607" text-anchor="middle" class="body">review of compliance-sensitive wording</text>
+  <rect x="1090" y="645" width="330" height="40" class="gate"/>
+  <text x="1255" y="670" text-anchor="middle" class="body">final human approval before release</text>
+</svg>

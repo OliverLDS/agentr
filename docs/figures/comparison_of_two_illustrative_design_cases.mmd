@@ -1,0 +1,51 @@
+flowchart LR
+    classDef panel fill:#ffffff,stroke:#a0a0a0,stroke-width:1.5px;
+    classDef title fill:#f7f7f7,stroke:#777777,stroke-width:1.5px;
+    classDef subsystem fill:#edf3fb,stroke:#4a6ea9,stroke-width:2px;
+    classDef tacit fill:#fbf4df,stroke:#a78622,stroke-width:2px;
+    classDef gate fill:#f8e8e8,stroke:#b25b5b,stroke-width:2px;
+
+    subgraph A[Panel A. Economic analysis, data mining, and visualization]
+        direction TB
+        A0[Likely subsystem mix]
+        A1[PG strong]
+        A2[AE strong]
+        A3[RWM optional or light]
+        A4[IAC limited]
+        A5[LA minimal]
+
+        A6[Main tacit knowledge]
+        A7[indicator selection]
+        A8[chart choice and comparison logic]
+        A9[quality and interpretability rules]
+
+        A10[Key human gates]
+        A11[review of assumptions]
+        A12[review of visual communication]
+        A13[publication approval]
+    end
+
+    subgraph B[Panel B. Market investment suggestion writing]
+        direction TB
+        B0[Likely subsystem mix]
+        B1[PG moderate]
+        B2[AE moderate]
+        B3[RWM stronger]
+        B4[IAC stronger]
+        B5[LA possible]
+
+        B6[Main tacit knowledge]
+        B7[risk framing]
+        B8[regulatory and compliance caution]
+        B9[tone and recommendation boundaries]
+
+        B10[Key human gates]
+        B11[review of claims and uncertainty]
+        B12[review of compliance-sensitive wording]
+        B13[final human approval before release]
+    end
+
+    class A0,A6,A10,B0,B6,B10 title;
+    class A1,A2,A3,A4,A5,B1,B2,B3,B4,B5 subsystem;
+    class A7,A8,A9,B7,B8,B9 tacit;
+    class A11,A12,A13,B11,B12,B13 gate;

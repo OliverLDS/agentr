@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Allowed scaffolding actions in the constrained LLM bridge.}
+\begin{tabular}{p{3.2cm} p{4.6cm} p{6.0cm}}
+\hline
+\textbf{Action} & \textbf{Purpose} & \textbf{Typical use in refinement} \\
+\hline
+\texttt{evaluate\_task} & Produces an initial task assessment and scaffolding context. & Used at the start of a session to frame the task before decomposition or review. \\
+\texttt{discuss\_task} & Records free-form discussion about task intent, scope, or constraints. & Used when human or model feedback clarifies goals before structural changes are made. \\
+\texttt{decompose\_task} & Proposes or updates workflow nodes and edges for the task. & Used to construct or revise the candidate DAG during early or mid-stage refinement. \\
+\texttt{review\_workflow} & Captures workflow-level review judgments and concerns. & Used when assessing the adequacy, realism, or completeness of the workflow as a whole. \\
+\texttt{review\_node} & Captures review judgments for an individual workflow node. & Used when a specific node needs targeted critique, clarification, or approval. \\
+\texttt{edit\_workflow} & Applies explicit structural edits to nodes or edges. & Used when refinement requires concrete modifications rather than discussion alone. \\
+\texttt{ask\_human\_complete} & Requests human confirmation that a node or workflow is sufficiently complete. & Used at approval checkpoints when model confidence is not enough to close review. \\
+\texttt{ask\_human\_changes} & Requests human guidance about needed revisions. & Used when workflow or node structure appears inadequate but the required fix is not fully specified. \\
+\texttt{ask\_human\_rule} & Requests human articulation of a governing rule or constraint. & Used when tacit procedural knowledge must be made explicit for a node or transition. \\
+\texttt{apply\_human\_feedback} & Incorporates human-provided guidance into scaffolder state. & Used after human review to update workflow structure, rules, or completion status. \\
+\hline
+\end{tabular}
+\end{table}

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="760" viewBox="0 0 1320 760" role="img" aria-labelledby="title desc">
+  <title id="title">Two-axis design model of agentr</title>
+  <desc id="desc">A conceptual diagram showing two separate but interacting axes in agentr: subsystem design with RWM, PG, AE, IAC, and LA, and workflow design with nodes, edges, rule_spec, review_status, human_required, and implementation_hint.</desc>
+  <style>
+    .title { font: 600 28px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .axis { font: 600 21px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .label { font: 600 17px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .body { font: 400 15px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #333; }
+    .small { font: 400 14px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #444; }
+    .subsystem { fill: #edf3fb; stroke: #4a6ea9; stroke-width: 2; rx: 12; ry: 12; }
+    .workflow { fill: #f8eedf; stroke: #a6782a; stroke-width: 2; rx: 12; ry: 12; }
+    .center { fill: #e7f1ea; stroke: #3b8459; stroke-width: 3; rx: 16; ry: 16; }
+    .legend { fill: #fff; stroke: #999; stroke-width: 1.4; rx: 10; ry: 10; }
+    .axisline { stroke: #666; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .arrowBlue { stroke: #4a6ea9; stroke-width: 2.2; fill: none; marker-end: url(#arrowBlue); }
+    .arrowAmber { stroke: #a6782a; stroke-width: 2.2; fill: none; marker-end: url(#arrowAmber); }
+    .feedback { stroke: #5f7d6a; stroke-width: 1.8; stroke-dasharray: 6 4; fill: none; marker-end: url(#arrowGreen); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#666"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#4a6ea9"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#a6782a"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#5f7d6a"/>
+    </marker>
+  </defs>
+
+  <text x="660" y="44" text-anchor="middle" class="title">Two-axis design model of agentr</text>
+
+  <path d="M 230 620 L 230 110" class="axisline"/>
+  <text x="110" y="85" class="axis">Subsystem design axis</text>
+
+  <rect x="155" y="145" width="150" height="58" class="subsystem"/>
+  <text x="230" y="180" text-anchor="middle" class="label">RWM</text>
+
+  <rect x="155" y="225" width="150" height="58" class="subsystem"/>
+  <text x="230" y="260" text-anchor="middle" class="label">PG</text>
+
+  <rect x="155" y="305" width="150" height="58" class="subsystem"/>
+  <text x="230" y="340" text-anchor="middle" class="label">AE</text>
+
+  <rect x="155" y="385" width="150" height="58" class="subsystem"/>
+  <text x="230" y="420" text-anchor="middle" class="label">IAC</text>
+
+  <rect x="155" y="465" width="150" height="58" class="subsystem"/>
+  <text x="230" y="500" text-anchor="middle" class="label">LA</text>
+
+  <path d="M 360 560 L 1130 560" class="axisline"/>
+  <text x="935" y="610" class="axis">Workflow design axis</text>
+
+  <rect x="390" y="515" width="110" height="58" class="workflow"/>
+  <text x="445" y="550" text-anchor="middle" class="label">nodes</text>
+
+  <rect x="520" y="515" width="110" height="58" class="workflow"/>
+  <text x="575" y="550" text-anchor="middle" class="label">edges</text>
+
+  <rect x="650" y="515" width="120" height="58" class="workflow"/>
+  <text x="710" y="550" text-anchor="middle" class="label">rule_spec</text>
+
+  <rect x="790" y="515" width="135" height="58" class="workflow"/>
+  <text x="857" y="550" text-anchor="middle" class="label">review_status</text>
+
+  <rect x="945" y="515" width="150" height="58" class="workflow"/>
+  <text x="1020" y="550" text-anchor="middle" class="label">human_required</text>
+
+  <rect x="1115" y="515" width="155" height="58" class="workflow"/>
+  <text x="1193" y="550" text-anchor="middle" class="label">implementation_hint</text>
+
+  <rect x="470" y="225" width="430" height="160" class="center"/>
+  <text x="685" y="260" text-anchor="middle" class="axis">Interacting design layer</text>
+  <text x="685" y="298" text-anchor="middle" class="body">subsystem selection shapes workflow structure</text>
+  <text x="685" y="326" text-anchor="middle" class="body">workflow constraints shape subsystem needs</text>
+  <text x="685" y="354" text-anchor="middle" class="small">the axes remain separate, but decisions propagate across both</text>
+
+  <path d="M 305 334 L 470 305" class="arrowBlue"/>
+  <path d="M 830 515 L 760 385" class="arrowAmber"/>
+  <path d="M 570 385 C 470 430, 360 450, 300 465" class="feedback"/>
+  <path d="M 790 385 C 910 430, 1010 465, 1095 515" class="feedback"/>
+
+  <rect x="960" y="120" width="250" height="118" class="legend"/>
+  <text x="985" y="150" class="label">Legend</text>
+  <rect x="985" y="168" width="20" height="20" class="subsystem"/>
+  <text x="1018" y="183" class="body">subsystem design</text>
+  <rect x="985" y="198" width="20" height="20" class="workflow"/>
+  <text x="1018" y="213" class="body">workflow design</text>
+  <rect x="985" y="228" width="20" height="20" class="center"/>
+  <text x="1018" y="243" class="body">interaction layer</text>
+</svg>

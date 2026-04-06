@@ -1,0 +1,27 @@
+\begin{table}[htbp]
+\centering
+\caption{Proposal states and transition rules.}
+\begin{tabular}{p{2.7cm} p{4.4cm} p{4.1cm} p{4.1cm}}
+\hline
+\multicolumn{4}{l}{\textbf{Workflow proposals}} \\
+\hline
+\textbf{State} & \textbf{Meaning} & \textbf{Typical transition in} & \textbf{Typical transition out} \\
+\hline
+\texttt{pending} & A newly created workflow proposal awaiting review. & Created by preview or proposal creation. & Moves to \texttt{under\_discussion}, \texttt{approved}, or \texttt{rejected}. \\
+\texttt{under\_discussion} & A workflow proposal being actively reviewed or revised. & Entered from \texttt{pending} after discussion begins. & Moves to \texttt{approved} or \texttt{rejected}. \\
+\texttt{approved} & A workflow proposal accepted as the live approved workflow. & Entered from \texttt{pending} or \texttt{under\_discussion} by approval. & May later become \texttt{superseded} if a newer proposal is approved. \\
+\texttt{superseded} & A previously approved or still-active proposal displaced by a newer approved proposal. & Entered when a newer workflow proposal is approved. & Typically terminal. \\
+\texttt{rejected} & A workflow proposal not accepted for promotion. & Entered from \texttt{pending} or \texttt{under\_discussion} by rejection. & Typically terminal. \\
+\hline
+\multicolumn{4}{l}{\textbf{Agent-spec proposals}} \\
+\hline
+\textbf{State} & \textbf{Meaning} & \textbf{Typical transition in} & \textbf{Typical transition out} \\
+\hline
+\texttt{draft} & A newly created agent-spec proposal awaiting review. & Created by \texttt{propose\_agent\_spec()}. & Moves to \texttt{under\_discussion}, \texttt{approved}, or \texttt{rejected}. \\
+\texttt{under\_discussion} & An agent-spec proposal under active review or revision. & Entered from \texttt{draft} after discussion begins. & Moves to \texttt{approved} or \texttt{rejected}. \\
+\texttt{approved} & An agent-spec proposal accepted as the live approved agent design. & Entered from \texttt{draft} or \texttt{under\_discussion} by approval. & May later become \texttt{superseded} if a newer proposal is approved. \\
+\texttt{superseded} & A previously approved or still-active agent-spec proposal displaced by a newer approved proposal. & Entered when a newer agent-spec proposal is approved. & Typically terminal. \\
+\texttt{rejected} & An agent-spec proposal not accepted for promotion. & Entered from \texttt{draft} or \texttt{under\_discussion} by rejection. & Typically terminal. \\
+\hline
+\end{tabular}
+\end{table}

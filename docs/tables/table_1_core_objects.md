@@ -1,0 +1,15 @@
+# Table 1. Core Objects In agentr
+
+Caption: Core objects in `agentr` and their roles in the framework.
+
+| Object | Type | Role in the framework |
+|---|---|---|
+| `CognitiveState` | R6 class | Stores structured cognitive state such as beliefs, knowledge, goals, task context, confidence, and update history. |
+| `AffectiveState` | R6 class | Stores the optional affective layer, including affect dimensions, decay, inertia-aware updates, and summaries. |
+| `AgentCore` | R6 class | Minimal agent container that holds cognition and optional affect, and serves as the base object that can attach a `Scaffolder`. |
+| `Scaffolder` | R6 class | Main human-in-the-loop scaffolding interface for task evaluation, workflow elicitation, subsystem selection, proposal handling, review, and approval. |
+| `SubsystemSpec` | R6 class | Sparse specification of selected subsystems such as `RWM`, `PG`, `AE`, `IAC`, and `LA`, including their configuration objects. |
+| `AgentSpec` | R6 class | Top-level approved agent-design artifact combining task, subsystem selection, workflow, interfaces, and implementation-oriented metadata. |
+| `WorkflowProposal` | R6 class | Represents one candidate workflow proposal and its lifecycle state during review, discussion, approval, rejection, or supersession. |
+| `WorkflowProposalState` | R6 class | Stores the approved workflow together with workflow proposal history and lifecycle management operations. |
+| `IntelligentAgent` | R6 class | Runtime-oriented wrapper built from an `AgentSpec`, used to carry selected subsystem configuration and runtime state without defining the execution stack itself. |

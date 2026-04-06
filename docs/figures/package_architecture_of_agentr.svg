@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1380" height="900" viewBox="0 0 1380 900" role="img" aria-labelledby="title desc">
+  <title id="title">Package architecture of agentr</title>
+  <desc id="desc">A layered architecture diagram showing the major objects in agentr, the constrained LLM bridge into Scaffolder, persistent workflow and proposal artifacts, and a separate excluded execution-layer region.</desc>
+  <style>
+    .title { font: 600 28px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .layer { font: 600 21px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .label { font: 600 17px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .body { font: 400 15px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #333; }
+    .small { font: 400 13px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #444; }
+    .frame { fill: none; stroke: #a0a0a0; stroke-width: 1.5; rx: 18; ry: 18; }
+    .state { fill: #edf3fb; stroke: #4a6ea9; stroke-width: 2; rx: 12; ry: 12; }
+    .scaffold { fill: #eaf4ee; stroke: #3f7559; stroke-width: 2; rx: 12; ry: 12; }
+    .artifact { fill: #fbf4df; stroke: #a78622; stroke-width: 2; rx: 12; ry: 12; }
+    .bridge { fill: #f6edf8; stroke: #8c5fa8; stroke-width: 2; rx: 12; ry: 12; }
+    .excluded { fill: #f7f7f7; stroke: #8b8b8b; stroke-width: 1.8; stroke-dasharray: 6 4; rx: 12; ry: 12; }
+    .arrow { stroke: #555; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    .soft { stroke: #777; stroke-width: 1.8; fill: none; stroke-dasharray: 6 4; marker-end: url(#arrowSoft); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#555"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#777"/>
+    </marker>
+  </defs>
+
+  <text x="690" y="42" text-anchor="middle" class="title">Package architecture of agentr</text>
+
+  <rect x="50" y="80" width="920" height="740" class="frame"/>
+  <text x="80" y="110" class="layer">Package layers</text>
+
+  <rect x="90" y="130" width="840" height="115" class="frame"/>
+  <text x="120" y="160" class="layer">State layer</text>
+  <rect x="130" y="180" width="180" height="42" class="state"/>
+  <text x="220" y="206" text-anchor="middle" class="label">CognitiveState</text>
+  <rect x="350" y="180" width="200" height="42" class="state"/>
+  <text x="450" y="197" text-anchor="middle" class="label">AffectiveState</text>
+  <text x="450" y="216" text-anchor="middle" class="small">optional</text>
+  <rect x="590" y="180" width="180" height="42" class="state"/>
+  <text x="680" y="206" text-anchor="middle" class="label">AgentCore</text>
+
+  <rect x="90" y="275" width="840" height="150" class="frame"/>
+  <text x="120" y="305" class="layer">Scaffolding and design layer</text>
+  <rect x="120" y="330" width="180" height="50" class="scaffold"/>
+  <text x="210" y="360" text-anchor="middle" class="label">Scaffolder</text>
+  <rect x="335" y="330" width="170" height="50" class="scaffold"/>
+  <text x="420" y="360" text-anchor="middle" class="label">AgentSpec</text>
+  <rect x="540" y="330" width="180" height="50" class="scaffold"/>
+  <text x="630" y="360" text-anchor="middle" class="label">SubsystemSpec</text>
+  <rect x="755" y="330" width="150" height="50" class="scaffold"/>
+  <text x="830" y="360" text-anchor="middle" class="label">IntelligentAgent</text>
+
+  <rect x="90" y="455" width="840" height="115" class="frame"/>
+  <text x="120" y="485" class="layer">Workflow proposal layer</text>
+  <rect x="180" y="505" width="220" height="42" class="artifact"/>
+  <text x="290" y="531" text-anchor="middle" class="label">WorkflowProposal</text>
+  <rect x="470" y="505" width="250" height="42" class="artifact"/>
+  <text x="595" y="531" text-anchor="middle" class="label">WorkflowProposalState</text>
+
+  <rect x="90" y="600" width="840" height="90" class="frame"/>
+  <text x="120" y="628" class="layer">Constrained model bridge</text>
+  <rect x="180" y="640" width="660" height="34" class="bridge"/>
+  <text x="510" y="662" text-anchor="middle" class="body">LLM bridge: build_scaffolder_prompt, build_agent_design_prompt, apply_scaffolder_message</text>
+
+  <rect x="90" y="720" width="840" height="75" class="frame"/>
+  <text x="120" y="748" class="layer">Persistent design artifacts</text>
+  <rect x="180" y="750" width="180" height="30" class="artifact"/>
+  <text x="270" y="770" text-anchor="middle" class="body">workflow specs</text>
+  <rect x="420" y="750" width="180" height="30" class="artifact"/>
+  <text x="510" y="770" text-anchor="middle" class="body">proposal artifacts</text>
+  <rect x="660" y="750" width="200" height="30" class="artifact"/>
+  <text x="760" y="770" text-anchor="middle" class="body">approved design artifacts</text>
+
+  <rect x="1010" y="140" width="300" height="500" class="excluded"/>
+  <text x="1040" y="175" class="layer">Excluded execution-layer concerns</text>
+  <rect x="1050" y="215" width="220" height="50" class="excluded"/>
+  <text x="1160" y="245" text-anchor="middle" class="body">provider-specific LLM clients</text>
+  <rect x="1050" y="295" width="220" height="50" class="excluded"/>
+  <text x="1160" y="325" text-anchor="middle" class="body">transport backends</text>
+  <rect x="1050" y="375" width="220" height="50" class="excluded"/>
+  <text x="1160" y="405" text-anchor="middle" class="body">execution engines</text>
+  <rect x="1050" y="455" width="220" height="50" class="excluded"/>
+  <text x="1160" y="485" text-anchor="middle" class="body">domain-specific runtimes</text>
+
+  <path d="M 310 201 L 590 201" class="arrow"/>
+  <path d="M 550 201 L 590 201" class="arrow"/>
+  <path d="M 680 222 L 210 330" class="arrow"/>
+  <path d="M 300 355 L 335 355" class="arrow"/>
+  <path d="M 505 355 L 540 355" class="arrow"/>
+  <path d="M 505 355 L 755 355" class="arrow"/>
+
+  <path d="M 210 380 L 290 505" class="arrow"/>
+  <path d="M 210 380 L 595 505" class="arrow"/>
+  <path d="M 595 505 L 290 505" class="arrow"/>
+
+  <path d="M 510 640 L 210 380" class="arrow"/>
+
+  <path d="M 210 380 L 270 750" class="arrow"/>
+  <path d="M 290 547 L 510 750" class="arrow"/>
+  <path d="M 595 547 L 510 750" class="arrow"/>
+  <path d="M 420 380 L 760 750" class="arrow"/>
+  <path d="M 630 380 L 760 750" class="arrow"/>
+  <path d="M 830 380 L 760 750" class="arrow"/>
+
+  <path d="M 300 355 L 1050 240" class="soft"/>
+  <path d="M 830 355 L 1050 405" class="soft"/>
+</svg>

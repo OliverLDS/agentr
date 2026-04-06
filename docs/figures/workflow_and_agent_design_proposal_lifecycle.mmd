@@ -1,0 +1,44 @@
+stateDiagram-v2
+    direction LR
+
+    state "Elicitation" as E
+    state "Live approved workflow\nunchanged until approval" as LIVE
+
+    state "Workflow proposal lifecycle" as WFLOW {
+        [*] --> WPREV : preview/proposal
+        WPREV --> WDISC : discuss
+        WPREV --> WAPP : approve
+        WPREV --> WREJ : reject
+        WDISC --> WAPP : approve
+        WDISC --> WREJ : reject
+        WAPP --> WSUP : superseded by newer approval
+    }
+
+    state "Agent-spec proposal lifecycle" as AFLOW {
+        [*] --> ADRAFT : draft proposal
+        ADRAFT --> ADISC : discuss
+        ADRAFT --> AAPP : approve
+        ADRAFT --> AREJ : reject
+        ADISC --> AAPP : approve
+        ADISC --> AREJ : reject
+        AAPP --> ASUP : superseded by newer approval
+    }
+
+    E --> WPREV : create workflow proposal
+    E --> ADRAFT : create agent-spec proposal
+    LIVE --> E : evaluate / decompose / recommend
+
+    WPREV --> ADRAFT : linked workflow_proposal_id
+    WDISC --> ADISC : refine linked design
+    WAPP --> LIVE : promote proposal
+    WREJ --> LIVE : keep current approved workflow
+    WSUP --> LIVE : newer approved workflow remains live
+
+    AAPP --> LIVE : approved agent design can accompany approved workflow
+    AREJ --> LIVE : keep current approved design
+    ASUP --> LIVE : newer approved design remains live
+
+    note right of LIVE
+        The live workflow and live approved design
+        remain unchanged until explicit approval.
+    end note

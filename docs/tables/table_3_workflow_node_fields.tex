@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\caption{Workflow node fields in \texttt{agentr}.}
+\begin{tabular}{p{2.8cm} p{5.0cm} p{6.0cm}}
+\hline
+\textbf{Field} & \textbf{Meaning} & \textbf{Why it matters for scaffolding} \\
+\hline
+\texttt{confidence} & Estimated confidence in the node definition or inferred step. & Helps identify uncertain workflow structure that may need clarification or review before approval. \\
+\texttt{human\_required} & Indicates whether the node requires explicit human participation or authorization. & Makes human gates visible so automation is not assumed where oversight is necessary. \\
+\texttt{rule\_spec} & Captures explicit rules, constraints, or decision criteria attached to the node. & Surfaces tacit procedural knowledge and makes approval logic or domain constraints inspectable. \\
+\texttt{implementation\_hint} & Stores a lightweight hint about how the node may later be implemented. & Supports handoff from scaffolding to implementation without collapsing design into code too early. \\
+\texttt{complete} & Indicates whether the node has been sufficiently specified for the current scaffolding stage. & Helps track which parts of the workflow are mature enough for review, approval, or implementation planning. \\
+\texttt{review\_status} & Records the node's current review state. & Makes review progression explicit and supports structured refinement instead of implicit judgment. \\
+\texttt{review\_notes} & Stores reviewer comments or concerns about the node. & Preserves critique and revision context so later edits remain accountable and understandable. \\
+\texttt{review\_confidence} & Records confidence in the review judgment rather than only in the node itself. & Distinguishes uncertain review outcomes from uncertain workflow content and helps prioritize follow-up. \\
+\hline
+\end{tabular}
+\end{table}

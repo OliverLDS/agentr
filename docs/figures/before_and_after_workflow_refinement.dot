@@ -1,0 +1,81 @@
+digraph before_after_workflow_refinement {
+  graph [
+    rankdir=LR,
+    splines=true,
+    nodesep=0.45,
+    ranksep=0.7,
+    bgcolor="white",
+    fontname="Helvetica"
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=11,
+    color="#666666",
+    penwidth=1.4,
+    margin="0.12,0.08"
+  ];
+  edge [
+    color="#666666",
+    penwidth=1.4,
+    arrowsize=0.8,
+    fontname="Helvetica",
+    fontsize=10
+  ];
+
+  subgraph cluster_before {
+    label="Before refinement";
+    labelloc="t";
+    fontsize=16;
+    fontname="Helvetica-Bold";
+    color="#b7b7b7";
+    style="rounded";
+
+    b1 [label="Collect market data", fillcolor="#f7f5f0"];
+    b2 [label="Analyze economy", fillcolor="#f7f5f0"];
+    b3 [label="Create charts", fillcolor="#f7f5f0"];
+    b4 [label="Write report", fillcolor="#f7f5f0"];
+    b5 [label="Publish report", fillcolor="#f7f5f0"];
+
+    b1 -> b2 -> b3 -> b4 -> b5;
+
+    b_note [shape=note, label="Tacit knowledge is implicit:\nwhich chart type fits the claim,\nwhat needs human review,\nand which publication rules apply.", fillcolor="#ffffff", color="#9a9a9a", style="filled"];
+    b3 -> b_note [style=dashed, arrowhead=none, color="#9a9a9a"];
+  }
+
+  subgraph cluster_after {
+    label="After refinement";
+    labelloc="t";
+    fontsize=16;
+    fontname="Helvetica-Bold";
+    color="#8ea18f";
+    style="rounded";
+
+    a1 [label="Collect market data", fillcolor="#eef4fb", color="#4a6ea9"];
+    a2 [label="Validate indicators\nand assumptions", fillcolor="#eef4fb", color="#4a6ea9"];
+    a3 [label="Analyze economy", fillcolor="#eef4fb", color="#4a6ea9"];
+    a4 [label="Select chart type\nby communicative goal", fillcolor="#fbf4df", color="#a78622"];
+    a5 [label="Apply charting rules\nclarity, scale, comparability", fillcolor="#fbf4df", color="#a78622"];
+    a6 [label="Draft charts", fillcolor="#eef4fb", color="#4a6ea9"];
+    a7 [label="Human review gate", fillcolor="#f8e8e8", color="#b25b5b"];
+    a8 [label="Revise analysis or charts", fillcolor="#eef4fb", color="#4a6ea9"];
+    a9 [label="Write report", fillcolor="#eef4fb", color="#4a6ea9"];
+    a10 [label="Publication rule check", fillcolor="#fbf4df", color="#a78622"];
+    a11 [label="Publish report", fillcolor="#e7f1ea", color="#3b8459"];
+
+    a1 -> a2 -> a3 -> a4 -> a5 -> a6 -> a7;
+    a7 -> a9 [label="approved"];
+    a7 -> a8 [label="changes needed"];
+    a8 -> a3;
+    a9 -> a10 -> a11;
+
+    tac1 [shape=note, label="Surfaced tacit knowledge:\nchart choice depends on the\nclaim, audience, and comparison.", fillcolor="#ffffff", color="#9a9a9a", style="filled"];
+    tac2 [shape=note, label="Surfaced tacit knowledge:\nhuman review is an explicit gate,\nnot an implied assumption.", fillcolor="#ffffff", color="#9a9a9a", style="filled"];
+    tac3 [shape=note, label="Surfaced tacit knowledge:\npublication follows rule checks,\nnot automatic release.", fillcolor="#ffffff", color="#9a9a9a", style="filled"];
+
+    a4 -> tac1 [style=dashed, arrowhead=none, color="#9a9a9a"];
+    a7 -> tac2 [style=dashed, arrowhead=none, color="#9a9a9a"];
+    a10 -> tac3 [style=dashed, arrowhead=none, color="#9a9a9a"];
+  }
+}

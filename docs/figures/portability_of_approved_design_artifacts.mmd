@@ -1,0 +1,37 @@
+flowchart LR
+    classDef env fill:#eaf4ee,stroke:#3f7559,stroke-width:2px;
+    classDef artifact fill:#fbf4df,stroke:#a78622,stroke-width:2px;
+    classDef prompt fill:#edf3fb,stroke:#4a6ea9,stroke-width:2px;
+    classDef impl fill:#f7f7f7,stroke:#8b8b8b,stroke-width:1.8px;
+    classDef note fill:#ffffff,stroke:#999999,stroke-dasharray: 5 4,stroke-width:1.4px;
+
+    subgraph AG[agentr]
+        direction TB
+        S[Scaffolder]
+        AS[Approved AgentSpec]
+        WF[Approved workflow]
+        S --> AS
+        S --> WF
+    end
+
+    AS --> IP[Implementation prompts]
+    WF --> IP
+
+    AS --> CA[Coding agents]
+    WF --> CA
+
+    AS --> R1[R implementation]
+    WF --> R1
+    AS --> P1[Python implementation]
+    WF --> P1
+    AS --> JS1[JS or orchestration stack]
+    WF --> JS1
+
+    N[Portable unit = approved design artifact<br/>not the runtime itself] -.-> AS
+    N -.-> WF
+
+    class S env;
+    class AS,WF artifact;
+    class IP,CA prompt;
+    class R1,P1,JS1 impl;
+    class N note;

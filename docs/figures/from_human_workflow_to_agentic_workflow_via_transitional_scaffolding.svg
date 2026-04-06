@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="520" viewBox="0 0 1280 520" role="img" aria-labelledby="title desc">
+  <title id="title">From Human Workflow to Agentic Workflow via Transitional Scaffolding</title>
+  <desc id="desc">A left-to-right conceptual diagram showing human workflow transitioning through agentr as a scaffolding layer into an agentic workflow, with stages for elicitation, proposal review and approval, and implementation handoff.</desc>
+  <style>
+    .title { font: 600 28px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .label { font: 600 19px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #222; }
+    .body { font: 400 16px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #333; }
+    .small { font: 400 14px "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #444; }
+    .box { fill: #f7f5f0; stroke: #666; stroke-width: 2; rx: 14; ry: 14; }
+    .core { fill: #ebf2ee; stroke: #4f6f5f; stroke-width: 3; rx: 18; ry: 18; }
+    .stage { fill: #fbfcfb; stroke: #7b8f84; stroke-width: 1.5; rx: 10; ry: 10; }
+    .frame { fill: none; stroke: #8b9a90; stroke-width: 1.6; rx: 18; ry: 18; }
+    .note { fill: #fff; stroke: #999; stroke-width: 1.5; stroke-dasharray: 6 5; rx: 10; ry: 10; }
+    .arrow { stroke: #555; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    .soft { stroke: #6b7280; stroke-width: 1.8; fill: none; marker-end: url(#arrowSoft); }
+    .connector { stroke: #748277; stroke-width: 1.8; fill: none; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#555"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <text x="640" y="44" text-anchor="middle" class="title">From Human Workflow to Agentic Workflow via Transitional Scaffolding</text>
+
+  <rect x="60" y="150" width="250" height="140" class="box"/>
+  <text x="185" y="185" text-anchor="middle" class="label">Human workflow</text>
+  <text x="185" y="220" text-anchor="middle" class="body">ad hoc task structure</text>
+  <text x="185" y="248" text-anchor="middle" class="body">human judgment and rules</text>
+
+  <rect x="390" y="120" width="500" height="220" class="core"/>
+  <text x="640" y="160" text-anchor="middle" class="label">agentr</text>
+  <text x="640" y="190" text-anchor="middle" class="body">cognitive and human-interaction core</text>
+
+  <rect x="425" y="225" width="130" height="72" class="stage"/>
+  <text x="490" y="268" text-anchor="middle" class="body">elicitation</text>
+
+  <rect x="575" y="225" width="165" height="72" class="stage"/>
+  <text x="658" y="258" text-anchor="middle" class="body">proposal review</text>
+  <text x="658" y="281" text-anchor="middle" class="body">and approval</text>
+
+  <rect x="760" y="225" width="100" height="72" class="stage"/>
+  <text x="810" y="268" text-anchor="middle" class="body">implementation</text>
+  <text x="810" y="291" text-anchor="middle" class="body">handoff</text>
+
+  <path d="M 310 220 L 390 220" class="arrow"/>
+  <path d="M 890 220 L 970 220" class="arrow"/>
+  <path d="M 555 261 L 575 261" class="soft"/>
+  <path d="M 740 261 L 760 261" class="soft"/>
+
+  <rect x="970" y="150" width="250" height="140" class="box"/>
+  <text x="1095" y="185" text-anchor="middle" class="label">Agentic workflow</text>
+  <text x="1095" y="220" text-anchor="middle" class="body">approved design artifacts</text>
+  <text x="1095" y="248" text-anchor="middle" class="body">portable to execution stacks</text>
+
+  <rect x="515" y="360" width="250" height="68" class="note"/>
+  <text x="640" y="390" text-anchor="middle" class="body">Not the execution layer</text>
+  <text x="640" y="414" text-anchor="middle" class="small">execution happens downstream</text>
+  <path d="M 640 360 L 640 340" class="connector"/>
+</svg>

@@ -1,0 +1,43 @@
+flowchart TB
+    classDef subsystem fill:#edf3fb,stroke:#4a6ea9,stroke-width:2px;
+    classDef workflow fill:#f8eedf,stroke:#a6782a,stroke-width:2px;
+    classDef center fill:#e7f1ea,stroke:#3b8459,stroke-width:2.5px;
+    classDef legend fill:#ffffff,stroke:#999999,stroke-width:1.2px;
+
+    subgraph S[Subsystem design axis]
+        direction TB
+        RWM[RWM]
+        PG[PG]
+        AE[AE]
+        IAC[IAC]
+        LA[LA]
+    end
+
+    subgraph W[Workflow design axis]
+        direction LR
+        N[nodes]
+        E[edges]
+        RS[rule_spec]
+        RV[review_status]
+        HR[human_required]
+        IH[implementation_hint]
+    end
+
+    X[Interacting agent design<br/>subsystem selection shapes workflow structure<br/>workflow constraints shape subsystem needs]
+
+    S --> X
+    W --> X
+    X -. feedback .-> S
+    X -. feedback .-> W
+
+    subgraph L[Legend]
+        direction TB
+        L1[Blue = subsystem design]
+        L2[Amber = workflow design]
+        L3[Green = interaction layer]
+    end
+
+    class RWM,PG,AE,IAC,LA subsystem;
+    class N,E,RS,RV,HR,IH workflow;
+    class X center;
+    class L1,L2,L3 legend;

@@ -1,0 +1,25 @@
+flowchart LR
+    classDef workflow fill:#f6f4ef,stroke:#666666,stroke-width:1.5px;
+    classDef agentr fill:#ebf2ee,stroke:#4f6f5f,stroke-width:2px;
+    classDef stage fill:#f8faf8,stroke:#7b8f84,stroke-width:1.2px;
+    classDef runtime fill:#eef2f7,stroke:#64748b,stroke-width:1.5px;
+    classDef note fill:#ffffff,stroke:#999999,stroke-dasharray: 4 3;
+
+    A[Human workflow<br/>ad hoc task structure<br/>human judgment and rules] --> B
+    B[agentr<br/>cognitive and human-interaction core] --> C[Agentic workflow<br/>approved design artifacts<br/>portable to execution stacks]
+
+    subgraph S[Transitional scaffolding inside agentr]
+        direction LR
+        S1[Elicitation]
+        S2[Proposal review and approval]
+        S3[Implementation handoff]
+        S1 --> S2 --> S3
+    end
+
+    B --- S
+    N[Not the execution layer] -.-> B
+
+    class A,C workflow;
+    class B agentr;
+    class S1,S2,S3 stage;
+    class N note;

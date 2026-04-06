@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.4
+
+Released: 2026-04-06
+
+- Reorganized documentation assets by adding dedicated figure and table indexes plus a manuscript-assets overview page.
+- Expanded the manuscript-oriented figure set with standalone source, render, and caption artifacts for the main conceptual diagrams.
+- Expanded the manuscript-oriented table set with paired Markdown and LaTeX outputs for core framework, subsystem, workflow, lifecycle, and case-comparison summaries.
+- Moved historical release planning notes into `docs/plans/` so top-level documentation stays focused on current package and manuscript materials.
+- Updated package-level documentation links and version references to align with the expanded documentation structure.
+
 ## agentr 0.2.3
 
 Released: 2026-04-03

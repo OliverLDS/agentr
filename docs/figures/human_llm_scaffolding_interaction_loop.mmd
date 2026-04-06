@@ -1,0 +1,33 @@
+flowchart LR
+    classDef human fill:#f7f1e8,stroke:#9a6735,stroke-width:2px;
+    classDef prompt fill:#edf3fb,stroke:#4a6ea9,stroke-width:2px;
+    classDef model fill:#f6edf8,stroke:#8c5fa8,stroke-width:2px;
+    classDef control fill:#eaf4ee,stroke:#3f7559,stroke-width:2px;
+    classDef artifact fill:#fbf4df,stroke:#a78622,stroke-width:2px;
+    classDef guard fill:#f8e8e8,stroke:#b25b5b,stroke-width:2px;
+
+    H[Human reviewer] --> P[build_scaffolder_prompt]
+    P --> M[Reasoning model]
+    M --> J[JSON response<br/>actions only]
+    J --> V[Validation<br/>allowed methods<br/>argument checks<br/>reference checks]
+    V --> A[apply_scaffolder_message]
+    A --> U[Updated workflow and proposals]
+    U --> N[Next round prompt build]
+    N --> P
+
+    A --> HP[Human prompts]
+    HP --> HR1[ask_human_rule]
+    HP --> HR2[ask_human_changes]
+    HR1 --> HF[apply_human_feedback]
+    HR2 --> HF
+    HF --> U
+
+    V --> G[Constrained actions only<br/>sequential semantics<br/>auditable dispatch]
+    G -. guards .-> A
+
+    class H,HR1,HR2,HF human;
+    class P,N prompt;
+    class M,J model;
+    class V,A control;
+    class U,HP artifact;
+    class G guard;

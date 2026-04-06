@@ -1,0 +1,76 @@
+flowchart TB
+    classDef state fill:#edf3fb,stroke:#4a6ea9,stroke-width:2px;
+    classDef scaffold fill:#eaf4ee,stroke:#3f7559,stroke-width:2px;
+    classDef artifact fill:#fbf4df,stroke:#a78622,stroke-width:2px;
+    classDef bridge fill:#f6edf8,stroke:#8c5fa8,stroke-width:2px;
+    classDef runtime fill:#f5f5f5,stroke:#8b8b8b,stroke-dasharray: 5 4,stroke-width:1.8px;
+
+    subgraph L1[State layer]
+        direction LR
+        CS[CognitiveState]
+        AS[AffectiveState<br/>optional]
+        AC[AgentCore]
+    end
+
+    subgraph L2[Scaffolding and design layer]
+        direction LR
+        SC[Scaffolder]
+        AGS[AgentSpec]
+        SS[SubsystemSpec]
+        IA[IntelligentAgent]
+    end
+
+    subgraph L3[Workflow proposal layer]
+        direction LR
+        WP[WorkflowProposal]
+        WPS[WorkflowProposalState]
+    end
+
+    subgraph L4[Constrained model bridge]
+        direction LR
+        BR[LLM bridge<br/>build_scaffolder_prompt<br/>build_agent_design_prompt<br/>apply_scaffolder_message]
+    end
+
+    subgraph L5[Persistent design artifacts]
+        direction LR
+        WF[workflow specs]
+        PA[proposal artifacts]
+        AD[approved design artifacts]
+    end
+
+    CS --> AC
+    AS --> AC
+    AC --> SC
+    SC --> AGS
+    AGS --> SS
+    AGS --> IA
+
+    SC --> WP
+    WPS --> WP
+    SC --> WPS
+
+    BR --> SC
+
+    SC --> WF
+    WP --> PA
+    WPS --> PA
+    AGS --> AD
+    SS --> AD
+    IA --> AD
+
+    subgraph EX[Excluded execution-layer concerns]
+        direction TB
+        E1[provider-specific LLM clients]
+        E2[transport backends]
+        E3[execution engines]
+        E4[domain-specific runtimes]
+    end
+
+    SC -. excluded boundary .-> EX
+    IA -. implemented elsewhere .-> EX
+
+    class CS,AS,AC state;
+    class SC,AGS,SS,IA scaffold;
+    class WP,WPS,WF,PA,AD artifact;
+    class BR bridge;
+    class E1,E2,E3,E4 runtime;
