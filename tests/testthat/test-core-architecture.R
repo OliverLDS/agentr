@@ -534,6 +534,33 @@ test_that("build_workflow_extraction_prompt supports json and markdown outputs",
   expect_true(grepl("downloadable `.json` file or attachment link", prompt_markdown, fixed = TRUE))
 })
 
+test_that("build_article_workflow_extraction_prompt supports json and markdown outputs", {
+  article_context <- c(
+    "Case A describes an analyst agent that gathers economic indicators.",
+    "The agent selects charts, requests human review, and publishes a report after approval."
+  )
+
+  prompt_json <- build_article_workflow_extraction_prompt(
+    article_context = article_context,
+    article_title = "Agentic analysis cases",
+    case_names = "Case A",
+    extraction_mode = "both"
+  )
+  prompt_markdown <- build_article_workflow_extraction_prompt(
+    article_context = article_context,
+    article_title = "Agentic analysis cases",
+    extraction_mode = "case_workflows",
+    format = "markdown"
+  )
+
+  expect_true(grepl("\"article_workflow_extractor\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"article_task\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"workflows\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("\"cross_case_summary\"", prompt_json, fixed = TRUE))
+  expect_true(grepl("# Article Workflow Extraction Prompt", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("Return a top-level object with `article_task`, `workflows`, `cross_case_summary`, and `metadata`", prompt_markdown, fixed = TRUE))
+})
+
 test_that("parse and validate scaffolder message accept valid json", {
   text <- jsonlite::toJSON(
     list(
@@ -909,7 +936,7 @@ test_that("validate_scaffolder_message rejects unsupported methods", {
   )
 })
 
-test_that("workflow_graph_data returns igraph-ready vertices and edges", {
+test_that("workflow_graph_data returns renderer-ready vertices and edges", {
   scaffolder <- Scaffolder$new(agent = AgentCore$new())
   scaffolder$evaluate_task("Visualize a workflow")
   scaffolder$decompose_task(candidates = c("Clarify", "Translate"))
@@ -980,10 +1007,10 @@ test_that("import_extracted_workflow can store and approve a proposal", {
   expect_equal(scaffolder$get_workflow_proposal(imported$proposal_id)$status, "approved")
 })
 
-test_that("render_workflow_graphviz returns DOT and optional diagrammer rendering", {
+test_that("render_workflow_graphviz returns DOT and optional DiagrammeR/SVG rendering", {
   workflow <- new_workflow_spec(
     nodes = rbind(
-      workflow_node("node_1", "Clarify"),
+      workflow_node("node_1", "Clarify report requirements", human_required = TRUE),
       workflow_node("node_2", "Translate")
     ),
     edges = workflow_edge("node_1", "node_2"),
@@ -995,6 +1022,8 @@ test_that("render_workflow_graphviz returns DOT and optional diagrammer renderin
   expect_true(is.character(dot))
   expect_true(grepl("digraph workflow", dot, fixed = TRUE))
   expect_true(grepl("\"node_1\" -> \"node_2\"", dot, fixed = TRUE))
+  expect_true(grepl("shape=diamond", dot, fixed = TRUE))
+  expect_true(grepl("tooltip=", dot, fixed = TRUE))
 
   if (requireNamespace("DiagrammeR", quietly = TRUE)) {
     rendered <- render_workflow_graphviz(workflow, as = "diagrammer")
@@ -1005,27 +1034,37 @@ test_that("render_workflow_graphviz returns DOT and optional diagrammer renderin
       "requires the `DiagrammeR` package"
     )
   }
+
+  if (requireNamespace("DiagrammeR", quietly = TRUE) && requireNamespace("DiagrammeRsvg", quietly = TRUE)) {
+    svg <- render_workflow_graphviz(workflow, as = "svg")
+    expect_true(is.character(svg))
+    expect_true(grepl("<svg", svg, fixed = TRUE))
+  } else if (requireNamespace("DiagrammeR", quietly = TRUE)) {
+    expect_error(
+      render_workflow_graphviz(workflow, as = "svg"),
+      "requires the `DiagrammeRsvg` package"
+    )
+  }
 })
 
-test_that("plot_workflow_graph returns an igraph-backed result when available", {
+test_that("plot_workflow_graph returns a DiagrammeR graph when available", {
   workflow <- new_workflow_spec(
     nodes = rbind(
       workflow_node("node_1", "Clarify"),
       workflow_node("node_2", "Translate")
     ),
     edges = workflow_edge("node_1", "node_2"),
-    task = "igraph render"
+    task = "DiagrammeR render"
   )
 
-  if (!requireNamespace("igraph", quietly = TRUE)) {
+  if (!requireNamespace("DiagrammeR", quietly = TRUE)) {
     expect_error(
       plot_workflow_graph(workflow),
-      "requires the `igraph` package"
+      "requires the `DiagrammeR` package"
     )
   } else {
     out <- plot_workflow_graph(workflow)
-    expect_true(is.list(out))
-    expect_true(all(c("graph", "layout") %in% names(out)))
+    expect_true(inherits(out, "grViz"))
   }
 })
 

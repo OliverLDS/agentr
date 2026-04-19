@@ -67,6 +67,7 @@ Once a workflow is approved, use:
 - `build_agent_design_prompt()` to reason about subsystem-first agent design
 - `build_implementation_prompt()` to hand the approved agent design or approved workflow to a coding agent
 - `build_workflow_extraction_prompt()` to infer a workflow from existing code before preview and approval
+- `build_article_workflow_extraction_prompt()` to infer workflows from article-described cases before preview and approval
 
 Implementation handoff uses approved state only. Pending or discussed proposals do not affect implementation prompts until approval happens.
 

@@ -404,3 +404,281 @@ build_workflow_extraction_prompt <- function(
     sep = "\n"
   )
 }
+
+#' Build a workflow extraction prompt from an article
+#'
+#' Creates a prompt for a reasoning model to infer one or more
+#' `agentr`-compatible workflow specifications from an article describing
+#' agentic AI application cases, demonstrations, or methods.
+#'
+#' @param article_context Character string or character vector containing the
+#'   article text, excerpt, URL, abstract, notes, or section summaries.
+#' @param article_title Optional article title.
+#' @param task Optional task summary for the extraction.
+#' @param case_names Optional case names to prioritize when extracting
+#'   workflows.
+#' @param extraction_mode Extraction mode: `"case_workflows"`,
+#'   `"global_workflow"`, or `"both"`.
+#' @param format Prompt payload format. Use `"json"` for SDK-facing structured
+#'   payloads and `"markdown"` for prompts pasted into a reasoning-model chat
+#'   interface.
+#' @param target_agent Target reasoning agent label.
+#' @param extraction_goal Optional extraction goal note.
+#' @param constraints Optional character vector of extraction constraints.
+#' @param extra_context Optional named list of additional context.
+#'
+#' @return Character string prompt.
+#' @export
+build_article_workflow_extraction_prompt <- function(
+  article_context,
+  article_title = NULL,
+  task = NULL,
+  case_names = NULL,
+  extraction_mode = "both",
+  format = "json",
+  target_agent = "reasoning_model",
+  extraction_goal = "Infer workflow specification(s) from article-described agentic AI application case(s), consistent with agentr.",
+  constraints = character(),
+  extra_context = list()
+) {
+  extraction_mode <- match.arg(extraction_mode, choices = c("case_workflows", "global_workflow", "both"))
+  format <- match.arg(format, choices = c("json", "markdown"))
+
+  contract <- new_prompt_contract(
+    input_type = "character article context",
+    target_role = "article_workflow_extractor",
+    expected_output = paste(
+      "JSON containing one or more workflow specifications grounded in article case(s),",
+      "with top-level fields `article_task`, `workflows`, `cross_case_summary`, and `metadata`."
+    )
+  )
+
+  if (!is.character(article_context) || !length(article_context) || any(!nzchar(article_context))) {
+    stop("`article_context` must be a non-empty character vector.", call. = FALSE)
+  }
+  if (!is.null(article_title) && (!is.character(article_title) || length(article_title) != 1L || !nzchar(article_title))) {
+    stop("`article_title` must be NULL or a non-empty string.", call. = FALSE)
+  }
+  if (!is.null(task) && (!is.character(task) || length(task) != 1L || !nzchar(task))) {
+    stop("`task` must be NULL or a non-empty string.", call. = FALSE)
+  }
+  if (!is.null(case_names) && (!is.character(case_names) || !length(case_names) || any(!nzchar(case_names)))) {
+    stop("`case_names` must be NULL or a non-empty character vector.", call. = FALSE)
+  }
+  if (!is.character(target_agent) || length(target_agent) != 1L || !nzchar(target_agent)) {
+    stop("`target_agent` must be a non-empty string.", call. = FALSE)
+  }
+  if (!is.character(extraction_goal) || length(extraction_goal) != 1L || !nzchar(extraction_goal)) {
+    stop("`extraction_goal` must be a non-empty string.", call. = FALSE)
+  }
+  if (!is.character(constraints)) {
+    stop("`constraints` must be a character vector.", call. = FALSE)
+  }
+  if (!is.list(extra_context)) {
+    stop("`extra_context` must be a list.", call. = FALSE)
+  }
+
+  article_text <- paste(article_context, collapse = "\n\n")
+  inferred_task <- task %||% "Infer workflow specification(s) from the article's agentic AI application case(s)."
+
+  response_schema <- list(
+    article_task = inferred_task,
+    workflows = list(
+      list(
+        workflow_id = "case_1_workflow",
+        case_id = "case_1",
+        case_label = "Case name or short label",
+        workflow_scope = "case",
+        task = "Workflow goal inferred from the case",
+        confidence = 0.86,
+        evidence = list(
+          list(
+            section = "Optional article section heading",
+            span = "Short supporting excerpt or paraphrased evidence",
+            rationale = "Why this evidence supports the workflow"
+          )
+        ),
+        nodes = list(
+          list(
+            id = "node_1",
+            label = "Describe workflow step",
+            confidence = 0.85,
+            human_required = TRUE,
+            rule_spec = "Optional governing rule",
+            implementation_hint = "Optional implementation hint",
+            complete = FALSE,
+            review_status = "pending",
+            review_notes = "Optional review note",
+            review_confidence = 0.80
+          )
+        ),
+        edges = list(
+          list(
+            from = "node_1",
+            to = "node_2",
+            relation = "depends_on",
+            confidence = 0.80,
+            notes = "Optional edge note"
+          )
+        ),
+        metadata = list(
+          source = "article_case_workflow_extraction",
+          case_type = "agentic_ai_application",
+          agent_roles = list("planner", "executor", "reviewer"),
+          assumptions = list("Optional assumption")
+        )
+      )
+    ),
+    cross_case_summary = list(
+      shared_patterns = list("Optional shared workflow pattern"),
+      key_variations = list("Optional variation across cases"),
+      reusable_template = list(
+        task = "Optional generalized workflow task",
+        nodes = list(
+          list(
+            id = "node_1",
+            label = "Generalized step",
+            confidence = 0.70,
+            human_required = TRUE,
+            rule_spec = "Optional generalized rule",
+            implementation_hint = "Optional generalized implementation hint",
+            complete = FALSE,
+            review_status = "pending",
+            review_notes = "Optional note",
+            review_confidence = 0.70
+          )
+        ),
+        edges = list(
+          list(
+            from = "node_1",
+            to = "node_2",
+            relation = "depends_on",
+            confidence = 0.70,
+            notes = "Optional note"
+          )
+        )
+      )
+    ),
+    metadata = list(
+      source = "article_workflow_extraction",
+      article_title = article_title,
+      extraction_goal = extraction_goal,
+      extraction_mode = extraction_mode,
+      assumptions = list("Optional assumption")
+    )
+  )
+
+  instructions <- c(
+    "Read the article as a description of one or more agentic AI application cases.",
+    "Infer workflow specification(s) that are consistent with agentr workflow-spec conventions.",
+    "If the article contains multiple cases, extract one workflow per case whenever the cases are substantively distinct.",
+    "If the article mainly presents one overarching pattern, also extract a reusable generalized workflow when supported by the text.",
+    "Use stable node ids such as `node_1`, `node_2`, and express dependencies through `edges`.",
+    "Capture human-required checkpoints, governing rules, review loops, and implementation hints when supported by the article.",
+    "Distinguish clearly between explicit article evidence and reasonable inference.",
+    "Ground each workflow in article evidence using short spans, section names, or concise paraphrases.",
+    "Do not invent major steps, tools, or agent roles that are not reasonably supported by the article or extra context.",
+    "When the article is ambiguous, use lower confidence values and record assumptions in workflow metadata and top-level metadata."
+  )
+  if (!is.null(case_names)) {
+    instructions <- c(
+      instructions,
+      paste0("Prioritize extraction around these named cases if present: ", paste(case_names, collapse = ", "), ".")
+    )
+  }
+  if (identical(extraction_mode, "case_workflows")) {
+    instructions <- c(instructions, "Return only case-specific workflows and keep `cross_case_summary` minimal.")
+  }
+  if (identical(extraction_mode, "global_workflow")) {
+    instructions <- c(instructions, "Focus on one generalized workflow for the whole article; only split into multiple workflows if the article makes the separation unavoidable.")
+  }
+  if (identical(extraction_mode, "both")) {
+    instructions <- c(instructions, "Return both case-specific workflows and a concise cross-case synthesis when supported by the article.")
+  }
+
+  payload <- .prompt_contract_payload(contract, list(
+    role = "article_workflow_extractor",
+    target_agent = target_agent,
+    extraction_goal = extraction_goal,
+    article_title = article_title,
+    task = inferred_task,
+    case_names = if (is.null(case_names)) NULL else as.list(case_names),
+    extraction_mode = extraction_mode,
+    constraints = as.list(constraints),
+    article_context = article_context,
+    extra_context = extra_context,
+    instructions = instructions,
+    response_requirements = list(
+      format = "json",
+      rules = c(
+        "Return machine-readable JSON only.",
+        "Return a top-level object with `article_task`, `workflows`, `cross_case_summary`, and `metadata`.",
+        "Each element of `workflows` must contain `task`, `nodes`, `edges`, and `metadata`.",
+        "Node and edge shapes should remain compatible with agentr workflow-spec conventions.",
+        "Use empty arrays or minimal placeholders rather than omitting top-level required fields."
+      ),
+      schema = response_schema
+    )
+  ))
+
+  if (identical(format, "json")) {
+    return(.prompt_json(payload))
+  }
+
+  schema_json <- jsonlite::toJSON(
+    response_schema,
+    auto_unbox = TRUE,
+    pretty = TRUE,
+    null = "null",
+    na = "null"
+  )
+
+  paste(
+    "# Article Workflow Extraction Prompt",
+    "",
+    "You are extracting workflow specification(s) from an article that describes one or more agentic AI application cases.",
+    paste0("Target reasoning agent: `", target_agent, "`."),
+    if (is.null(article_title)) "Article title: <unspecified>" else paste0("Article title: `", article_title, "`."),
+    paste0("Extraction mode: `", extraction_mode, "`."),
+    "Your job is to infer the workflow(s) embodied in the article and express them in a structure compatible with agentr.",
+    "",
+    "## Extraction Goal",
+    extraction_goal,
+    "",
+    "## Task",
+    inferred_task,
+    "",
+    "## Named Cases",
+    if (is.null(case_names)) "<unspecified>" else paste(case_names, collapse = ", "),
+    "",
+    "## Instructions",
+    paste(paste0("- ", instructions), collapse = "\n"),
+    "",
+    "## Constraints",
+    if (length(constraints)) paste(paste0("- ", constraints), collapse = "\n") else "- <none>",
+    "",
+    "## Article Context",
+    "```text",
+    article_text,
+    "```",
+    "",
+    "## Extra Context",
+    if (length(extra_context)) {
+      jsonlite::toJSON(extra_context, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null")
+    } else {
+      "<none>"
+    },
+    "",
+    "## Response Requirements",
+    "- Produce the response as a downloadable `.json` file or attachment link when the UI supports it.",
+    "- If file output is unavailable, return raw machine-readable JSON only.",
+    "- Return a top-level object with `article_task`, `workflows`, `cross_case_summary`, and `metadata`.",
+    "- Each workflow should preserve the agentr-style node/edge structure.",
+    "",
+    "## Expected JSON Shape",
+    "```json",
+    schema_json,
+    "```",
+    sep = "\n"
+  )
+}

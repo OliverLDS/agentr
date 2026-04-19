@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and now centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.4` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.4.1` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -53,7 +53,7 @@ spec <- scaffolder$workflow_spec()
 spec
 ```
 
-`0.2.4` also exposes:
+`0.2.4.1` also exposes:
 
 - `WorkflowProposal` for one persisted proposal and its lifecycle
 - `WorkflowProposalState` for approved workflow plus proposal history
@@ -118,7 +118,7 @@ approved_spec <- scaffolder$approve_agent_spec_proposal(design_proposal$id)
 
 ## LLM Scaffolding Bridge
 
-`0.2.4` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
+`0.2.4.1` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)
@@ -253,6 +253,20 @@ extraction_prompt <- build_workflow_extraction_prompt(
 )
 ```
 
+If the source is an article rather than code, use the article extraction prompt:
+
+```r
+article_prompt <- build_article_workflow_extraction_prompt(
+  article_context = c(
+    "The article describes an analyst agent that gathers indicators,",
+    "selects suitable charts, asks a human reviewer, and publishes a report."
+  ),
+  article_title = "Illustrative agentic analysis case",
+  extraction_mode = "both",
+  format = "markdown"
+)
+```
+
 After the reasoning model returns JSON, import it directly with:
 
 ```r
@@ -266,15 +280,16 @@ imported <- import_extracted_workflow(
 )
 ```
 
-To inspect the inferred DAG visually, you can render Graphviz DOT or plot with `igraph`:
+To inspect the inferred DAG visually, use the DiagrammeR-oriented renderer:
 
 ```r
 dot <- render_workflow_graphviz(workflow, as = "dot")
 cat(dot)
 
 # Optional backends:
-# render_workflow_graphviz(workflow, as = "diagrammer")
-# plot_workflow_graph(workflow, layout = "sugiyama")
+# graph <- render_workflow_graphviz(workflow, as = "diagrammer")
+# svg <- render_workflow_graphviz(workflow, as = "svg")
+# graph <- plot_workflow_graph(workflow)
 ```
 
 ## Implementation And Extraction Handoff
@@ -381,18 +396,15 @@ These structures are outputs of scaffolding and reasoning, not hard-coded packag
 
 ## DAG Visualization
 
-Workflow specs are directly convertible into graph-ready node and edge tables:
+Workflow specs are directly convertible into DiagrammeR/Graphviz-ready views:
 
 ```r
 graph_data <- workflow_graph_data(scaffolder)
-
-# Example with igraph
-# library(igraph)
-# g <- graph_from_data_frame(graph_data$edges, vertices = graph_data$vertices)
-# plot(g)
+graph <- plot_workflow_graph(scaffolder)
+dot <- render_workflow_graphviz(scaffolder, as = "dot")
 ```
 
-The returned vertex table includes fields such as `node_label`, `node_shape`, `node_color`, `node_border`, and `low_confidence` to support lightweight styling in external graph packages.
+The returned vertex table includes fields such as `node_label`, `node_shape`, `node_color`, `node_border`, and `low_confidence` to support lightweight styling in external graph packages. For visual rendering, `DiagrammeR` is preferred over base `igraph` plotting because it produces clearer DAG layouts for workflow inspection.
 
 ## Workflow Persistence
 

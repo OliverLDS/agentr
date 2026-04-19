@@ -23,5 +23,5 @@ A list with \code{vertices} and \code{edges} data frames.
 }
 \description{
 Returns node and edge data frames in a shape that is directly usable by graph
-packages such as \code{igraph::graph_from_data_frame()}.
+packages and renderers such as \code{DiagrammeR}.
 }

@@ -2,20 +2,36 @@
 % Please edit documentation in R/workflow_graph.R
 \name{render_workflow_graphviz}
 \alias{render_workflow_graphviz}
-\title{Render a workflow as Graphviz DOT or a DiagrammeR graph}
+\title{Render a workflow as Graphviz DOT, DiagrammeR, or SVG}
 \usage{
-render_workflow_graphviz(x, rankdir = "TB", as = c("dot", "diagrammer"))
+render_workflow_graphviz(
+  x,
+  rankdir = "TB",
+  as = c("dot", "diagrammer", "svg"),
+  label_width = 28,
+  show_edge_labels = FALSE,
+  same_rank = NULL
+)
 }
 \arguments{
 \item{x}{A workflow specification or a \code{\link{Scaffolder}} instance.}
 
 \item{rankdir}{Graphviz rank direction, for example \code{"TB"} or \code{"LR"}.}
 
-\item{as}{Output format: raw \code{"dot"} text or a \code{"diagrammer"} object.}
+\item{as}{Output format: raw \code{"dot"} text, a \code{"diagrammer"} object, or
+exported \code{"svg"} text.}
+
+\item{label_width}{Approximate wrapping width for node labels.}
+
+\item{show_edge_labels}{Whether to show edge relation labels.}
+
+\item{same_rank}{Optional list of node-id character vectors to keep at the
+same Graphviz rank.}
 }
 \value{
-A Graphviz DOT string or a \code{DiagrammeR} graph object.
+A Graphviz DOT string, \code{DiagrammeR} graph object, or SVG string.
 }
 \description{
 Converts a workflow specification into a Graphviz-friendly representation.
+The DiagrammeR path is preferred for visual inspection of workflow DAGs.
 }

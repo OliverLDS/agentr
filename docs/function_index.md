@@ -35,8 +35,8 @@
 | `save_workflow_spec()` | Save a workflow specification |
 | `load_workflow_spec()` | Load a workflow specification |
 | `workflow_graph_data()` | Export graph-ready node and edge tables |
-| `render_workflow_graphviz()` | Render a workflow as Graphviz DOT or a DiagrammeR graph |
-| `plot_workflow_graph()` | Plot a workflow graph with `igraph` |
+| `render_workflow_graphviz()` | Render a workflow as Graphviz DOT, DiagrammeR, or SVG |
+| `plot_workflow_graph()` | Plot a workflow graph with DiagrammeR |
 | `validate_workflow_proposal()` | Validate a workflow proposal object |
 | `save_workflow_proposal()` | Save a workflow proposal |
 | `load_workflow_proposal()` | Load a workflow proposal |
@@ -51,6 +51,7 @@
 | `build_agent_design_prompt()` | Build a prompt focused on subsystem-first agent design |
 | `build_implementation_prompt()` | Build an implementation-planning prompt for a coding agent |
 | `build_workflow_extraction_prompt()` | Build a prompt to reverse-engineer existing code into an agentr workflow spec |
+| `build_article_workflow_extraction_prompt()` | Build a prompt to infer workflow specs from article-described cases |
 | `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
 | `validate_scaffolder_message()` | Validate requested scaffolding actions |
 | `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |

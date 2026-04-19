@@ -2,29 +2,32 @@
 % Please edit documentation in R/workflow_graph.R
 \name{plot_workflow_graph}
 \alias{plot_workflow_graph}
-\title{Plot a workflow graph with igraph}
+\title{Plot a workflow graph with DiagrammeR}
 \usage{
 plot_workflow_graph(
   x,
-  layout = c("sugiyama", "tree"),
-  show_edge_labels = TRUE,
-  ...
+  rankdir = "TB",
+  label_width = 28,
+  show_edge_labels = FALSE,
+  same_rank = NULL
 )
 }
 \arguments{
 \item{x}{A workflow specification or a \code{\link{Scaffolder}} instance.}
 
-\item{layout}{Layout method. Use \code{"sugiyama"} for layered DAG layout or
-\code{"tree"} for a simpler tree-like view.}
+\item{rankdir}{Graphviz rank direction, for example \code{"TB"} or \code{"LR"}.}
 
-\item{show_edge_labels}{Whether to draw edge labels.}
+\item{label_width}{Approximate wrapping width for node labels.}
 
-\item{...}{Additional arguments passed to \code{\link[igraph:plot.igraph]{igraph::plot.igraph()}}.}
+\item{show_edge_labels}{Whether to show edge relation labels.}
+
+\item{same_rank}{Optional list of node-id character vectors to keep at the
+same Graphviz rank.}
 }
 \value{
-Invisibly returns a list with the \code{graph} and \code{layout}.
+A \code{DiagrammeR} graph object.
 }
 \description{
-Creates an \code{igraph} object from a workflow and draws it using a DAG-friendly
-layout when available.
+Creates a DiagrammeR graph from a workflow. This is preferred over base
+\code{igraph} plotting for readable workflow DAG visualization.
 }

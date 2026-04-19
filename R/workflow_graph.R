@@ -1,7 +1,7 @@
 #' Convert a workflow specification into graph-ready data
 #'
 #' Returns node and edge data frames in a shape that is directly usable by graph
-#' packages such as `igraph::graph_from_data_frame()`.
+#' packages and renderers such as `DiagrammeR`.
 #'
 #' @param x A workflow specification or a [`Scaffolder`] instance.
 #' @param highlight_low_confidence Whether to add a low-confidence flag based on
@@ -25,13 +25,14 @@ workflow_graph_data <- function(
   edges <- x$edges
 
   vertices$node_label <- vertices$label
-  vertices$node_shape <- ifelse(vertices$human_required, "square", "circle")
-  vertices$node_color <- ifelse(vertices$human_required, "#D55E00", "#0072B2")
-  vertices$node_border <- ifelse(vertices$complete, "#009E73", "#666666")
+  vertices$node_shape <- ifelse(vertices$human_required, "diamond", "box")
+  vertices$node_color <- ifelse(vertices$human_required, "#FDE68A", "#DBEAFE")
+  vertices$node_border <- ifelse(vertices$human_required, "#B45309", "#1D4ED8")
   vertices$node_alpha <- ifelse(vertices$complete, 1, 0.85)
   if (highlight_low_confidence) {
     vertices$low_confidence <- is.na(vertices$confidence) | vertices$confidence < confidence_threshold
-    vertices$node_color[vertices$low_confidence] <- "#CC79A7"
+    vertices$node_color[vertices$low_confidence] <- "#FBCFE8"
+    vertices$node_border[vertices$low_confidence] <- "#BE185D"
   }
 
   edges$edge_label <- edges$relation
@@ -42,61 +43,177 @@ workflow_graph_data <- function(
   )
 }
 
-#' Render a workflow as Graphviz DOT or a DiagrammeR graph
-#'
-#' Converts a workflow specification into a Graphviz-friendly representation.
-#'
-#' @param x A workflow specification or a [`Scaffolder`] instance.
-#' @param rankdir Graphviz rank direction, for example `"TB"` or `"LR"`.
-#' @param as Output format: raw `"dot"` text or a `"diagrammer"` object.
-#'
-#' @return A Graphviz DOT string or a `DiagrammeR` graph object.
-#' @export
-render_workflow_graphviz <- function(x, rankdir = "TB", as = c("dot", "diagrammer")) {
-  as <- match.arg(as)
-  graph_data <- workflow_graph_data(x)
+.dot_escape_id <- function(x) {
+  x <- ifelse(is.na(x), "", as.character(x))
+  gsub("\"", "\\\"", x, fixed = TRUE)
+}
 
-  escape_label <- function(text) {
-    text <- gsub("\\\\", "\\\\\\\\", as.character(text))
-    text <- gsub("\"", "\\\\\"", text, fixed = TRUE)
-    text
+.dot_prepare_label <- function(x, width = 28) {
+  x <- ifelse(is.na(x), "", as.character(x))
+  x <- gsub("\r\n", "\n", x, fixed = TRUE)
+  x <- gsub("\r", "\n", x, fixed = TRUE)
+  x <- gsub("\\\\n", "\n", x)
+  if (!grepl("\n", x, fixed = TRUE)) {
+    x <- paste(strwrap(x, width = width), collapse = "\n")
   }
+  x <- gsub("\"", "\\\"", x, fixed = TRUE)
+  gsub("\n", "\\n", x, fixed = TRUE)
+}
 
-  node_lines <- vapply(seq_len(nrow(graph_data$vertices)), function(i) {
-    node <- graph_data$vertices[i, , drop = FALSE]
+.dot_present <- function(x) {
+  !is.null(x) && length(x) == 1L && !is.na(x) && nzchar(as.character(x))
+}
+
+.workflow_node_tooltip <- function(nodes, i) {
+  parts <- c(
+    paste0("id: ", nodes$id[[i]]),
+    if (!is.na(nodes$confidence[[i]])) paste0("confidence: ", sprintf("%.2f", nodes$confidence[[i]])) else NULL,
+    if ("rule_spec" %in% names(nodes) && .dot_present(nodes$rule_spec[[i]])) paste0("rule: ", nodes$rule_spec[[i]]) else NULL,
+    if ("implementation_hint" %in% names(nodes) && .dot_present(nodes$implementation_hint[[i]])) paste0("hint: ", nodes$implementation_hint[[i]]) else NULL,
+    if ("review_status" %in% names(nodes) && .dot_present(nodes$review_status[[i]])) paste0("review_status: ", nodes$review_status[[i]]) else NULL,
+    if ("review_notes" %in% names(nodes) && .dot_present(nodes$review_notes[[i]])) paste0("review: ", nodes$review_notes[[i]]) else NULL
+  )
+  x <- paste(parts, collapse = "\n")
+  x <- gsub("\"", "\\\"", x, fixed = TRUE)
+  gsub("\n", "\\n", x, fixed = TRUE)
+}
+
+.workflow_edge_tooltip <- function(edges, i) {
+  parts <- c(
+    if ("relation" %in% names(edges) && .dot_present(edges$relation[[i]])) paste0("relation: ", edges$relation[[i]]) else NULL,
+    if (!is.na(edges$confidence[[i]])) paste0("confidence: ", sprintf("%.2f", edges$confidence[[i]])) else NULL,
+    if ("notes" %in% names(edges) && .dot_present(edges$notes[[i]])) paste0("notes: ", edges$notes[[i]]) else NULL
+  )
+  x <- paste(parts, collapse = "\n")
+  x <- gsub("\"", "\\\"", x, fixed = TRUE)
+  gsub("\n", "\\n", x, fixed = TRUE)
+}
+
+.workflow_graph_dot <- function(
+  graph_data,
+  rankdir = "TB",
+  label_width = 28,
+  show_edge_labels = FALSE,
+  same_rank = NULL
+) {
+  nodes <- graph_data$vertices
+  edges <- graph_data$edges
+
+  if (!"human_required" %in% names(nodes)) nodes$human_required <- FALSE
+  if (!"confidence" %in% names(nodes)) nodes$confidence <- NA_real_
+  if (!"relation" %in% names(edges)) edges$relation <- ""
+  if (!"confidence" %in% names(edges)) edges$confidence <- NA_real_
+
+  nodes$label_prepared <- vapply(nodes$node_label %||% nodes$label, .dot_prepare_label, character(1), width = label_width)
+  nodes$shape <- ifelse(nodes$human_required, "diamond", "box")
+  nodes$style <- ifelse(nodes$human_required, "filled", "rounded,filled")
+  nodes$fillcolor <- nodes$node_color %||% ifelse(nodes$human_required, "#FDE68A", "#DBEAFE")
+  nodes$color <- nodes$node_border %||% ifelse(nodes$human_required, "#B45309", "#1D4ED8")
+
+  node_lines <- vapply(seq_len(nrow(nodes)), function(i) {
     sprintf(
-      '  "%s" [label="%s", shape=%s, style=filled, fillcolor="%s", color="%s"];',
-      escape_label(node$id[[1]]),
-      escape_label(node$node_label[[1]]),
-      if (identical(node$node_shape[[1]], "square")) "box" else "ellipse",
-      node$node_color[[1]],
-      node$node_border[[1]]
+      paste0(
+        '  "%s" [',
+        'label="%s", shape=%s, style="%s", fillcolor="%s", color="%s", ',
+        'fontcolor="#111827", fontname="Helvetica", fontsize=11, ',
+        'margin="0.18,0.10", penwidth=1.3, tooltip="%s"',
+        '];'
+      ),
+      .dot_escape_id(nodes$id[[i]]),
+      nodes$label_prepared[[i]],
+      nodes$shape[[i]],
+      nodes$style[[i]],
+      nodes$fillcolor[[i]],
+      nodes$color[[i]],
+      .workflow_node_tooltip(nodes, i)
     )
   }, character(1))
 
-  edge_lines <- if (nrow(graph_data$edges)) {
-    vapply(seq_len(nrow(graph_data$edges)), function(i) {
-      edge <- graph_data$edges[i, , drop = FALSE]
+  edge_lines <- if (nrow(edges)) {
+    edge_color <- ifelse(edges$relation == "routes_to", "#2563EB", "#6B7280")
+    edge_style <- ifelse(edges$relation == "routes_to", "dashed", "solid")
+    edge_penwidth <- ifelse(is.na(edges$confidence), 1.2, pmax(1.0, 1 + 2 * (edges$confidence - 0.85)))
+
+    vapply(seq_len(nrow(edges)), function(i) {
+      edge_label <- if (isTRUE(show_edge_labels)) .dot_prepare_label(edges$relation[[i]], width = 100) else ""
       sprintf(
-        '  "%s" -> "%s" [label="%s"];',
-        escape_label(edge$from[[1]]),
-        escape_label(edge$to[[1]]),
-        escape_label(edge$edge_label[[1]])
+        paste0(
+          '  "%s" -> "%s" [',
+          'color="%s", style="%s", penwidth=%.2f, arrowsize=0.8, ',
+          'label="%s", fontname="Helvetica", fontsize=9, tooltip="%s"',
+          '];'
+        ),
+        .dot_escape_id(edges$from[[i]]),
+        .dot_escape_id(edges$to[[i]]),
+        edge_color[[i]],
+        edge_style[[i]],
+        edge_penwidth[[i]],
+        edge_label,
+        .workflow_edge_tooltip(edges, i)
       )
     }, character(1))
   } else {
     character()
   }
 
-  dot <- paste(
+  rank_lines <- character(0)
+  if (!is.null(same_rank)) {
+    if (!is.list(same_rank)) {
+      stop("`same_rank` must be NULL or a list of character vectors.", call. = FALSE)
+    }
+    rank_lines <- vapply(same_rank, function(x) {
+      sprintf(
+        "  { rank = same; %s; }",
+        paste(sprintf('"%s"', vapply(x, .dot_escape_id, character(1))), collapse = "; ")
+      )
+    }, character(1))
+  }
+
+  paste(
     "digraph workflow {",
-    paste0("  rankdir=", rankdir, ";"),
-    "  node [fontname=\"Helvetica\"];",
-    "  edge [fontname=\"Helvetica\"];",
+    sprintf('  graph [layout=dot, rankdir=%s, nodesep=0.40, ranksep=0.65, splines=spline, pad=0.2];', rankdir),
+    '  node [fontname="Helvetica"];',
+    '  edge [fontname="Helvetica"];',
     paste(node_lines, collapse = "\n"),
+    if (length(rank_lines)) paste(rank_lines, collapse = "\n") else "",
     paste(edge_lines, collapse = "\n"),
     "}",
     sep = "\n"
+  )
+}
+
+#' Render a workflow as Graphviz DOT, DiagrammeR, or SVG
+#'
+#' Converts a workflow specification into a Graphviz-friendly representation.
+#' The DiagrammeR path is preferred for visual inspection of workflow DAGs.
+#'
+#' @param x A workflow specification or a [`Scaffolder`] instance.
+#' @param rankdir Graphviz rank direction, for example `"TB"` or `"LR"`.
+#' @param as Output format: raw `"dot"` text, a `"diagrammer"` object, or
+#'   exported `"svg"` text.
+#' @param label_width Approximate wrapping width for node labels.
+#' @param show_edge_labels Whether to show edge relation labels.
+#' @param same_rank Optional list of node-id character vectors to keep at the
+#'   same Graphviz rank.
+#'
+#' @return A Graphviz DOT string, `DiagrammeR` graph object, or SVG string.
+#' @export
+render_workflow_graphviz <- function(
+  x,
+  rankdir = "TB",
+  as = c("dot", "diagrammer", "svg"),
+  label_width = 28,
+  show_edge_labels = FALSE,
+  same_rank = NULL
+) {
+  as <- match.arg(as)
+  graph_data <- workflow_graph_data(x)
+  dot <- .workflow_graph_dot(
+    graph_data = graph_data,
+    rankdir = rankdir,
+    label_width = label_width,
+    show_edge_labels = show_edge_labels,
+    same_rank = same_rank
   )
 
   if (identical(as, "dot")) {
@@ -108,60 +225,47 @@ render_workflow_graphviz <- function(x, rankdir = "TB", as = c("dot", "diagramme
       call. = FALSE
     )
   }
-  DiagrammeR::grViz(dot)
+
+  graph <- DiagrammeR::grViz(dot)
+  if (identical(as, "diagrammer")) {
+    return(graph)
+  }
+  if (!requireNamespace("DiagrammeRsvg", quietly = TRUE)) {
+    stop(
+      "`render_workflow_graphviz(..., as = \"svg\")` requires the `DiagrammeRsvg` package.",
+      call. = FALSE
+    )
+  }
+  DiagrammeRsvg::export_svg(graph)
 }
 
-#' Plot a workflow graph with igraph
+#' Plot a workflow graph with DiagrammeR
 #'
-#' Creates an `igraph` object from a workflow and draws it using a DAG-friendly
-#' layout when available.
+#' Creates a DiagrammeR graph from a workflow. This is preferred over base
+#' `igraph` plotting for readable workflow DAG visualization.
 #'
 #' @param x A workflow specification or a [`Scaffolder`] instance.
-#' @param layout Layout method. Use `"sugiyama"` for layered DAG layout or
-#'   `"tree"` for a simpler tree-like view.
-#' @param show_edge_labels Whether to draw edge labels.
-#' @param ... Additional arguments passed to [igraph::plot.igraph()].
+#' @param rankdir Graphviz rank direction, for example `"TB"` or `"LR"`.
+#' @param label_width Approximate wrapping width for node labels.
+#' @param show_edge_labels Whether to show edge relation labels.
+#' @param same_rank Optional list of node-id character vectors to keep at the
+#'   same Graphviz rank.
 #'
-#' @return Invisibly returns a list with the `graph` and `layout`.
+#' @return A `DiagrammeR` graph object.
 #' @export
 plot_workflow_graph <- function(
   x,
-  layout = c("sugiyama", "tree"),
-  show_edge_labels = TRUE,
-  ...
+  rankdir = "TB",
+  label_width = 28,
+  show_edge_labels = FALSE,
+  same_rank = NULL
 ) {
-  if (!requireNamespace("igraph", quietly = TRUE)) {
-    stop("`plot_workflow_graph()` requires the `igraph` package.", call. = FALSE)
-  }
-
-  layout <- match.arg(layout)
-  graph_data <- workflow_graph_data(x)
-  g <- igraph::graph_from_data_frame(
-    d = graph_data$edges,
-    vertices = graph_data$vertices,
-    directed = TRUE
+  render_workflow_graphviz(
+    x = x,
+    rankdir = rankdir,
+    as = "diagrammer",
+    label_width = label_width,
+    show_edge_labels = show_edge_labels,
+    same_rank = same_rank
   )
-
-  graph_layout <- switch(
-    layout,
-    sugiyama = igraph::layout_with_sugiyama(g)$layout,
-    tree = igraph::layout_as_tree(g)
-  )
-
-  igraph::plot.igraph(
-    g,
-    layout = graph_layout,
-    vertex.label = igraph::V(g)$node_label,
-    vertex.color = igraph::V(g)$node_color,
-    vertex.shape = ifelse(igraph::V(g)$node_shape == "square", "square", "circle"),
-    vertex.frame.color = igraph::V(g)$node_border,
-    vertex.label.color = "#222222",
-    edge.label = if (isTRUE(show_edge_labels)) igraph::E(g)$edge_label else NA,
-    ...
-  )
-
-  invisible(list(
-    graph = g,
-    layout = graph_layout
-  ))
 }

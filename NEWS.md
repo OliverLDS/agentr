@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.4.1
+
+Released: 2026-04-19
+
+- Switched workflow graph rendering guidance from base `igraph` plotting to a DiagrammeR/Graphviz-first path for clearer workflow DAG visualization.
+- Enhanced `render_workflow_graphviz()` with wrapped labels, human-gate node styling, tooltips, optional same-rank grouping, and SVG export through `DiagrammeRsvg`.
+- Kept `plot_workflow_graph()` as the public plotting helper while making it return a DiagrammeR graph.
+- Added `build_article_workflow_extraction_prompt()` for inferring agentr-compatible workflow specifications from article-described cases.
+- Updated README, function index, lifecycle docs, generated manual pages, and tests for the new visualization and article-extraction paths.
+
 ## agentr 0.2.4
 
 Released: 2026-04-06

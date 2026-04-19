@@ -1,7 +1,7 @@
 Package: agentr
 Type: Package
 Title: Cognitive Core for Agentic Workflows in R
-Version: 0.2.4
+Version: 0.2.4.1
 Authors@R: 
     person(given = "Oliver", 
            family = "Zhou",
@@ -24,7 +24,7 @@ Imports:
     yaml
 Suggests:
     DiagrammeR,
-    igraph,
+    DiagrammeRsvg,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
