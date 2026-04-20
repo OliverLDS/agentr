@@ -30,6 +30,7 @@
 | `workflow_edge()` | Create a workflow edge record |
 | `new_workflow_spec()` | Build a workflow specification object |
 | `workflow_spec_from_json()` | Build a workflow specification from extracted JSON |
+| `article_workflow_specs_from_json()` | Build workflow specifications from article extraction JSON |
 | `import_extracted_workflow()` | Import extracted workflow JSON and optionally store it on a `Scaffolder` |
 | `validate_workflow_spec()` | Validate workflow structure |
 | `save_workflow_spec()` | Save a workflow specification |

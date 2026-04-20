@@ -94,6 +94,7 @@ workflow_graph_data <- function(
   rankdir = "TB",
   label_width = 28,
   show_edge_labels = FALSE,
+  show_tooltips = FALSE,
   same_rank = NULL
 ) {
   nodes <- graph_data$vertices
@@ -111,21 +112,28 @@ workflow_graph_data <- function(
   nodes$color <- nodes$node_border %||% ifelse(nodes$human_required, "#B45309", "#1D4ED8")
 
   node_lines <- vapply(seq_len(nrow(nodes)), function(i) {
-    sprintf(
-      paste0(
-        '  "%s" [',
-        'label="%s", shape=%s, style="%s", fillcolor="%s", color="%s", ',
-        'fontcolor="#111827", fontname="Helvetica", fontsize=11, ',
-        'margin="0.18,0.10", penwidth=1.3, tooltip="%s"',
-        '];'
+    tooltip_part <- if (isTRUE(show_tooltips)) {
+      sprintf(', tooltip="%s"', .workflow_node_tooltip(nodes, i))
+    } else {
+      ""
+    }
+    paste0(
+      sprintf(
+        paste0(
+          '  "%s" [',
+          'label="%s", shape=%s, style="%s", fillcolor="%s", color="%s", ',
+          'fontcolor="#111827", fontname="Helvetica", fontsize=11, ',
+          'margin="0.18,0.10", penwidth=1.3'
+        ),
+        .dot_escape_id(nodes$id[[i]]),
+        nodes$label_prepared[[i]],
+        nodes$shape[[i]],
+        nodes$style[[i]],
+        nodes$fillcolor[[i]],
+        nodes$color[[i]]
       ),
-      .dot_escape_id(nodes$id[[i]]),
-      nodes$label_prepared[[i]],
-      nodes$shape[[i]],
-      nodes$style[[i]],
-      nodes$fillcolor[[i]],
-      nodes$color[[i]],
-      .workflow_node_tooltip(nodes, i)
+      tooltip_part,
+      "];"
     )
   }, character(1))
 
@@ -136,20 +144,27 @@ workflow_graph_data <- function(
 
     vapply(seq_len(nrow(edges)), function(i) {
       edge_label <- if (isTRUE(show_edge_labels)) .dot_prepare_label(edges$relation[[i]], width = 100) else ""
-      sprintf(
-        paste0(
-          '  "%s" -> "%s" [',
-          'color="%s", style="%s", penwidth=%.2f, arrowsize=0.8, ',
-          'label="%s", fontname="Helvetica", fontsize=9, tooltip="%s"',
-          '];'
+      tooltip_part <- if (isTRUE(show_tooltips)) {
+        sprintf(', tooltip="%s"', .workflow_edge_tooltip(edges, i))
+      } else {
+        ""
+      }
+      paste0(
+        sprintf(
+          paste0(
+            '  "%s" -> "%s" [',
+            'color="%s", style="%s", penwidth=%.2f, arrowsize=0.8, ',
+            'label="%s", fontname="Helvetica", fontsize=9'
+          ),
+          .dot_escape_id(edges$from[[i]]),
+          .dot_escape_id(edges$to[[i]]),
+          edge_color[[i]],
+          edge_style[[i]],
+          edge_penwidth[[i]],
+          edge_label
         ),
-        .dot_escape_id(edges$from[[i]]),
-        .dot_escape_id(edges$to[[i]]),
-        edge_color[[i]],
-        edge_style[[i]],
-        edge_penwidth[[i]],
-        edge_label,
-        .workflow_edge_tooltip(edges, i)
+        tooltip_part,
+        "];"
       )
     }, character(1))
   } else {
@@ -193,6 +208,9 @@ workflow_graph_data <- function(
 #'   exported `"svg"` text.
 #' @param label_width Approximate wrapping width for node labels.
 #' @param show_edge_labels Whether to show edge relation labels.
+#' @param show_tooltips Whether to include Graphviz tooltip attributes. Defaults
+#'   to `FALSE` because long prose tooltips can trigger Viz.js parse failures in
+#'   some DiagrammeR renderers.
 #' @param same_rank Optional list of node-id character vectors to keep at the
 #'   same Graphviz rank.
 #'
@@ -204,6 +222,7 @@ render_workflow_graphviz <- function(
   as = c("dot", "diagrammer", "svg"),
   label_width = 28,
   show_edge_labels = FALSE,
+  show_tooltips = FALSE,
   same_rank = NULL
 ) {
   as <- match.arg(as)
@@ -213,6 +232,7 @@ render_workflow_graphviz <- function(
     rankdir = rankdir,
     label_width = label_width,
     show_edge_labels = show_edge_labels,
+    show_tooltips = show_tooltips,
     same_rank = same_rank
   )
 
@@ -248,6 +268,9 @@ render_workflow_graphviz <- function(
 #' @param rankdir Graphviz rank direction, for example `"TB"` or `"LR"`.
 #' @param label_width Approximate wrapping width for node labels.
 #' @param show_edge_labels Whether to show edge relation labels.
+#' @param show_tooltips Whether to include Graphviz tooltip attributes. Defaults
+#'   to `FALSE` because long prose tooltips can trigger Viz.js parse failures in
+#'   some DiagrammeR renderers.
 #' @param same_rank Optional list of node-id character vectors to keep at the
 #'   same Graphviz rank.
 #'
@@ -258,6 +281,7 @@ plot_workflow_graph <- function(
   rankdir = "TB",
   label_width = 28,
   show_edge_labels = FALSE,
+  show_tooltips = FALSE,
   same_rank = NULL
 ) {
   render_workflow_graphviz(
@@ -266,6 +290,7 @@ plot_workflow_graph <- function(
     as = "diagrammer",
     label_width = label_width,
     show_edge_labels = show_edge_labels,
+    show_tooltips = show_tooltips,
     same_rank = same_rank
   )
 }

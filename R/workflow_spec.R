@@ -226,33 +226,25 @@ print.agentr_workflow_spec <- function(x, ...) {
   invisible(x)
 }
 
-#' Build a workflow specification from extracted JSON
-#'
-#' Converts reasoning-model output produced from
-#' [build_workflow_extraction_prompt()] into a validated
-#' `agentr_workflow_spec` object.
-#'
-#' @param x Parsed list, raw JSON string, or path to a `.json` file.
-#'
-#' @return A validated workflow specification.
-#' @export
-workflow_spec_from_json <- function(x) {
+.parse_workflow_json_input <- function(x, label = "Workflow JSON") {
   if (is.character(x) && length(x) == 1L && nzchar(x)) {
     if (file.exists(x)) {
       if (!grepl("\\.json$", x, ignore.case = TRUE)) {
-        stop("Workflow JSON files must use a `.json` extension.", call. = FALSE)
+        stop(label, " files must use a `.json` extension.", call. = FALSE)
       }
-      x <- load_json_file(x, simplifyVector = FALSE)
-    } else {
-      x <- tryCatch(
-        jsonlite::fromJSON(x, simplifyVector = FALSE),
-        error = function(e) {
-          stop("Could not parse workflow JSON.", call. = FALSE)
-        }
-      )
+      return(load_json_file(x, simplifyVector = FALSE))
     }
+    return(tryCatch(
+      jsonlite::fromJSON(x, simplifyVector = FALSE),
+      error = function(e) {
+        stop("Could not parse ", tolower(label), ".", call. = FALSE)
+      }
+    ))
   }
+  x
+}
 
+.workflow_spec_from_list <- function(x, metadata = NULL) {
   if (!is.list(x) || !all(c("task", "nodes", "edges", "metadata") %in% names(x))) {
     stop(
       "Workflow JSON must contain top-level `task`, `nodes`, `edges`, and `metadata` fields.",
@@ -299,8 +291,71 @@ workflow_spec_from_json <- function(x) {
     nodes = nodes,
     edges = edges,
     task = x$task,
-    metadata = x$metadata %||% list()
+    metadata = metadata %||% x$metadata %||% list()
   )
+}
+
+#' Build a workflow specification from extracted JSON
+#'
+#' Converts reasoning-model output produced from
+#' [build_workflow_extraction_prompt()] into a validated
+#' `agentr_workflow_spec` object.
+#'
+#' @param x Parsed list, raw JSON string, or path to a `.json` file.
+#'
+#' @return A validated workflow specification.
+#' @export
+workflow_spec_from_json <- function(x) {
+  .workflow_spec_from_list(.parse_workflow_json_input(x, label = "Workflow JSON"))
+}
+
+#' Build workflow specifications from article extraction JSON
+#'
+#' Converts the article-level JSON object produced from
+#' [build_article_workflow_extraction_prompt()] into one validated workflow
+#' specification per element of `workflows`.
+#'
+#' @param x Parsed list, raw JSON string, or path to a `.json` file.
+#'
+#' @return A named list of validated workflow specifications.
+#' @export
+article_workflow_specs_from_json <- function(x) {
+  x <- .parse_workflow_json_input(x, label = "Article workflow JSON")
+
+  if (!is.list(x) || !all(c("article_task", "workflows", "metadata") %in% names(x))) {
+    stop(
+      "Article workflow JSON must contain top-level `article_task`, `workflows`, and `metadata` fields.",
+      call. = FALSE
+    )
+  }
+  if (!is.list(x$workflows) || !length(x$workflows)) {
+    stop("Article workflow JSON must contain a non-empty `workflows` list.", call. = FALSE)
+  }
+
+  workflows <- lapply(seq_along(x$workflows), function(i) {
+    workflow <- x$workflows[[i]]
+    workflow_metadata <- utils::modifyList(
+      workflow$metadata %||% list(),
+      list(
+        article_task = x$article_task,
+        article_metadata = x$metadata %||% list(),
+        cross_case_summary = x$cross_case_summary %||% list(),
+        workflow_id = workflow$workflow_id %||% paste0("workflow_", i),
+        case_id = workflow$case_id %||% NA_character_,
+        case_label = workflow$case_label %||% NA_character_,
+        workflow_scope = workflow$workflow_scope %||% NA_character_,
+        workflow_confidence = workflow$confidence %||% NA_real_,
+        evidence = workflow$evidence %||% list()
+      )
+    )
+    .workflow_spec_from_list(workflow, metadata = workflow_metadata)
+  })
+
+  names(workflows) <- vapply(seq_along(x$workflows), function(i) {
+    workflow <- x$workflows[[i]]
+    workflow$workflow_id %||% workflow$case_id %||% paste0("workflow_", i)
+  }, character(1))
+  workflows
 }
 
 #' Import extracted workflow JSON into agentr

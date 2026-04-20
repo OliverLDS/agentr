@@ -976,6 +976,63 @@ test_that("workflow_spec_from_json imports extracted workflow JSON", {
   expect_equal(nrow(workflow$edges), 1L)
 })
 
+test_that("article_workflow_specs_from_json imports article extraction JSON", {
+  json_text <- jsonlite::toJSON(
+    list(
+      article_task = "Infer article workflows",
+      workflows = list(
+        list(
+          workflow_id = "case_1_workflow",
+          case_id = "case_1",
+          case_label = "Case 1",
+          workflow_scope = "case",
+          task = "Case workflow",
+          confidence = 0.9,
+          evidence = list(
+            list(section = "Case", span = "Case evidence", rationale = "Supports workflow")
+          ),
+          nodes = list(
+            list(id = "node_1", label = "Clarify", confidence = 0.9, human_required = TRUE),
+            list(id = "node_2", label = "Execute", confidence = 0.8, human_required = FALSE)
+          ),
+          edges = list(
+            list(from = "node_1", to = "node_2", relation = "depends_on", confidence = 0.85)
+          ),
+          metadata = list(source = "article_case_workflow_extraction")
+        ),
+        list(
+          workflow_id = "case_2_workflow",
+          case_id = "case_2",
+          case_label = "Case 2",
+          workflow_scope = "case",
+          task = "Second case workflow",
+          confidence = 0.8,
+          evidence = list(),
+          nodes = list(
+            list(id = "node_1", label = "Review", human_required = TRUE)
+          ),
+          edges = list(),
+          metadata = list(source = "article_case_workflow_extraction")
+        )
+      ),
+      cross_case_summary = list(shared_patterns = list("review gate")),
+      metadata = list(source = "article_workflow_extraction", article_title = "Cases")
+    ),
+    auto_unbox = TRUE
+  )
+
+  workflows <- article_workflow_specs_from_json(json_text)
+
+  expect_true(is.list(workflows))
+  expect_equal(names(workflows), c("case_1_workflow", "case_2_workflow"))
+  expect_s3_class(workflows[[1]], "agentr_workflow_spec")
+  expect_equal(workflows[[1]]$task, "Case workflow")
+  expect_equal(nrow(workflows[[1]]$nodes), 2L)
+  expect_equal(nrow(workflows[[1]]$edges), 1L)
+  expect_equal(workflows[[1]]$metadata$case_id, "case_1")
+  expect_equal(workflows[[2]]$metadata$article_metadata$article_title, "Cases")
+})
+
 test_that("import_extracted_workflow can store and approve a proposal", {
   scaffolder <- Scaffolder$new(agent = AgentCore$new())
   scaffolder$evaluate_task("Imported workflow proposal")
@@ -1023,7 +1080,9 @@ test_that("render_workflow_graphviz returns DOT and optional DiagrammeR/SVG rend
   expect_true(grepl("digraph workflow", dot, fixed = TRUE))
   expect_true(grepl("\"node_1\" -> \"node_2\"", dot, fixed = TRUE))
   expect_true(grepl("shape=diamond", dot, fixed = TRUE))
-  expect_true(grepl("tooltip=", dot, fixed = TRUE))
+  expect_false(grepl("tooltip=", dot, fixed = TRUE))
+  dot_with_tooltips <- render_workflow_graphviz(workflow, as = "dot", show_tooltips = TRUE)
+  expect_true(grepl("tooltip=", dot_with_tooltips, fixed = TRUE))
 
   if (requireNamespace("DiagrammeR", quietly = TRUE)) {
     rendered <- render_workflow_graphviz(workflow, as = "diagrammer")

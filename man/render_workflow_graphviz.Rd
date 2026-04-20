@@ -10,6 +10,7 @@ render_workflow_graphviz(
   as = c("dot", "diagrammer", "svg"),
   label_width = 28,
   show_edge_labels = FALSE,
+  show_tooltips = FALSE,
   same_rank = NULL
 )
 }
@@ -24,6 +25,10 @@ exported \code{"svg"} text.}
 \item{label_width}{Approximate wrapping width for node labels.}
 
 \item{show_edge_labels}{Whether to show edge relation labels.}
+
+\item{show_tooltips}{Whether to include Graphviz tooltip attributes. Defaults
+to \code{FALSE} because long prose tooltips can trigger Viz.js parse failures in
+some DiagrammeR renderers.}
 
 \item{same_rank}{Optional list of node-id character vectors to keep at the
 same Graphviz rank.}

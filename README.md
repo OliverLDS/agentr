@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and now centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.4.1` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.4.2` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -53,7 +53,7 @@ spec <- scaffolder$workflow_spec()
 spec
 ```
 
-`0.2.4.1` also exposes:
+`0.2.4.2` also exposes:
 
 - `WorkflowProposal` for one persisted proposal and its lifecycle
 - `WorkflowProposalState` for approved workflow plus proposal history
@@ -118,7 +118,7 @@ approved_spec <- scaffolder$approve_agent_spec_proposal(design_proposal$id)
 
 ## LLM Scaffolding Bridge
 
-`0.2.4.1` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
+`0.2.4.2` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)
@@ -265,6 +265,15 @@ article_prompt <- build_article_workflow_extraction_prompt(
   extraction_mode = "both",
   format = "markdown"
 )
+```
+
+Article extraction returns an article-level object with one or more workflows.
+Convert it into validated workflow specs with:
+
+```r
+article_workflows <- article_workflow_specs_from_json("article_workflows.json")
+workflow <- article_workflows[[1]]
+graph <- render_workflow_graphviz(workflow, as = "diagrammer")
 ```
 
 After the reasoning model returns JSON, import it directly with:

@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.4.2
+
+Released: 2026-04-20
+
+- Added `article_workflow_specs_from_json()` to import multi-workflow article extraction JSON into validated workflow specifications.
+- Refactored workflow JSON import internals so single-workflow and article-level extraction paths share stricter node and edge normalization.
+- Made Graphviz tooltips opt-in in `render_workflow_graphviz()` and `plot_workflow_graph()` to avoid DiagrammeR/Viz.js parse failures from long article-derived prose.
+- Updated README examples, function index docs, generated manual pages, and tests for article workflow import and robust DiagrammeR rendering.
+
 ## agentr 0.2.4.1
 
 Released: 2026-04-19
