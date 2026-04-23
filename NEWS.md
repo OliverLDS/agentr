@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.4.3
+
+Released: 2026-04-23
+
+- Hardened Graphviz string escaping in workflow rendering so backslashes and apostrophes no longer break `render_workflow_graphviz(..., as = "svg")` on article-derived workflows.
+- Restored correct Graphviz label line-break rendering after the escaping hardening by preserving intended `\n` label breaks while still escaping unsafe string content.
+- Added regression tests covering backslash-heavy labels, apostrophes in wrapped labels, and multiline label rendering through the SVG export path.
+
 ## agentr 0.2.4.2
 
 Released: 2026-04-20

@@ -43,9 +43,22 @@ workflow_graph_data <- function(
   )
 }
 
-.dot_escape_id <- function(x) {
+.dot_escape_string <- function(x) {
   x <- ifelse(is.na(x), "", as.character(x))
+  x <- gsub("\\\\", "\\\\\\\\", x)
+  x <- gsub("'", "&#39;", x, fixed = TRUE)
   gsub("\"", "\\\"", x, fixed = TRUE)
+}
+
+.dot_escape_multiline <- function(x) {
+  placeholder <- "<<DOT_NEWLINE_PLACEHOLDER>>"
+  x <- gsub("\n", placeholder, x, fixed = TRUE)
+  x <- .dot_escape_string(x)
+  gsub(placeholder, "\\n", x, fixed = TRUE)
+}
+
+.dot_escape_id <- function(x) {
+  .dot_escape_string(x)
 }
 
 .dot_prepare_label <- function(x, width = 28) {
@@ -56,8 +69,7 @@ workflow_graph_data <- function(
   if (!grepl("\n", x, fixed = TRUE)) {
     x <- paste(strwrap(x, width = width), collapse = "\n")
   }
-  x <- gsub("\"", "\\\"", x, fixed = TRUE)
-  gsub("\n", "\\n", x, fixed = TRUE)
+  .dot_escape_multiline(x)
 }
 
 .dot_present <- function(x) {
@@ -74,8 +86,7 @@ workflow_graph_data <- function(
     if ("review_notes" %in% names(nodes) && .dot_present(nodes$review_notes[[i]])) paste0("review: ", nodes$review_notes[[i]]) else NULL
   )
   x <- paste(parts, collapse = "\n")
-  x <- gsub("\"", "\\\"", x, fixed = TRUE)
-  gsub("\n", "\\n", x, fixed = TRUE)
+  .dot_escape_multiline(x)
 }
 
 .workflow_edge_tooltip <- function(edges, i) {
@@ -85,8 +96,7 @@ workflow_graph_data <- function(
     if ("notes" %in% names(edges) && .dot_present(edges$notes[[i]])) paste0("notes: ", edges$notes[[i]]) else NULL
   )
   x <- paste(parts, collapse = "\n")
-  x <- gsub("\"", "\\\"", x, fixed = TRUE)
-  gsub("\n", "\\n", x, fixed = TRUE)
+  .dot_escape_multiline(x)
 }
 
 .workflow_graph_dot <- function(

@@ -1106,6 +1106,87 @@ test_that("render_workflow_graphviz returns DOT and optional DiagrammeR/SVG rend
   }
 })
 
+test_that("render_workflow_graphviz escapes backslashes in DOT strings", {
+  workflow <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node(
+        "node\\\\1",
+        "Review C:\\\\data\\\\inputs and preserve literal \\\\n markers",
+        human_required = TRUE,
+        rule_spec = "Require review of C:\\\\reports\\\\drafts",
+        implementation_hint = "Write to C:\\\\exports\\\\final"
+      ),
+      workflow_node("node_2", "Publish output")
+    ),
+    edges = workflow_edge(
+      "node\\\\1",
+      "node_2",
+      notes = "Route from C:\\\\queue\\\\pending"
+    ),
+    task = "Backslash render"
+  )
+
+  dot <- render_workflow_graphviz(workflow, as = "dot", show_tooltips = TRUE)
+
+  expect_true(grepl("\"node\\\\\\\\1\"", dot, fixed = TRUE))
+  expect_true(grepl("C:\\\\\\\\data\\\\\\\\inputs", dot, fixed = TRUE))
+  expect_true(grepl("tooltip=", dot, fixed = TRUE))
+
+  if (requireNamespace("DiagrammeR", quietly = TRUE) && requireNamespace("DiagrammeRsvg", quietly = TRUE)) {
+    svg <- render_workflow_graphviz(workflow, as = "svg", show_tooltips = TRUE)
+    expect_true(is.character(svg))
+    expect_true(grepl("<svg", svg, fixed = TRUE))
+  }
+})
+
+test_that("render_workflow_graphviz escapes apostrophes for svg export", {
+  workflow <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node(
+        "node_1",
+        "Monitor generative AI news, papers, product launches, and industry commentary",
+        human_required = TRUE
+      ),
+      workflow_node(
+        "node_2",
+        "Select a trend worth discussing for the firm's LinkedIn audience",
+        human_required = TRUE
+      )
+    ),
+    edges = workflow_edge("node_1", "node_2"),
+    task = "Apostrophe render"
+  )
+
+  dot <- render_workflow_graphviz(workflow, as = "dot")
+
+  expect_true(grepl("firm&#39;s", dot, fixed = TRUE))
+
+  if (requireNamespace("DiagrammeR", quietly = TRUE) && requireNamespace("DiagrammeRsvg", quietly = TRUE)) {
+    svg <- render_workflow_graphviz(workflow, as = "svg")
+    expect_true(is.character(svg))
+    expect_true(grepl("<svg", svg, fixed = TRUE))
+  }
+})
+
+test_that("render_workflow_graphviz preserves Graphviz label line breaks", {
+  workflow <- new_workflow_spec(
+    nodes = workflow_node("node_1", "line one\nline two", human_required = TRUE),
+    edges = .empty_workflow_edges(),
+    task = "Line break render"
+  )
+
+  dot <- render_workflow_graphviz(workflow, as = "dot")
+
+  expect_true(grepl('label="line one\\\\nline two"', dot))
+
+  if (requireNamespace("DiagrammeR", quietly = TRUE) && requireNamespace("DiagrammeRsvg", quietly = TRUE)) {
+    svg <- render_workflow_graphviz(workflow, as = "svg")
+    expect_true(is.character(svg))
+    expect_true(grepl(">line one</text>", svg, fixed = TRUE))
+    expect_true(grepl(">line two</text>", svg, fixed = TRUE))
+  }
+})
+
 test_that("plot_workflow_graph returns a DiagrammeR graph when available", {
   workflow <- new_workflow_spec(
     nodes = rbind(

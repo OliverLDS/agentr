@@ -1,6 +1,6 @@
 # Conceptual Figures
 
-These figures summarize the core design ideas behind `agentr` as of `0.2.4.2`.
+These figures summarize the core design ideas behind `agentr` as of `0.2.4.3`.
 
 This page is the narrative hub for the figure set. For the full asset inventory, including all source, render, and caption files, see [figures/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/figures/index.md). For the paired tables, see [tables/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/tables/index.md).
 
