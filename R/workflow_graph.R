@@ -23,12 +23,40 @@ workflow_graph_data <- function(
 
   vertices <- x$nodes
   edges <- x$edges
+  node_subsystems <- if (is.null(x$metadata$node_subsystems)) list() else x$metadata$node_subsystems
+  subsystem_palette <- list(
+    rwm = list(fill = "#E0F2FE", border = "#0369A1", label = "RWM: Reasoning & World Model"),
+    pg = list(fill = "#DCFCE7", border = "#15803D", label = "PG: Perception & Grounding"),
+    ae = list(fill = "#FDE68A", border = "#B45309", label = "AE: Action Execution"),
+    la = list(fill = "#FCE7F3", border = "#BE185D", label = "LA: Learning & Adaptation"),
+    iac = list(fill = "#EDE9FE", border = "#6D28D9", label = "IAC: Inter-Agent Communication")
+  )
 
   vertices$node_label <- vertices$label
   vertices$node_shape <- ifelse(vertices$human_required, "diamond", "box")
   vertices$node_color <- ifelse(vertices$human_required, "#FDE68A", "#DBEAFE")
   vertices$node_border <- ifelse(vertices$human_required, "#B45309", "#1D4ED8")
   vertices$node_alpha <- ifelse(vertices$complete, 1, 0.85)
+  vertices$node_subsystem <- vapply(vertices$id, function(id) {
+    labels <- node_subsystems[[id]]
+    if (is.null(labels) || !length(labels)) {
+      return(NA_character_)
+    }
+    normalize_subsystem_key(labels)[1]
+  }, character(1))
+  for (name in names(subsystem_palette)) {
+    idx <- which(vertices$node_subsystem == name)
+    if (length(idx)) {
+      vertices$node_color[idx] <- subsystem_palette[[name]]$fill
+      vertices$node_border[idx] <- subsystem_palette[[name]]$border
+    }
+  }
+  vertices$subsystem_label <- vapply(vertices$node_subsystem, function(x) {
+    if (is.na(x) || is.null(subsystem_palette[[x]])) {
+      return(NA_character_)
+    }
+    subsystem_palette[[x]]$label
+  }, character(1))
   if (highlight_low_confidence) {
     vertices$low_confidence <- is.na(vertices$confidence) | vertices$confidence < confidence_threshold
     vertices$node_color[vertices$low_confidence] <- "#FBCFE8"
@@ -79,6 +107,7 @@ workflow_graph_data <- function(
 .workflow_node_tooltip <- function(nodes, i) {
   parts <- c(
     paste0("id: ", nodes$id[[i]]),
+    if ("subsystem_label" %in% names(nodes) && .dot_present(nodes$subsystem_label[[i]])) paste0("subsystem: ", nodes$subsystem_label[[i]]) else NULL,
     if (!is.na(nodes$confidence[[i]])) paste0("confidence: ", sprintf("%.2f", nodes$confidence[[i]])) else NULL,
     if ("rule_spec" %in% names(nodes) && .dot_present(nodes$rule_spec[[i]])) paste0("rule: ", nodes$rule_spec[[i]]) else NULL,
     if ("implementation_hint" %in% names(nodes) && .dot_present(nodes$implementation_hint[[i]])) paste0("hint: ", nodes$implementation_hint[[i]]) else NULL,

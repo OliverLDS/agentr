@@ -9,13 +9,16 @@
 | `AgentCore` | Minimal agent container for cognition, affect, and scaffolding |
 | `CognitiveConfig` | Cognitive-layer config for `RWM` |
 | `AffectiveConfig` | Affective-layer config for `RWM` |
-| `RWMConfig` | Reflective working-memory config |
-| `PGConfig` | Planning and goal-management config |
+| `RWMConfig` | Reasoning and world-model config |
+| `PGConfig` | Perception and grounding config |
 | `AEConfig` | Action-execution config |
-| `IACConfig` | Interaction and communication config |
+| `IACConfig` | Inter-agent communication config |
 | `LAConfig` | Learning and adaptation config |
-| `SubsystemSpec` | Sparse subsystem inventory for an agent design |
+| `SubsystemSpec` | Sparse diagnostic subsystem inventory for an agent design |
 | `AgentSpec` | Public intelligent-agent design artifact |
+| `KnowledgeSpec` | Curated knowledge specification |
+| `KnowledgeProposal` | Proposal object for one knowledge item |
+| `KnowledgeProposalState` | Approved knowledge plus knowledge proposal history |
 | `AgentScaffoldState` | Approved agent-design state container |
 | `IntelligentAgent` | Runtime-oriented container around an `AgentSpec` |
 | `Scaffolder` | Human-in-the-loop intelligent-agent scaffolding interface |
@@ -35,6 +38,10 @@
 | `validate_workflow_spec()` | Validate workflow structure |
 | `save_workflow_spec()` | Save a workflow specification |
 | `load_workflow_spec()` | Load a workflow specification |
+| `set_workflow_node_owner()` | Set one workflow node owner |
+| `set_workflow_node_automation_status()` | Set one workflow node automation status |
+| `mark_node_human_owned()` | Mark a workflow node as human-owned |
+| `mark_node_agent_owned()` | Mark a workflow node as agent-owned |
 | `workflow_graph_data()` | Export graph-ready node and edge tables |
 | `render_workflow_graphviz()` | Render a workflow as Graphviz DOT, DiagrammeR, or SVG |
 | `plot_workflow_graph()` | Plot a workflow graph with DiagrammeR |
@@ -53,6 +60,14 @@
 | `build_implementation_prompt()` | Build an implementation-planning prompt for a coding agent |
 | `build_workflow_extraction_prompt()` | Build a prompt to reverse-engineer existing code into an agentr workflow spec |
 | `build_article_workflow_extraction_prompt()` | Build a prompt to infer workflow specs from article-described cases |
+| `knowledge_action_methods()` | List the knowledge actions an LLM may request |
+| `build_knowledge_elicitation_prompt()` | Build a prompt to elicit raw domain knowledge |
+| `build_knowledge_normalization_prompt()` | Build a prompt to normalize raw knowledge |
+| `build_knowledge_conflict_check_prompt()` | Build a prompt to compare candidate knowledge against existing approved knowledge |
+| `build_knowledge_design_prompt()` | Build a prompt focused on knowledge proposals and review |
+| `parse_knowledge_message()` | Parse constrained knowledge-action JSON |
+| `preview_knowledge_message()` | Preview knowledge actions without mutating state |
+| `apply_knowledge_message()` | Apply constrained knowledge actions to a knowledge-proposal state |
 | `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
 | `validate_scaffolder_message()` | Validate requested scaffolding actions |
 | `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |
@@ -90,12 +105,22 @@
 | `load_agent_spec()` | Load an `AgentSpec` explicitly |
 | `save_subsystem_spec()` | Save a `SubsystemSpec` explicitly |
 | `load_subsystem_spec()` | Load a `SubsystemSpec` explicitly |
+| `save_knowledge_spec()` | Save a `KnowledgeSpec` explicitly |
+| `load_knowledge_spec()` | Load a `KnowledgeSpec` explicitly |
+| `save_knowledge_proposal()` | Save a `KnowledgeProposal` explicitly |
+| `load_knowledge_proposal()` | Load a `KnowledgeProposal` explicitly |
 | `load_agent()` | Load a supported `agentr` object |
 | `backup_agent()` | Save a timestamped backup |
 | `load_json_file()` | Load JSON files |
 | `load_yaml_file()` | Load YAML files |
 | `inferencer_available()` | Detect optional `inferencer` availability |
 | `inferencer_integration()` | Build optional integration metadata |
+| `create_decision_trace()` | Build a decision trace record |
+| `append_decision_trace()` | Append a decision trace to JSONL or RDS storage |
+| `read_decision_traces()` | Read stored decision traces |
+| `create_reflection_trace()` | Build a reflection trace record |
+| `append_reflection_trace()` | Append a reflection trace to JSONL or RDS storage |
+| `read_reflection_traces()` | Read stored reflection traces |
 
 ## Scaffolder Design Flow
 

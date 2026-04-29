@@ -4,10 +4,16 @@
 \alias{validate_workflow_spec}
 \title{Validate a workflow specification}
 \usage{
-validate_workflow_spec(x)
+validate_workflow_spec(x, knowledge_spec = NULL, warn_missing_knowledge = TRUE)
 }
 \arguments{
 \item{x}{Workflow specification.}
+
+\item{knowledge_spec}{Optional \code{\link{KnowledgeSpec}} used to warn about missing,
+non-approved, or inactive \code{knowledge_refs}.}
+
+\item{warn_missing_knowledge}{Whether to emit warnings about unresolved
+knowledge references when \code{knowledge_spec} is supplied.}
 }
 \value{
 The validated object, invisibly.

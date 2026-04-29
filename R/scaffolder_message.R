@@ -857,7 +857,10 @@ build_agent_design_prompt <- function(scaffolder, format = "json") {
   instructions <- c(
       "Treat subsystem selection as a separate design axis from workflow structure.",
       "Default to sparse agents and avoid enabling subsystems without justification.",
-      "Model RWM through cognitive and affective layers when memory or affect is truly needed.",
+      "Use RWM for reasoning, planning, inference, and world-model structure.",
+      "Use PG for perception, grounding, source interpretation, and artifact understanding.",
+      "Use IAC only for genuine inter-agent communication rather than generic human review.",
+      "Model cognitive and affective layers inside RWM only when they are truly needed.",
       "Keep workflow-first compatibility by using the current workflow as a nested artifact inside the agent design.",
       "Use draft agent-spec proposals to preserve design iterations before final approval.",
       "Approve the agent spec only after subsystem selection and workflow ownership labels are coherent."

@@ -9,12 +9,12 @@ PGConfig
 PGConfig
 }
 \details{
-Configuration for the planning and goal-management subsystem.
+Configuration for the Perception & Grounding subsystem.
 }
 \section{Methods}{
 
 \describe{
-\item{\verb{$initialize(enabled = TRUE, planning_mode = "task_decomposition", decomposition_style = "dag", metadata = list())}}{Create a planning and goal-management config.}
+\item{\verb{$initialize(enabled = TRUE, planning_mode = "task_decomposition", decomposition_style = "dag", metadata = list())}}{Create a Perception & Grounding config. Legacy field names are preserved for compatibility.}
 \item{\verb{$validate()}}{Validate the config.}
 \item{\verb{$as_list()}}{Return a serializable representation.}
 }
@@ -25,9 +25,9 @@ Configuration for the planning and goal-management subsystem.
 \describe{
 \item{\code{enabled}}{Whether the subsystem is enabled.}
 
-\item{\code{planning_mode}}{Planning mode label.}
+\item{\code{planning_mode}}{Legacy field name retained for compatibility; interpreted as a grounding/perception mode label.}
 
-\item{\code{decomposition_style}}{Workflow decomposition style.}
+\item{\code{decomposition_style}}{Legacy field name retained for compatibility; interpreted as a representation-structuring style.}
 
 \item{\code{metadata}}{Free-form metadata list.}
 }
@@ -47,7 +47,7 @@ Configuration for the planning and goal-management subsystem.
 \if{html}{\out{<a id="method-PGConfig-new"></a>}}
 \if{latex}{\out{\hypertarget{method-PGConfig-new}{}}}
 \subsection{Method \code{new()}}{
-Create a planning and goal-management config.
+Create a Perception & Grounding config.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PGConfig$new(
   enabled = TRUE,

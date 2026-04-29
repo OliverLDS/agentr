@@ -98,6 +98,9 @@ save_agent <- function(agent, file_path) {
     "Scaffolder",
     "AgentSpec",
     "SubsystemSpec",
+    "KnowledgeSpec",
+    "KnowledgeProposal",
+    "KnowledgeProposalState",
     "AgentScaffoldState",
     "IntelligentAgent"
   )
@@ -204,6 +207,9 @@ load_agent <- function(file_path) {
     "Scaffolder",
     "AgentSpec",
     "SubsystemSpec",
+    "KnowledgeSpec",
+    "KnowledgeProposal",
+    "KnowledgeProposalState",
     "AgentScaffoldState",
     "IntelligentAgent"
   )

@@ -12,7 +12,9 @@ build_implementation_prompt(
   runtime = NULL,
   style = NULL,
   constraints = character(),
-  extra_context = list()
+  extra_context = list(),
+  include_knowledge = TRUE,
+  knowledge_scope = c("referenced", "approved", "all")
 )
 }
 \arguments{
@@ -36,6 +38,12 @@ chat interface.}
 \item{constraints}{Optional character vector of implementation constraints.}
 
 \item{extra_context}{Optional named list of additional context.}
+
+\item{include_knowledge}{Whether approved knowledge should be included in the
+implementation handoff when available.}
+
+\item{knowledge_scope}{Knowledge-selection scope when \code{include_knowledge} is
+\code{TRUE}: referenced items only, all approved items, or all items.}
 }
 \value{
 Character string prompt.

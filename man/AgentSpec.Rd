@@ -14,7 +14,7 @@ Public agent-design artifact combining subsystem selection and workflow.
 \section{Methods}{
 
 \describe{
-\item{\verb{$initialize(task, agent_name = "agentr-agent", summary = NULL, subsystems = SubsystemSpec$new(), workflow = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list())}}{Create an agent-design artifact.}
+\item{\verb{$initialize(task, agent_name = "agentr-agent", summary = NULL, subsystems = SubsystemSpec$new(), workflow = NULL, knowledge_spec = NULL, state_requirements = list(), state_spec = NULL, interfaces = list(), interface_spec = NULL, autonomy_spec = NULL, autonomy_stage = NULL, implementation_targets = list(), metadata = list())}}{Create an agent-design artifact.}
 \item{\verb{$validate()}}{Validate the agent design.}
 \item{\verb{$selected_subsystems()}}{Return the selected subsystem names.}
 \item{\verb{$workflow_spec()}}{Return the embedded workflow specification.}
@@ -37,9 +37,19 @@ Public agent-design artifact combining subsystem selection and workflow.
 
 \item{\code{workflow}}{Embedded workflow specification or \code{NULL}.}
 
+\item{\code{knowledge_spec}}{Embedded \code{KnowledgeSpec} or \code{NULL}.}
+
 \item{\code{state_requirements}}{Free-form list of state requirements.}
 
+\item{\code{state_spec}}{Optional structured state-spec list.}
+
 \item{\code{interfaces}}{Free-form list of interfaces.}
+
+\item{\code{interface_spec}}{Optional structured interface-spec list.}
+
+\item{\code{autonomy_spec}}{Optional structured autonomy-spec list.}
+
+\item{\code{autonomy_stage}}{Optional autonomy-stage label.}
 
 \item{\code{implementation_targets}}{Free-form list of implementation targets.}
 
@@ -73,8 +83,13 @@ Create an agent-design artifact.
   summary = NULL,
   subsystems = SubsystemSpec$new(),
   workflow = NULL,
+  knowledge_spec = NULL,
   state_requirements = list(),
+  state_spec = NULL,
   interfaces = list(),
+  interface_spec = NULL,
+  autonomy_spec = NULL,
+  autonomy_stage = NULL,
   implementation_targets = list(),
   metadata = list()
 )}\if{html}{\out{</div>}}
@@ -93,9 +108,19 @@ Create an agent-design artifact.
 
 \item{\code{workflow}}{Embedded workflow specification or \code{NULL}.}
 
+\item{\code{knowledge_spec}}{Embedded \code{KnowledgeSpec} or \code{NULL}.}
+
 \item{\code{state_requirements}}{Free-form list of state requirements.}
 
+\item{\code{state_spec}}{Optional structured state-spec list.}
+
 \item{\code{interfaces}}{Free-form list of interfaces.}
+
+\item{\code{interface_spec}}{Optional structured interface-spec list.}
+
+\item{\code{autonomy_spec}}{Optional structured autonomy-spec list.}
+
+\item{\code{autonomy_stage}}{Optional autonomy-stage label.}
 
 \item{\code{implementation_targets}}{Free-form list of implementation targets.}
 

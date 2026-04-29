@@ -9,12 +9,12 @@ SubsystemSpec
 SubsystemSpec
 }
 \details{
-Sparse inventory of the selected agent subsystems.
+Sparse diagnostic inventory of the selected agent subsystems.
 }
 \section{Methods}{
 
 \describe{
-\item{\verb{$initialize(rwm = NULL, pg = NULL, ae = NULL, iac = NULL, la = NULL, metadata = list())}}{Create a sparse subsystem inventory.}
+\item{\verb{$initialize(rwm = NULL, pg = NULL, ae = NULL, iac = NULL, la = NULL, metadata = list())}}{Create a sparse subsystem diagnostic inventory.}
 \item{\verb{$validate()}}{Validate the subsystem selection.}
 \item{\verb{$selected_subsystems()}}{Return the selected subsystem names.}
 \item{\verb{$persistence_requirements()}}{Return persistence requirements for selected subsystems.}

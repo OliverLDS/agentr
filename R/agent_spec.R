@@ -41,6 +41,65 @@
   c("rwm", "pg", "ae", "iac", "la")
 }
 
+#' Normalize subsystem keys
+#'
+#' Accepts canonical subsystem keys and legacy mixed-case variants, then returns
+#' the canonical keys used throughout `agentr`.
+#'
+#' @param x Character vector of subsystem keys.
+#'
+#' @return Character vector containing canonical subsystem keys.
+#' @export
+normalize_subsystem_key <- function(x) {
+  if (is.null(x)) {
+    return(character())
+  }
+  x <- tolower(as.character(unlist(x, use.names = FALSE)))
+  x <- trimws(x)
+  aliases <- c(
+    rwm = "rwm",
+    reasoning_world_model = "rwm",
+    reasoningandworldmodel = "rwm",
+    pg = "pg",
+    perception_grounding = "pg",
+    perceptionandgrounding = "pg",
+    ae = "ae",
+    action_execution = "ae",
+    actionandexecution = "ae",
+    iac = "iac",
+    inter_agent_communication = "iac",
+    interagentcommunication = "iac",
+    la = "la",
+    learning_adaptation = "la",
+    learningandadaptation = "la"
+  )
+  mapped <- unname(aliases[x])
+  mapped[is.na(mapped)] <- x[is.na(mapped)]
+  invalid <- setdiff(unique(mapped), .subsystem_names())
+  if (length(invalid)) {
+    stop(
+      "Unsupported subsystem labels: ",
+      paste(invalid, collapse = ", "),
+      call. = FALSE
+    )
+  }
+  unique(mapped)
+}
+
+#' @keywords internal
+.subsystem_meanings <- function() {
+  list(
+    schema = "agentr_five_module_v1",
+    meanings = list(
+      rwm = "Reasoning & World Model",
+      pg = "Perception & Grounding",
+      ae = "Action Execution",
+      la = "Learning & Adaptation",
+      iac = "Inter-Agent Communication"
+    )
+  )
+}
+
 #' @keywords internal
 .validate_node_subsystems <- function(labels, nodes = NULL) {
   if (is.null(labels)) {
@@ -67,18 +126,9 @@
   }
 
   normalized <- lapply(labels, function(value) {
-    value <- .normalize_character(value)
+    value <- normalize_subsystem_key(.normalize_character(value))
     if (!length(value)) {
       return(character())
-    }
-    allowed <- .subsystem_names()
-    invalid <- setdiff(value, allowed)
-    if (length(invalid)) {
-      stop(
-        "Unsupported subsystem labels: ",
-        paste(invalid, collapse = ", "),
-        call. = FALSE
-      )
     }
     unique(value)
   })
@@ -135,6 +185,33 @@
     return(NULL)
   }
   validate_workflow_spec(workflow)
+}
+
+#' @keywords internal
+.coerce_knowledge_spec_or_null <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  if (inherits(x, "KnowledgeSpec")) {
+    x$validate()
+    return(x)
+  }
+  stop("`knowledge_spec` must be `NULL` or a `KnowledgeSpec`.", call. = FALSE)
+}
+
+#' @keywords internal
+.normalize_autonomy_stage <- function(x) {
+  match.arg(
+    x,
+    choices = c(
+      "manual_scaffold",
+      "scripted_tool",
+      "human_in_loop",
+      "llm_assisted",
+      "agent_owned",
+      "validated_autonomous"
+    )
+  )
 }
 
 #' CognitiveConfig
@@ -316,7 +393,7 @@ AffectiveConfig <- R6::R6Class(
 
 #' RWMConfig
 #'
-#' Configuration for the reflective working-memory subsystem.
+#' Configuration for the Reasoning & World Model subsystem.
 #'
 #' @field cognitive A `CognitiveConfig` object or `NULL`.
 #' @field affective An `AffectiveConfig` object or `NULL`.
@@ -331,7 +408,7 @@ AffectiveConfig <- R6::R6Class(
 #' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
-#'   \item{`$initialize(cognitive = CognitiveConfig$new(), affective = NULL, persistence = "session", summary = NULL, metadata = list())`}{Create an `RWM` config.}
+#'   \item{`$initialize(cognitive = CognitiveConfig$new(), affective = NULL, persistence = "session", summary = NULL, metadata = list())`}{Create a Reasoning & World Model config.}
 #'   \item{`$validate()`}{Validate the config.}
 #'   \item{`$selected_layers()`}{Return the active inner layers.}
 #'   \item{`$as_list()`}{Return a serializable representation.}
@@ -410,6 +487,7 @@ RWMConfig <- R6::R6Class(
     print = function(...) {
       self$validate()
       cat("<RWMConfig>\n")
+      cat("Meaning: Reasoning & World Model\n")
       cat("Layers:", paste(self$selected_layers(), collapse = ", "), "\n")
       cat("Persistence:", self$persistence, "\n")
       invisible(self)
@@ -419,11 +497,11 @@ RWMConfig <- R6::R6Class(
 
 #' PGConfig
 #'
-#' Configuration for the planning and goal-management subsystem.
+#' Configuration for the Perception & Grounding subsystem.
 #'
 #' @field enabled Whether the subsystem is enabled.
-#' @field planning_mode Planning mode label.
-#' @field decomposition_style Workflow decomposition style.
+#' @field planning_mode Legacy field name retained for compatibility; interpreted as a grounding/perception mode label.
+#' @field decomposition_style Legacy field name retained for compatibility; interpreted as a representation-structuring style.
 #' @field metadata Free-form metadata list.
 #' @param enabled Whether the subsystem is enabled.
 #' @param planning_mode Planning mode label.
@@ -432,7 +510,7 @@ RWMConfig <- R6::R6Class(
 #' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
-#'   \item{`$initialize(enabled = TRUE, planning_mode = "task_decomposition", decomposition_style = "dag", metadata = list())`}{Create a planning and goal-management config.}
+#'   \item{`$initialize(enabled = TRUE, planning_mode = "task_decomposition", decomposition_style = "dag", metadata = list())`}{Create a Perception & Grounding config. Legacy field names are preserved for compatibility.}
 #'   \item{`$validate()`}{Validate the config.}
 #'   \item{`$as_list()`}{Return a serializable representation.}
 #' }
@@ -446,7 +524,7 @@ PGConfig <- R6::R6Class(
     metadata = NULL,
 
     #' @description
-    #' Create a planning and goal-management config.
+    #' Create a Perception & Grounding config.
     initialize = function(
       enabled = TRUE,
       planning_mode = "task_decomposition",
@@ -485,9 +563,10 @@ PGConfig <- R6::R6Class(
     print = function(...) {
       self$validate()
       cat("<PGConfig>\n")
+      cat("Meaning: Perception & Grounding\n")
       cat("Enabled:", self$enabled, "\n")
-      cat("Planning mode:", self$planning_mode, "\n")
-      cat("Decomposition style:", self$decomposition_style, "\n")
+      cat("Grounding mode:", self$planning_mode, "\n")
+      cat("Representation style:", self$decomposition_style, "\n")
       invisible(self)
     }
   )
@@ -571,7 +650,7 @@ AEConfig <- R6::R6Class(
 
 #' IACConfig
 #'
-#' Configuration for interaction and communication.
+#' Configuration for Inter-Agent Communication.
 #'
 #' @field enabled Whether the subsystem is enabled.
 #' @field channels Character vector of communication channels.
@@ -584,7 +663,7 @@ AEConfig <- R6::R6Class(
 #' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
-#'   \item{`$initialize(enabled = TRUE, channels = character(), structured_io = TRUE, metadata = list())`}{Create an interaction and communication config.}
+#'   \item{`$initialize(enabled = TRUE, channels = character(), structured_io = TRUE, metadata = list())`}{Create an Inter-Agent Communication config.}
 #'   \item{`$validate()`}{Validate the config.}
 #'   \item{`$as_list()`}{Return a serializable representation.}
 #' }
@@ -598,7 +677,7 @@ IACConfig <- R6::R6Class(
     metadata = NULL,
 
     #' @description
-    #' Create an interaction and communication config.
+    #' Create an Inter-Agent Communication config.
     initialize = function(
       enabled = TRUE,
       channels = character(),
@@ -641,6 +720,7 @@ IACConfig <- R6::R6Class(
     print = function(...) {
       self$validate()
       cat("<IACConfig>\n")
+      cat("Meaning: Inter-Agent Communication\n")
       cat("Enabled:", self$enabled, "\n")
       cat("Channels:", if (length(self$channels)) paste(self$channels, collapse = ", ") else "<none>", "\n")
       cat("Structured IO:", self$structured_io, "\n")
@@ -651,7 +731,7 @@ IACConfig <- R6::R6Class(
 
 #' LAConfig
 #'
-#' Configuration for lightweight learning and adaptation.
+#' Configuration for Learning & Adaptation.
 #'
 #' @field enabled Whether the subsystem is enabled.
 #' @field learning_mode Learning-mode label.
@@ -739,7 +819,7 @@ LAConfig <- R6::R6Class(
 
 #' SubsystemSpec
 #'
-#' Sparse inventory of the selected agent subsystems.
+#' Sparse diagnostic inventory of the selected agent subsystems.
 #'
 #' @field rwm An `RWMConfig` object or `NULL`.
 #' @field pg A `PGConfig` object or `NULL`.
@@ -756,7 +836,7 @@ LAConfig <- R6::R6Class(
 #' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
-#'   \item{`$initialize(rwm = NULL, pg = NULL, ae = NULL, iac = NULL, la = NULL, metadata = list())`}{Create a sparse subsystem inventory.}
+#'   \item{`$initialize(rwm = NULL, pg = NULL, ae = NULL, iac = NULL, la = NULL, metadata = list())`}{Create a sparse subsystem diagnostic inventory.}
 #'   \item{`$validate()`}{Validate the subsystem selection.}
 #'   \item{`$selected_subsystems()`}{Return the selected subsystem names.}
 #'   \item{`$persistence_requirements()`}{Return persistence requirements for selected subsystems.}
@@ -790,7 +870,7 @@ SubsystemSpec <- R6::R6Class(
       self$ae <- if (is.null(ae)) NULL else .coerce_subsystem_config(ae, "AEConfig", "ae")
       self$iac <- if (is.null(iac)) NULL else .coerce_subsystem_config(iac, "IACConfig", "iac")
       self$la <- if (is.null(la)) NULL else .coerce_subsystem_config(la, "LAConfig", "la")
-      self$metadata <- metadata
+      self$metadata <- utils::modifyList(.subsystem_meanings(), metadata)
       self$validate()
     },
 
@@ -871,6 +951,7 @@ SubsystemSpec <- R6::R6Class(
       self$validate()
       selected <- self$selected_subsystems()
       cat("<SubsystemSpec>\n")
+      cat("Role: diagnostic design layer\n")
       cat("Selected:", if (length(selected)) paste(selected, collapse = ", ") else "<none>", "\n")
       comms <- self$communication_requirements()
       if (length(comms)) {
@@ -894,8 +975,13 @@ SubsystemSpec <- R6::R6Class(
 #' @field summary One-line agent summary.
 #' @field subsystems A `SubsystemSpec` object.
 #' @field workflow Embedded workflow specification or `NULL`.
+#' @field knowledge_spec Embedded `KnowledgeSpec` or `NULL`.
 #' @field state_requirements Free-form list of state requirements.
+#' @field state_spec Optional structured state-spec list.
 #' @field interfaces Free-form list of interfaces.
+#' @field interface_spec Optional structured interface-spec list.
+#' @field autonomy_spec Optional structured autonomy-spec list.
+#' @field autonomy_stage Optional autonomy-stage label.
 #' @field implementation_targets Free-form list of implementation targets.
 #' @field metadata Free-form metadata list.
 #' @param task Source task description.
@@ -903,15 +989,20 @@ SubsystemSpec <- R6::R6Class(
 #' @param summary One-line agent summary.
 #' @param subsystems A `SubsystemSpec` object or list payload.
 #' @param workflow Embedded workflow specification or `NULL`.
+#' @param knowledge_spec Embedded `KnowledgeSpec` or `NULL`.
 #' @param state_requirements Free-form list of state requirements.
+#' @param state_spec Optional structured state-spec list.
 #' @param interfaces Free-form list of interfaces.
+#' @param interface_spec Optional structured interface-spec list.
+#' @param autonomy_spec Optional structured autonomy-spec list.
+#' @param autonomy_stage Optional autonomy-stage label.
 #' @param implementation_targets Free-form list of implementation targets.
 #' @param metadata Free-form metadata list.
 #' @param file_path Output path used by `$save()`.
 #' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
-#'   \item{`$initialize(task, agent_name = "agentr-agent", summary = NULL, subsystems = SubsystemSpec$new(), workflow = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list())`}{Create an agent-design artifact.}
+#'   \item{`$initialize(task, agent_name = "agentr-agent", summary = NULL, subsystems = SubsystemSpec$new(), workflow = NULL, knowledge_spec = NULL, state_requirements = list(), state_spec = NULL, interfaces = list(), interface_spec = NULL, autonomy_spec = NULL, autonomy_stage = NULL, implementation_targets = list(), metadata = list())`}{Create an agent-design artifact.}
 #'   \item{`$validate()`}{Validate the agent design.}
 #'   \item{`$selected_subsystems()`}{Return the selected subsystem names.}
 #'   \item{`$workflow_spec()`}{Return the embedded workflow specification.}
@@ -928,8 +1019,13 @@ AgentSpec <- R6::R6Class(
     summary = NULL,
     subsystems = NULL,
     workflow = NULL,
+    knowledge_spec = NULL,
     state_requirements = NULL,
+    state_spec = NULL,
     interfaces = NULL,
+    interface_spec = NULL,
+    autonomy_spec = NULL,
+    autonomy_stage = NULL,
     implementation_targets = NULL,
     metadata = NULL,
 
@@ -941,8 +1037,13 @@ AgentSpec <- R6::R6Class(
       summary = NULL,
       subsystems = SubsystemSpec$new(),
       workflow = NULL,
+      knowledge_spec = NULL,
       state_requirements = list(),
+      state_spec = NULL,
       interfaces = list(),
+      interface_spec = NULL,
+      autonomy_spec = NULL,
+      autonomy_stage = NULL,
       implementation_targets = list(),
       metadata = list()
     ) {
@@ -951,8 +1052,13 @@ AgentSpec <- R6::R6Class(
       self$summary <- if (is.null(summary)) self$task else as.character(summary)[1]
       self$subsystems <- if (inherits(subsystems, "SubsystemSpec")) subsystems else do.call(SubsystemSpec$new, subsystems)
       self$workflow <- .coerce_workflow_or_null(workflow)
+      self$knowledge_spec <- .coerce_knowledge_spec_or_null(knowledge_spec)
       self$state_requirements <- state_requirements
+      self$state_spec <- if (is.null(state_spec)) list() else state_spec
       self$interfaces <- interfaces
+      self$interface_spec <- if (is.null(interface_spec)) list() else interface_spec
+      self$autonomy_spec <- if (is.null(autonomy_spec)) list() else autonomy_spec
+      self$autonomy_stage <- if (is.null(autonomy_stage)) NA_character_ else as.character(autonomy_stage)[1]
       self$implementation_targets <- implementation_targets
       self$metadata <- metadata
       self$validate()
@@ -972,8 +1078,11 @@ AgentSpec <- R6::R6Class(
       }
       self$subsystems$validate()
       selected <- self$selected_subsystems()
+      if (!is.null(self$knowledge_spec)) {
+        self$knowledge_spec$validate()
+      }
       if (!is.null(self$workflow)) {
-        validate_workflow_spec(self$workflow)
+        validate_workflow_spec(self$workflow, knowledge_spec = self$knowledge_spec)
         node_subsystems <- .validate_node_subsystems(self$metadata$node_subsystems, nodes = self$workflow$nodes)
         if (length(node_subsystems)) {
           labeled <- unique(unlist(node_subsystems, use.names = FALSE))
@@ -991,10 +1100,13 @@ AgentSpec <- R6::R6Class(
       }
       .validate_named_list_fields(self$interfaces, "interfaces")
       .validate_named_list_fields(self$implementation_targets, "implementation_targets")
-      if (length(self$interfaces) && !("iac" %in% selected)) {
-        stop("Non-empty `interfaces` require the `iac` subsystem.", call. = FALSE)
-      }
+      .validate_metadata_list(self$state_spec, "state_spec")
+      .validate_metadata_list(self$interface_spec, "interface_spec")
+      .validate_metadata_list(self$autonomy_spec, "autonomy_spec")
       .validate_metadata_list(self$state_requirements, "state_requirements")
+      if (!is.na(self$autonomy_stage)) {
+        self$autonomy_stage <- .normalize_autonomy_stage(self$autonomy_stage)
+      }
       .validate_metadata_list(self$metadata)
       invisible(self)
     },
@@ -1021,6 +1133,7 @@ AgentSpec <- R6::R6Class(
         agent_name = self$agent_name,
         selected_subsystems = paste(self$selected_subsystems(), collapse = ", "),
         workflow_nodes = if (is.null(self$workflow)) 0L else nrow(self$workflow$nodes),
+        knowledge_items = if (is.null(self$knowledge_spec)) 0L else length(self$knowledge_spec$items),
         stringsAsFactors = FALSE
       )
     },
@@ -1035,8 +1148,13 @@ AgentSpec <- R6::R6Class(
         summary = self$summary,
         subsystems = self$subsystems$as_list(),
         workflow = self$workflow,
+        knowledge_spec = if (is.null(self$knowledge_spec)) NULL else self$knowledge_spec$to_list(),
         state_requirements = self$state_requirements,
+        state_spec = self$state_spec,
         interfaces = self$interfaces,
+        interface_spec = self$interface_spec,
+        autonomy_spec = self$autonomy_spec,
+        autonomy_stage = self$autonomy_stage,
         implementation_targets = self$implementation_targets,
         metadata = self$metadata
       )
@@ -1059,6 +1177,8 @@ AgentSpec <- R6::R6Class(
       selected <- self$selected_subsystems()
       cat("Subsystems:", if (length(selected)) paste(selected, collapse = ", ") else "<none>", "\n")
       cat("Workflow nodes:", if (is.null(self$workflow)) 0L else nrow(self$workflow$nodes), "\n")
+      cat("Knowledge items:", if (is.null(self$knowledge_spec)) 0L else length(self$knowledge_spec$items), "\n")
+      cat("Autonomy stage:", if (is.na(self$autonomy_stage)) "<unspecified>" else self$autonomy_stage, "\n")
       invisible(self)
     }
   )

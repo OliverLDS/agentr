@@ -10,6 +10,12 @@
 #' @param review_status Node-level review status.
 #' @param review_notes Optional node-level review notes.
 #' @param review_confidence Optional confidence attached to the latest review.
+#' @param owner Optional current owner for the node.
+#' @param automation_status Optional current automation status for the node.
+#' @param human_owned_reason Optional explanation for why the node remains human-owned.
+#' @param target_automation_status Optional target automation status for the node.
+#' @param trace_required Optional logical flag indicating whether decision traces should be collected.
+#' @param knowledge_refs Optional character vector of referenced knowledge-item ids.
 #'
 #' @return One-row data frame.
 #' @export
@@ -23,9 +29,15 @@ workflow_node <- function(
   complete = FALSE,
   review_status = "pending",
   review_notes = NA_character_,
-  review_confidence = NA_real_
+  review_confidence = NA_real_,
+  owner = NA_character_,
+  automation_status = NA_character_,
+  human_owned_reason = NA_character_,
+  target_automation_status = NA_character_,
+  trace_required = NA,
+  knowledge_refs = character()
 ) {
-  data.frame(
+  out <- data.frame(
     id = as.character(id),
     label = as.character(label),
     confidence = as.numeric(confidence),
@@ -36,8 +48,15 @@ workflow_node <- function(
     review_status = as.character(review_status),
     review_notes = as.character(review_notes),
     review_confidence = as.numeric(review_confidence),
+    owner = as.character(owner),
+    automation_status = as.character(automation_status),
+    human_owned_reason = as.character(human_owned_reason),
+    target_automation_status = as.character(target_automation_status),
+    trace_required = as.logical(trace_required),
     stringsAsFactors = FALSE
   )
+  out$knowledge_refs <- I(replicate(nrow(out), as.character(knowledge_refs), simplify = FALSE))
+  out
 }
 
 #' Create a workflow edge record
@@ -69,7 +88,7 @@ workflow_edge <- function(
 
 #' @keywords internal
 .empty_workflow_nodes <- function() {
-  workflow_node(
+  out <- data.frame(
     id = character(),
     label = character(),
     confidence = numeric(),
@@ -79,8 +98,16 @@ workflow_edge <- function(
     complete = logical(),
     review_status = character(),
     review_notes = character(),
-    review_confidence = numeric()
+    review_confidence = numeric(),
+    owner = character(),
+    automation_status = character(),
+    human_owned_reason = character(),
+    target_automation_status = character(),
+    trace_required = logical(),
+    stringsAsFactors = FALSE
   )
+  out$knowledge_refs <- I(list())
+  out
 }
 
 #' @keywords internal
@@ -118,6 +145,8 @@ new_workflow_spec <- function(
   task = NULL,
   metadata = list()
 ) {
+  nodes <- .normalize_workflow_nodes_df(nodes)
+  edges <- .normalize_workflow_edges_df(edges)
   spec <- list(
     nodes = nodes,
     edges = edges,
@@ -128,29 +157,108 @@ new_workflow_spec <- function(
   validate_workflow_spec(spec)
 }
 
-#' Validate a workflow specification
-#'
-#' @param x Workflow specification.
-#'
-#' @return The validated object, invisibly.
-#' @export
-validate_workflow_spec <- function(x) {
-  required_nodes <- c(
+#' @keywords internal
+.workflow_node_required_columns <- function() {
+  c(
     "id", "label", "confidence", "human_required",
     "rule_spec", "implementation_hint", "complete",
     "review_status", "review_notes", "review_confidence"
   )
+}
+
+#' @keywords internal
+.workflow_node_optional_columns <- function() {
+  c(
+    "owner",
+    "automation_status",
+    "human_owned_reason",
+    "target_automation_status",
+    "trace_required",
+    "knowledge_refs"
+  )
+}
+
+#' @keywords internal
+.workflow_owner_values <- function() {
+  c("human", "script", "llm", "agent", "external_system")
+}
+
+#' @keywords internal
+.workflow_automation_status_values <- function() {
+  c(
+    "manual",
+    "human_in_loop",
+    "rule_assisted",
+    "llm_assisted",
+    "agent_owned",
+    "validated_autonomous"
+  )
+}
+
+#' @keywords internal
+.normalize_workflow_nodes_df <- function(nodes) {
+  if (!is.data.frame(nodes)) {
+    stop("Workflow spec `nodes` must be a data frame.", call. = FALSE)
+  }
+
+  if (!"owner" %in% names(nodes)) {
+    nodes$owner <- NA_character_
+  }
+  if (!"automation_status" %in% names(nodes)) {
+    nodes$automation_status <- NA_character_
+  }
+  if (!"human_owned_reason" %in% names(nodes)) {
+    nodes$human_owned_reason <- NA_character_
+  }
+  if (!"target_automation_status" %in% names(nodes)) {
+    nodes$target_automation_status <- NA_character_
+  }
+  if (!"trace_required" %in% names(nodes)) {
+    nodes$trace_required <- NA
+  }
+  if (!"knowledge_refs" %in% names(nodes)) {
+    nodes$knowledge_refs <- I(replicate(nrow(nodes), character(), simplify = FALSE))
+  } else if (!is.list(nodes$knowledge_refs)) {
+    nodes$knowledge_refs <- I(lapply(nodes$knowledge_refs, as.character))
+  } else {
+    nodes$knowledge_refs <- I(lapply(nodes$knowledge_refs, function(x) {
+      if (is.null(x)) {
+        return(character())
+      }
+      as.character(unlist(x, use.names = FALSE))
+    }))
+  }
+
+  nodes
+}
+
+#' @keywords internal
+.normalize_workflow_edges_df <- function(edges) {
+  if (!is.data.frame(edges)) {
+    stop("Workflow spec `edges` must be a data frame.", call. = FALSE)
+  }
+  edges
+}
+
+#' Validate a workflow specification
+#'
+#' @param x Workflow specification.
+#' @param knowledge_spec Optional [`KnowledgeSpec`] used to warn about missing,
+#'   non-approved, or inactive `knowledge_refs`.
+#' @param warn_missing_knowledge Whether to emit warnings about unresolved
+#'   knowledge references when `knowledge_spec` is supplied.
+#'
+#' @return The validated object, invisibly.
+#' @export
+validate_workflow_spec <- function(x, knowledge_spec = NULL, warn_missing_knowledge = TRUE) {
+  required_nodes <- .workflow_node_required_columns()
   required_edges <- c("from", "to", "relation", "confidence", "notes")
 
   if (!is.list(x) || !all(c("nodes", "edges", "task", "metadata") %in% names(x))) {
     stop("Workflow spec must contain nodes, edges, task, and metadata.", call. = FALSE)
   }
-  if (!is.data.frame(x$nodes)) {
-    stop("Workflow spec `nodes` must be a data frame.", call. = FALSE)
-  }
-  if (!is.data.frame(x$edges)) {
-    stop("Workflow spec `edges` must be a data frame.", call. = FALSE)
-  }
+  x$nodes <- .normalize_workflow_nodes_df(x$nodes)
+  x$edges <- .normalize_workflow_edges_df(x$edges)
   if (!all(required_nodes %in% names(x$nodes))) {
     stop("Workflow spec nodes are missing required columns.", call. = FALSE)
   }
@@ -181,6 +289,80 @@ validate_workflow_spec <- function(x) {
   edge_refs <- edge_refs[nzchar(edge_refs)]
   if (length(edge_refs) && any(!(edge_refs %in% x$nodes$id))) {
     stop("Workflow edges must reference existing node ids.", call. = FALSE)
+  }
+
+  if (any(!is.na(x$nodes$owner) & nzchar(x$nodes$owner))) {
+    invalid_owner <- setdiff(unique(x$nodes$owner[!is.na(x$nodes$owner) & nzchar(x$nodes$owner)]), .workflow_owner_values())
+    if (length(invalid_owner)) {
+      stop("Workflow node `owner` must use supported values.", call. = FALSE)
+    }
+  }
+  for (field in c("automation_status", "target_automation_status")) {
+    values <- x$nodes[[field]]
+    if (any(!is.na(values) & nzchar(values))) {
+      invalid <- setdiff(unique(values[!is.na(values) & nzchar(values)]), .workflow_automation_status_values())
+      if (length(invalid)) {
+        stop("Workflow node `", field, "` must use supported automation-status values.", call. = FALSE)
+      }
+    }
+  }
+  if (!is.logical(x$nodes$trace_required)) {
+    stop("Workflow node `trace_required` must be logical.", call. = FALSE)
+  }
+  if (!is.list(x$nodes$knowledge_refs)) {
+    stop("Workflow node `knowledge_refs` must be a list-column of character vectors.", call. = FALSE)
+  }
+  if (length(x$nodes$knowledge_refs) != nrow(x$nodes)) {
+    stop("Workflow node `knowledge_refs` must align row-wise with workflow nodes.", call. = FALSE)
+  }
+  for (i in seq_len(nrow(x$nodes))) {
+    refs <- x$nodes$knowledge_refs[[i]]
+    if (!is.character(refs)) {
+      stop("Each workflow node `knowledge_refs` entry must be a character vector.", call. = FALSE)
+    }
+  }
+
+  if (!is.null(knowledge_spec) && isTRUE(warn_missing_knowledge)) {
+    known_ids <- character()
+    approved_ids <- character()
+    inactive_ids <- character()
+    if (inherits(knowledge_spec, "KnowledgeSpec")) {
+      knowledge_spec$validate()
+      items <- knowledge_spec$list_items()
+      known_ids <- vapply(items, function(item) item$id, character(1))
+      approved_ids <- vapply(items, function(item) {
+        status <- item$review$status
+        if (is.null(status) || is.na(status)) "" else as.character(status)[1]
+      }, character(1))
+      inactive_ids <- known_ids[approved_ids %in% c("rejected", "superseded")]
+      approved_ids <- known_ids[approved_ids == "approved"]
+    }
+    referenced <- unique(unlist(x$nodes$knowledge_refs, use.names = FALSE))
+    referenced <- referenced[nzchar(referenced)]
+    missing_refs <- setdiff(referenced, known_ids)
+    pending_refs <- setdiff(intersect(referenced, known_ids), approved_ids)
+    pending_refs <- setdiff(pending_refs, inactive_ids)
+    if (length(missing_refs)) {
+      warning(
+        "Workflow references missing knowledge items: ",
+        paste(missing_refs, collapse = ", "),
+        call. = FALSE
+      )
+    }
+    if (length(pending_refs)) {
+      warning(
+        "Workflow references non-approved knowledge items: ",
+        paste(pending_refs, collapse = ", "),
+        call. = FALSE
+      )
+    }
+    if (length(inactive_ids) && length(intersect(referenced, inactive_ids))) {
+      warning(
+        "Workflow references rejected or superseded knowledge items: ",
+        paste(intersect(referenced, inactive_ids), collapse = ", "),
+        call. = FALSE
+      )
+    }
   }
   invisible(x)
 }
@@ -269,7 +451,13 @@ print.agentr_workflow_spec <- function(x, ...) {
       complete = item$complete %||% FALSE,
       review_status = item$review_status %||% "pending",
       review_notes = item$review_notes %||% NA_character_,
-      review_confidence = item$review_confidence %||% NA_real_
+      review_confidence = item$review_confidence %||% NA_real_,
+      owner = item$owner %||% NA_character_,
+      automation_status = item$automation_status %||% NA_character_,
+      human_owned_reason = item$human_owned_reason %||% NA_character_,
+      target_automation_status = item$target_automation_status %||% NA_character_,
+      trace_required = item$trace_required %||% NA,
+      knowledge_refs = item$knowledge_refs %||% character()
     )
   }))
 

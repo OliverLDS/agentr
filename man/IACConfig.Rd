@@ -9,12 +9,12 @@ IACConfig
 IACConfig
 }
 \details{
-Configuration for interaction and communication.
+Configuration for Inter-Agent Communication.
 }
 \section{Methods}{
 
 \describe{
-\item{\verb{$initialize(enabled = TRUE, channels = character(), structured_io = TRUE, metadata = list())}}{Create an interaction and communication config.}
+\item{\verb{$initialize(enabled = TRUE, channels = character(), structured_io = TRUE, metadata = list())}}{Create an Inter-Agent Communication config.}
 \item{\verb{$validate()}}{Validate the config.}
 \item{\verb{$as_list()}}{Return a serializable representation.}
 }
@@ -47,7 +47,7 @@ Configuration for interaction and communication.
 \if{html}{\out{<a id="method-IACConfig-new"></a>}}
 \if{latex}{\out{\hypertarget{method-IACConfig-new}{}}}
 \subsection{Method \code{new()}}{
-Create an interaction and communication config.
+Create an Inter-Agent Communication config.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IACConfig$new(
   enabled = TRUE,

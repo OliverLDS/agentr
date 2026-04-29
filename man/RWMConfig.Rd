@@ -9,12 +9,12 @@ RWMConfig
 RWMConfig
 }
 \details{
-Configuration for the reflective working-memory subsystem.
+Configuration for the Reasoning & World Model subsystem.
 }
 \section{Methods}{
 
 \describe{
-\item{\verb{$initialize(cognitive = CognitiveConfig$new(), affective = NULL, persistence = "session", summary = NULL, metadata = list())}}{Create an \code{RWM} config.}
+\item{\verb{$initialize(cognitive = CognitiveConfig$new(), affective = NULL, persistence = "session", summary = NULL, metadata = list())}}{Create a Reasoning & World Model config.}
 \item{\verb{$validate()}}{Validate the config.}
 \item{\verb{$selected_layers()}}{Return the active inner layers.}
 \item{\verb{$as_list()}}{Return a serializable representation.}

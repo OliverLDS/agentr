@@ -108,15 +108,6 @@ test_that("AgentSpec enforces subsystem and workflow consistency", {
   )
 
   expect_error(
-    AgentSpec$new(
-      task = "Consistency checks",
-      subsystems = SubsystemSpec$new(pg = PGConfig$new()),
-      interfaces = list(primary = c("terminal"))
-    ),
-    "Non-empty `interfaces` require the `iac` subsystem"
-  )
-
-  expect_error(
     RWMConfig$new(
       cognitive = list(enabled = FALSE),
       affective = list(enabled = FALSE)
@@ -139,6 +130,7 @@ test_that("Print methods expose compact interactive summaries", {
   runtime_output <- paste(capture.output(runtime$print()), collapse = "\n")
 
   expect_true(grepl("<SubsystemSpec>", subsystem_output, fixed = TRUE))
+  expect_true(grepl("diagnostic design layer", subsystem_output, ignore.case = TRUE))
   expect_true(grepl("Selected: pg, ae", subsystem_output, fixed = TRUE))
   expect_true(grepl("<AgentSpec>", spec_output, fixed = TRUE))
   expect_true(grepl("Name: print-agent", spec_output, fixed = TRUE))
@@ -281,7 +273,7 @@ test_that("Scaffolder supports draft agent-spec proposals and ownership editing"
   expect_equal(scaffolder$list_agent_spec_proposals()$agent_name[[1]], "review-agent")
   expect_match(
     scaffolder$subsystem_recommendation_rationale("pg"),
-    "planning",
+    "grounding|perception",
     ignore.case = TRUE
   )
 

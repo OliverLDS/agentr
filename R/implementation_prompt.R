@@ -17,18 +17,22 @@
 
   if (inherits(x, "AgentSpec")) {
     x$validate()
-    workflow <- x$workflow %||% new_workflow_spec(
-      nodes = .empty_workflow_nodes(),
-      edges = .empty_workflow_edges(),
-      task = x$task
-    )
+    workflow <- x$workflow
+    if (is.null(workflow)) {
+      workflow <- new_workflow_spec(
+        nodes = .empty_workflow_nodes(),
+        edges = .empty_workflow_edges(),
+        task = x$task
+      )
+    }
     return(list(
       task = x$task,
       agent_name = x$agent_name,
       selected_subsystems = x$selected_subsystems(),
-      node_subsystems = x$metadata$node_subsystems %||% list(),
-      nodes = workflow$nodes[, c("id", "label", "rule_spec", "implementation_hint"), drop = FALSE],
-      human_required = workflow$nodes[workflow$nodes$human_required, "id", drop = TRUE]
+      node_subsystems = if (is.null(x$metadata$node_subsystems)) list() else x$metadata$node_subsystems,
+      nodes = workflow$nodes[, c("id", "label", "rule_spec", "implementation_hint", "knowledge_refs"), drop = FALSE],
+      human_required = workflow$nodes[workflow$nodes$human_required, "id", drop = TRUE],
+      knowledge_spec = x$knowledge_spec
     ))
   }
 
@@ -39,15 +43,17 @@
       agent_name = NA_character_,
       selected_subsystems = character(),
       node_subsystems = list(),
-      nodes = x$nodes[, c("id", "label", "rule_spec", "implementation_hint"), drop = FALSE],
-      human_required = x$nodes[x$nodes$human_required, "id", drop = TRUE]
+      nodes = x$nodes[, c("id", "label", "rule_spec", "implementation_hint", "knowledge_refs"), drop = FALSE],
+      human_required = x$nodes[x$nodes$human_required, "id", drop = TRUE],
+      knowledge_spec = NULL
     ))
   }
 
   if (is.list(x) && all(c("task", "nodes", "human_required") %in% names(x))) {
-    x$agent_name <- x$agent_name %||% NA_character_
-    x$selected_subsystems <- x$selected_subsystems %||% character()
-    x$node_subsystems <- x$node_subsystems %||% list()
+    if (is.null(x$agent_name)) x$agent_name <- NA_character_
+    if (is.null(x$selected_subsystems)) x$selected_subsystems <- character()
+    if (is.null(x$node_subsystems)) x$node_subsystems <- list()
+    if (is.null(x$knowledge_spec)) x$knowledge_spec <- NULL
     return(x)
   }
 
@@ -78,6 +84,10 @@
 #' @param style Optional implementation style note.
 #' @param constraints Optional character vector of implementation constraints.
 #' @param extra_context Optional named list of additional context.
+#' @param include_knowledge Whether approved knowledge should be included in the
+#'   implementation handoff when available.
+#' @param knowledge_scope Knowledge-selection scope when `include_knowledge` is
+#'   `TRUE`: referenced items only, all approved items, or all items.
 #'
 #' @return Character string prompt.
 #' @export
@@ -89,9 +99,12 @@ build_implementation_prompt <- function(
   runtime = NULL,
   style = NULL,
   constraints = character(),
-  extra_context = list()
+  extra_context = list(),
+  include_knowledge = TRUE,
+  knowledge_scope = c("referenced", "approved", "all")
 ) {
   format <- match.arg(format, choices = c("json", "markdown"))
+  knowledge_scope <- match.arg(knowledge_scope)
   contract <- new_prompt_contract(
     input_type = "Scaffolder|IntelligentAgent|AgentSpec|agentr_workflow_spec|implementation_spec_list",
     target_role = "implementation_planner",
@@ -116,8 +129,34 @@ build_implementation_prompt <- function(
   if (!is.list(extra_context)) {
     stop("`extra_context` must be a list.", call. = FALSE)
   }
+  if (!is.logical(include_knowledge) || length(include_knowledge) != 1L || is.na(include_knowledge)) {
+    stop("`include_knowledge` must be a single non-missing logical value.", call. = FALSE)
+  }
 
   spec <- .normalize_implementation_prompt_input(x)
+  workflow_payload <- spec
+  workflow_payload$knowledge_spec <- NULL
+  knowledge_payload <- NULL
+  if (isTRUE(include_knowledge) && inherits(spec$knowledge_spec, "KnowledgeSpec")) {
+    items <- spec$knowledge_spec$list_items()
+    if (identical(knowledge_scope, "referenced")) {
+      refs <- unique(unlist(spec$nodes$knowledge_refs, use.names = FALSE))
+      refs <- refs[nzchar(refs)]
+      items <- Filter(function(item) item$id %in% refs && identical(item$review$status, "approved"), items)
+    } else if (identical(knowledge_scope, "approved")) {
+      items <- Filter(function(item) identical(item$review$status, "approved"), items)
+    }
+    knowledge_payload <- lapply(items, function(item) {
+      list(
+        id = item$id,
+        type = item$type,
+        normalized_statement = item$normalized_statement,
+        conditions = item$conditions,
+        exceptions = item$exceptions,
+        review = item$review
+      )
+    })
+  }
   response_schema <- list(
     implementation_plan = list(
       summary = "Short implementation objective.",
@@ -140,11 +179,13 @@ build_implementation_prompt <- function(
     runtime = runtime,
     style = style,
     constraints = as.list(constraints),
-    workflow = spec,
+    workflow = workflow_payload,
+    knowledge = knowledge_payload,
     extra_context = extra_context,
     instructions = c(
       "Translate the workflow into an implementation-ready coding plan.",
       "Respect node ordering, dependencies, and human-required checkpoints.",
+      "Use approved knowledge references when they are present and relevant to specific workflow nodes.",
       "Propose concrete files, modules, tests, and validation steps.",
       "Do not invent external systems or runtime assumptions unless they are justified by the workflow or extra context.",
       "Keep the plan actionable for a coding agent that will implement code next."
@@ -165,7 +206,7 @@ build_implementation_prompt <- function(
   }
 
   workflow_json <- jsonlite::toJSON(
-    spec,
+    workflow_payload,
     auto_unbox = TRUE,
     pretty = TRUE,
     null = "null",
@@ -202,6 +243,9 @@ build_implementation_prompt <- function(
     "```json",
     workflow_json,
     "```",
+    "",
+    "## Knowledge Input",
+    if (is.null(knowledge_payload)) "<none>" else paste(c("```json", jsonlite::toJSON(knowledge_payload, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"), "```"), collapse = "\n"),
     "",
     "## Extra Context",
     if (length(extra_context)) {

@@ -14,7 +14,13 @@ workflow_node(
   complete = FALSE,
   review_status = "pending",
   review_notes = NA_character_,
-  review_confidence = NA_real_
+  review_confidence = NA_real_,
+  owner = NA_character_,
+  automation_status = NA_character_,
+  human_owned_reason = NA_character_,
+  target_automation_status = NA_character_,
+  trace_required = NA,
+  knowledge_refs = character()
 )
 }
 \arguments{
@@ -37,6 +43,18 @@ workflow_node(
 \item{review_notes}{Optional node-level review notes.}
 
 \item{review_confidence}{Optional confidence attached to the latest review.}
+
+\item{owner}{Optional current owner for the node.}
+
+\item{automation_status}{Optional current automation status for the node.}
+
+\item{human_owned_reason}{Optional explanation for why the node remains human-owned.}
+
+\item{target_automation_status}{Optional target automation status for the node.}
+
+\item{trace_required}{Optional logical flag indicating whether decision traces should be collected.}
+
+\item{knowledge_refs}{Optional character vector of referenced knowledge-item ids.}
 }
 \value{
 One-row data frame.

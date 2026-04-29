@@ -69,7 +69,13 @@
     complete = item$complete %||% FALSE,
     review_status = item$review_status %||% "pending",
     review_notes = item$review_notes %||% NA_character_,
-    review_confidence = item$review_confidence %||% NA_real_
+    review_confidence = item$review_confidence %||% NA_real_,
+    owner = item$owner %||% NA_character_,
+    automation_status = item$automation_status %||% NA_character_,
+    human_owned_reason = item$human_owned_reason %||% NA_character_,
+    target_automation_status = item$target_automation_status %||% NA_character_,
+    trace_required = item$trace_required %||% NA,
+    knowledge_refs = item$knowledge_refs %||% character()
   )
 
   list(record = record, raw = item)

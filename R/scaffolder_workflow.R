@@ -448,11 +448,7 @@
   }
 
   if (is.character(subsystems) && is.null(names(subsystems))) {
-    selected <- unique(as.character(subsystems))
-    invalid <- setdiff(selected, allowed)
-    if (length(invalid)) {
-      stop("Unsupported subsystem names: ", paste(invalid, collapse = ", "), call. = FALSE)
-    }
+    selected <- normalize_subsystem_key(subsystems)
     payload <- stats::setNames(vector("list", length(allowed)), allowed)
     for (name in selected) {
       payload[[name]] <- .default_subsystem_config(name)
@@ -470,6 +466,7 @@
   if (is.null(names(subsystems)) || any(!nzchar(names(subsystems)))) {
     stop("Named subsystem lists must use subsystem names as list names.", call. = FALSE)
   }
+  names(subsystems) <- normalize_subsystem_key(names(subsystems))
   invalid <- setdiff(names(subsystems), allowed)
   if (length(invalid)) {
     stop("Unsupported subsystem names: ", paste(invalid, collapse = ", "), call. = FALSE)
@@ -518,42 +515,57 @@
   recommendations$pg <- list(
     recommended = TRUE,
     confidence = if (nrow(scaffolder$workflow$nodes)) 0.9 else 0.7,
-    rationale = "Workflow decomposition benefits from explicit planning and goal tracking."
+    rationale = "Most workflows require some perception and grounding of inputs, artifacts, or source claims."
+  )
+  recommendations$rwm <- list(
+    recommended = TRUE,
+    confidence = 0.82,
+    rationale = "Most workflows require reasoning, strategy choice, or an internal world model."
   )
   recommendations$ae <- list(
     recommended = TRUE,
     confidence = 0.8,
-    rationale = "Task execution requires an action-oriented subsystem by default."
+    rationale = "Task execution requires an action-execution subsystem by default."
   )
 
   memory_terms <- c("memory", "remember", "history", "persistent", "profile", "context")
+  reasoning_terms <- c("plan", "reason", "infer", "strategy", "forecast", "decide", "judge")
   affect_terms <- c("emotion", "affect", "empat", "companion", "sentiment", "mood")
-  iac_terms <- c("api", "interface", "communicat", "channel", "tool", "integration", "message")
+  iac_terms <- c("multi-agent", "other agent", "handoff", "role negotiation", "agent message", "coordination")
+  interface_terms <- c("api", "interface", "channel", "tool", "integration")
   learning_terms <- c("learn", "adapt", "feedback", "improve", "optimi")
 
-  if (any(grepl(paste(memory_terms, collapse = "|"), text))) {
+  if (any(grepl(paste(c(memory_terms, reasoning_terms), collapse = "|"), text))) {
     recommendations$rwm <- list(
       recommended = TRUE,
       confidence = 0.78,
-      rationale = "The task suggests persistent or structured working memory."
+      rationale = "The task suggests explicit reasoning, planning, memory, or world-model structure."
     )
   }
   if (any(grepl(paste(affect_terms, collapse = "|"), text))) {
-    recommendations$rwm <- recommendations$rwm %||% list(
-      recommended = TRUE,
-      confidence = 0.7,
-      rationale = "The task suggests non-trivial reflective state."
-    )
+    if (is.null(recommendations$rwm)) {
+      recommendations$rwm <- list(
+        recommended = TRUE,
+        confidence = 0.7,
+        rationale = "The task suggests non-trivial reasoning or world-model state."
+      )
+    }
     recommendations$rwm$rationale <- paste(
       recommendations$rwm$rationale,
       "An affective layer appears justified."
+    )
+  }
+  if (any(grepl(paste(interface_terms, collapse = "|"), text))) {
+    recommendations$pg$rationale <- paste(
+      recommendations$pg$rationale,
+      "Interface-facing artifacts may also require stronger grounding."
     )
   }
   if (any(grepl(paste(iac_terms, collapse = "|"), text))) {
     recommendations$iac <- list(
       recommended = TRUE,
       confidence = 0.74,
-      rationale = "The task references external interfaces or communication channels."
+      rationale = "The task references genuine inter-agent communication or multi-agent coordination."
     )
   }
   if (any(grepl(paste(learning_terms, collapse = "|"), text))) {

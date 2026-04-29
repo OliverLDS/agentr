@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and now centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.4.3` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.5` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -24,6 +24,19 @@ Version `0.2.4.3` shifts the public design surface from workflow-first scaffoldi
 - email, Telegram, or X communication backends
 - domain-specific trading or data-collection agents
 - a full execution engine
+
+`agentr` is primarily a scaffolding and specification layer. A common deployment pattern is a cold-start orchestrated loop:
+
+```text
+zsh orchestrator
+-> Rscript loads AgentSpec / state from .rds
+-> refreshes environment data
+-> performs one step
+-> saves revised state
+-> exits
+```
+
+R6 remains useful here because it gives validated design objects, clean methods, and persistence boundaries, while still supporting hotter long-lived runtimes when needed.
 
 ## Installation
 
@@ -53,11 +66,12 @@ spec <- scaffolder$workflow_spec()
 spec
 ```
 
-`0.2.4.3` also exposes:
+`0.2.5` also exposes:
 
 - `WorkflowProposal` for one persisted proposal and its lifecycle
 - `WorkflowProposalState` for approved workflow plus proposal history
 - `AgentSpec` for the approved agent design
+- `KnowledgeSpec` for curated domain knowledge, rules, heuristics, and exceptions
 - `SubsystemSpec` for sparse subsystem selection
 - `AgentScaffoldState` for approved agent-design state
 - `IntelligentAgent` for the runtime-oriented abstraction
@@ -71,6 +85,22 @@ spec
 3. implementation and extraction handoff
 
 For conceptual diagrams of the transition from human workflow to approved agent design, see [docs/conceptual_figures.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/conceptual_figures.md), [docs/figures/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/figures/index.md), and [docs/tables/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/tables/index.md).
+
+## WorkflowSpec vs KnowledgeSpec
+
+`WorkflowSpec` captures procedural knowledge: what the agent does, in what order, with what review gates and implementation hints.
+
+`KnowledgeSpec` captures epistemic and domain knowledge: what the agent should know, assume, treat as an exception, or use as a heuristic while executing or reviewing workflow steps.
+
+`SubsystemSpec` is a diagnostic design layer rather than direct runtime logic. In the corrected five-module schema:
+
+- `RWM` means Reasoning & World Model
+- `PG` means Perception & Grounding
+- `AE` means Action Execution
+- `LA` means Learning & Adaptation
+- `IAC` means Inter-Agent Communication
+
+Early-stage agents often still have human-owned reasoning nodes. `agentr` supports that transitional state by letting workflow nodes carry ownership, automation status, and trace requirements while tacit knowledge is progressively codified into `KnowledgeSpec`.
 
 ## Agent Design And Workflow Elicitation
 
@@ -96,6 +126,28 @@ save_agent_spec(agent_spec, "agent_spec.rds")
 reloaded_spec <- load_agent_spec("agent_spec.rds")
 ```
 
+You can also attach curated knowledge directly to an agent design:
+
+```r
+knowledge_spec <- KnowledgeSpec$new(items = list(
+  list(
+    id = "ki_yoy_macro_001",
+    type = "heuristic",
+    raw_statement = "For noisy monthly macro data, YoY is usually better than MoM.",
+    normalized_statement = "For noisy monthly macro indicators, YoY is often more suitable than MoM for medium-term interpretation.",
+    review = list(status = "approved")
+  )
+))
+
+agent_spec <- AgentSpec$new(
+  task = "Draft a macro-analysis agent",
+  agent_name = "macro-agent",
+  workflow = reloaded_spec$workflow,
+  knowledge_spec = knowledge_spec,
+  metadata = list(runtime_pattern = "cold_start_orchestrated")
+)
+```
+
 If you want a proposal-oriented design loop before final approval, use the draft agent-spec path:
 
 ```r
@@ -118,7 +170,7 @@ approved_spec <- scaffolder$approve_agent_spec_proposal(design_proposal$id)
 
 ## LLM Scaffolding Bridge
 
-`0.2.4.3` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
+`0.2.5` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)

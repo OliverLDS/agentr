@@ -9,7 +9,7 @@ LAConfig
 LAConfig
 }
 \details{
-Configuration for lightweight learning and adaptation.
+Configuration for Learning & Adaptation.
 }
 \section{Methods}{
 

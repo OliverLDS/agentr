@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.5
+
+Released: 2026-04-29
+
+- Refactored subsystem semantics to the corrected five-module schema: `RWM` = Reasoning & World Model, `PG` = Perception & Grounding, `AE` = Action Execution, `LA` = Learning & Adaptation, and `IAC` = Inter-Agent Communication.
+- Added `KnowledgeSpec`, `KnowledgeProposal`, and `KnowledgeProposalState` plus persistence, validation, and constrained knowledge-prompt/message helpers.
+- Extended `AgentSpec` and workflow nodes with knowledge references, autonomy metadata, ownership fields, and transitional trace requirements.
+- Added decision-trace and reflection-trace helpers for progressive codification of human-owned reasoning.
+- Added concept docs for `KnowledgeSpec`, cold-vs-hot runtime, and the capability-autonomy landscape.
+
 ## agentr 0.2.4.3
 
 Released: 2026-04-23
