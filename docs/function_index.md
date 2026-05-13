@@ -19,6 +19,7 @@
 | `KnowledgeSpec` | Curated knowledge specification |
 | `KnowledgeProposal` | Proposal object for one knowledge item |
 | `KnowledgeProposalState` | Approved knowledge plus knowledge proposal history |
+| `agentr_knowledge_graph_spec` | Knowledge-graph specification object |
 | `AgentScaffoldState` | Approved agent-design state container |
 | `IntelligentAgent` | Runtime-oriented container around an `AgentSpec` |
 | `Scaffolder` | Human-in-the-loop intelligent-agent scaffolding interface |
@@ -49,6 +50,14 @@
 | `save_workflow_proposal()` | Save a workflow proposal |
 | `load_workflow_proposal()` | Load a workflow proposal |
 | `workflow_proposal_graph_data()` | Export graph-ready node and edge tables from a workflow proposal |
+| `knowledge_graph_node()` | Create a knowledge-graph node record |
+| `knowledge_graph_edge()` | Create a knowledge-graph edge record |
+| `new_knowledge_graph_spec()` | Build a knowledge-graph specification object |
+| `validate_knowledge_graph_spec()` | Validate knowledge-graph structure |
+| `knowledge_graph_from_spec()` | Build a knowledge-graph specification from a `KnowledgeSpec` |
+| `knowledge_graph_data()` | Export graph-ready node and edge tables for a knowledge graph |
+| `render_knowledge_graphviz()` | Render a knowledge graph as Graphviz DOT, DiagrammeR, or SVG |
+| `plot_knowledge_graph()` | Plot a knowledge graph with DiagrammeR |
 
 ## LLM Scaffolding Bridge
 

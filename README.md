@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and now centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.5` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.5.1` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -66,7 +66,7 @@ spec <- scaffolder$workflow_spec()
 spec
 ```
 
-`0.2.5` also exposes:
+`0.2.5.1` also exposes:
 
 - `WorkflowProposal` for one persisted proposal and its lifecycle
 - `WorkflowProposalState` for approved workflow plus proposal history
@@ -148,6 +148,15 @@ agent_spec <- AgentSpec$new(
 )
 ```
 
+If you want a visual knowledge map, build a graph spec from `KnowledgeSpec` and render it through the same Graphviz/DiagrammeR path used for workflows:
+
+```r
+kg <- knowledge_graph_from_spec(knowledge_spec)
+dot <- render_knowledge_graphviz(kg, as = "dot")
+# graph <- render_knowledge_graphviz(kg, as = "diagrammer")
+# svg <- render_knowledge_graphviz(kg, as = "svg")
+```
+
 If you want a proposal-oriented design loop before final approval, use the draft agent-spec path:
 
 ```r
@@ -170,7 +179,7 @@ approved_spec <- scaffolder$approve_agent_spec_proposal(design_proposal$id)
 
 ## LLM Scaffolding Bridge
 
-`0.2.5` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
+`0.2.5.1` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)

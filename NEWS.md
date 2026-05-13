@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.5.1
+
+Released: 2026-05-13
+
+- Added `agentr_knowledge_graph_spec` helpers for structuring graph-ready knowledge nodes and edges from curated `KnowledgeSpec` items.
+- Added `knowledge_graph_from_spec()`, `knowledge_graph_data()`, `render_knowledge_graphviz()`, and `plot_knowledge_graph()` for DiagrammeR/Graphviz-based knowledge visualization.
+- Updated the README, function index, generated manual pages, and tests to cover the new knowledge-graph surface.
+
 ## agentr 0.2.5
 
 Released: 2026-04-29
