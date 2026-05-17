@@ -92,6 +92,10 @@ knowledge_graph_edge <- function(
 
 #' Create a knowledge-graph specification
 #'
+#' A knowledge-graph specification is a graph-ready view of curated
+#' `KnowledgeSpec` content. It is intended for review, visualization, and
+#' design inspection rather than runtime execution.
+#'
 #' @param nodes Data frame of graph nodes.
 #' @param edges Data frame of graph edges.
 #' @param metadata Additional metadata list.
@@ -177,6 +181,12 @@ print.agentr_knowledge_graph_spec <- function(x, ...) {
 
 #' Build a knowledge-graph specification from a KnowledgeSpec
 #'
+#' Converts approved or draft knowledge items into a graph-ready structure with
+#' nodes for knowledge items, domains, conditions, exceptions, and
+#' structure-derived concepts. The resulting object can be rendered with
+#' `render_knowledge_graphviz()` or inspected as data with
+#' `knowledge_graph_data()`.
+#'
 #' @param x A [`KnowledgeSpec`] object.
 #' @param include_domains Whether to include domain nodes.
 #' @param include_conditions Whether to include condition nodes.
@@ -185,6 +195,21 @@ print.agentr_knowledge_graph_spec <- function(x, ...) {
 #' @param include_conflicts Whether to include conflict edges when present.
 #'
 #' @return An `agentr_knowledge_graph_spec`.
+#'
+#' @examples
+#' ks <- KnowledgeSpec$new(items = list(list(
+#'   id = "ki_yoy_macro_001",
+#'   type = "heuristic",
+#'   raw_statement = "Use YoY when monthly macro data is noisy.",
+#'   normalized_statement = "Use YoY transformations for noisy monthly macro data.",
+#'   domain = "macro_analysis",
+#'   conditions = c("monthly macro data"),
+#'   exceptions = c("short-term shock timing"),
+#'   review = list(status = "approved")
+#' )))
+#'
+#' kg <- knowledge_graph_from_spec(ks)
+#' knowledge_graph_data(kg)
 #' @export
 knowledge_graph_from_spec <- function(
   x,
@@ -340,6 +365,9 @@ knowledge_graph_from_spec <- function(
 
 #' Convert a knowledge-graph specification into graph-ready data
 #'
+#' Returns styled vertex and edge tables suitable for external graph renderers
+#' or the package's Graphviz rendering helpers.
+#'
 #' @param x A knowledge-graph specification or a [`KnowledgeSpec`] object.
 #'
 #' @return A list with `vertices` and `edges` data frames.
@@ -485,6 +513,10 @@ knowledge_graph_data <- function(x) {
 
 #' Render a knowledge graph as Graphviz DOT, DiagrammeR, or SVG
 #'
+#' This helper renders the graph view of curated knowledge items. It mirrors the
+#' workflow graph rendering path, but the nodes and edges represent knowledge
+#' items, domains, conditions, exceptions, concepts, and conflicts.
+#'
 #' @param x A knowledge-graph specification or a [`KnowledgeSpec`] object.
 #' @param rankdir Graphviz rank direction, for example `"TB"` or `"LR"`.
 #' @param as Output format: raw `"dot"` text, a `"diagrammer"` object, or
@@ -494,6 +526,19 @@ knowledge_graph_data <- function(x) {
 #' @param show_tooltips Whether to include Graphviz tooltip attributes.
 #'
 #' @return A Graphviz DOT string, `DiagrammeR` graph object, or SVG string.
+#'
+#' @examples
+#' ks <- KnowledgeSpec$new(items = list(list(
+#'   id = "ki_yoy_macro_001",
+#'   type = "heuristic",
+#'   raw_statement = "Use YoY when monthly macro data is noisy.",
+#'   normalized_statement = "Use YoY transformations for noisy monthly macro data.",
+#'   domain = "macro_analysis",
+#'   review = list(status = "approved")
+#' )))
+#'
+#' dot <- render_knowledge_graphviz(ks, as = "dot")
+#' cat(dot)
 #' @export
 render_knowledge_graphviz <- function(
   x,
@@ -537,6 +582,11 @@ render_knowledge_graphviz <- function(
 }
 
 #' Plot a knowledge graph with DiagrammeR
+#'
+#' Returns an interactive DiagrammeR graph for human inspection of a
+#' `KnowledgeSpec` or `agentr_knowledge_graph_spec`. Use
+#' `render_knowledge_graphviz(..., as = "dot")` when a plain text artifact is
+#' easier to inspect or test.
 #'
 #' @param x A knowledge-graph specification or a [`KnowledgeSpec`] object.
 #' @param rankdir Graphviz rank direction, for example `"TB"` or `"LR"`.

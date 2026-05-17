@@ -30,5 +30,24 @@ knowledge_graph_from_spec(
 An \code{agentr_knowledge_graph_spec}.
 }
 \description{
-Build a knowledge-graph specification from a KnowledgeSpec
+Converts approved or draft knowledge items into a graph-ready structure with
+nodes for knowledge items, domains, conditions, exceptions, and
+structure-derived concepts. The resulting object can be rendered with
+\code{render_knowledge_graphviz()} or inspected as data with
+\code{knowledge_graph_data()}.
+}
+\examples{
+ks <- KnowledgeSpec$new(items = list(list(
+  id = "ki_yoy_macro_001",
+  type = "heuristic",
+  raw_statement = "Use YoY when monthly macro data is noisy.",
+  normalized_statement = "Use YoY transformations for noisy monthly macro data.",
+  domain = "macro_analysis",
+  conditions = c("monthly macro data"),
+  exceptions = c("short-term shock timing"),
+  review = list(status = "approved")
+)))
+
+kg <- knowledge_graph_from_spec(ks)
+knowledge_graph_data(kg)
 }

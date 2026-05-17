@@ -13,5 +13,6 @@ knowledge_graph_data(x)
 A list with \code{vertices} and \code{edges} data frames.
 }
 \description{
-Convert a knowledge-graph specification into graph-ready data
+Returns styled vertex and edge tables suitable for external graph renderers
+or the package's Graphviz rendering helpers.
 }

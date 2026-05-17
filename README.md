@@ -1,8 +1,8 @@
 # agentr
 
-`agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and now centers agent-spec design with workflow specifications kept as a nested planning artifact.
+`agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.5.1` shifts the public design surface from workflow-first scaffolding toward agent-spec-first scaffolding and adds a proposal-oriented design loop inside `Scaffolder`. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.5.2` is a stabilization release on the agent-spec-first surface. It clarifies package-facing documentation, adds complete `AgentSpec` round-trip coverage, and prepares the design artifacts for the planned review layer while keeping `agentr` as the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -66,7 +66,7 @@ spec <- scaffolder$workflow_spec()
 spec
 ```
 
-`0.2.5.1` also exposes:
+The current public surface includes:
 
 - `WorkflowProposal` for one persisted proposal and its lifecycle
 - `WorkflowProposalState` for approved workflow plus proposal history
@@ -144,9 +144,34 @@ agent_spec <- AgentSpec$new(
   agent_name = "macro-agent",
   workflow = reloaded_spec$workflow,
   knowledge_spec = knowledge_spec,
+  state_spec = list(
+    lifecycle_state = list(
+      allowed_values = c("idle", "refreshing_data", "drafting_report", "awaiting_review"),
+      persistent = TRUE
+    ),
+    task_state = list(
+      fields = c("current_dataset", "latest_report_path", "last_human_decision"),
+      persistent = TRUE
+    )
+  ),
+  interface_spec = list(
+    files = list(
+      inputs = c("data/macro/latest.csv"),
+      outputs = c("reports/macro_summary.md")
+    ),
+    tools = list(
+      r_packages = c("readr", "ggplot2")
+    )
+  ),
+  autonomy_spec = list(
+    default_stage = "human_in_loop",
+    human_required_for = c("publish_report", "change_chart_rule")
+  ),
   metadata = list(runtime_pattern = "cold_start_orchestrated")
 )
 ```
+
+`state_spec` and `interface_spec` are plain structured lists. They make memory fields, persistent state, files, tools, and external surfaces explicit before any execution runtime exists. This is useful for later review artifacts because humans can comment on unclear memory fields or missing interface constraints without changing workflow logic directly.
 
 If you want a visual knowledge map, build a graph spec from `KnowledgeSpec` and render it through the same Graphviz/DiagrammeR path used for workflows:
 
@@ -179,7 +204,7 @@ approved_spec <- scaffolder$approve_agent_spec_proposal(design_proposal$id)
 
 ## LLM Scaffolding Bridge
 
-`0.2.5.1` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
+`agentr` provides a constrained bridge for letting an external LLM reason about scaffolding and agent-design actions without exposing arbitrary code execution.
 
 ```r
 prompt <- build_scaffolder_prompt(scaffolder)

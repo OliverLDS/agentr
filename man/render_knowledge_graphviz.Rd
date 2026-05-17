@@ -31,5 +31,20 @@ exported \code{"svg"} text.}
 A Graphviz DOT string, \code{DiagrammeR} graph object, or SVG string.
 }
 \description{
-Render a knowledge graph as Graphviz DOT, DiagrammeR, or SVG
+This helper renders the graph view of curated knowledge items. It mirrors the
+workflow graph rendering path, but the nodes and edges represent knowledge
+items, domains, conditions, exceptions, concepts, and conflicts.
+}
+\examples{
+ks <- KnowledgeSpec$new(items = list(list(
+  id = "ki_yoy_macro_001",
+  type = "heuristic",
+  raw_statement = "Use YoY when monthly macro data is noisy.",
+  normalized_statement = "Use YoY transformations for noisy monthly macro data.",
+  domain = "macro_analysis",
+  review = list(status = "approved")
+)))
+
+dot <- render_knowledge_graphviz(ks, as = "dot")
+cat(dot)
 }

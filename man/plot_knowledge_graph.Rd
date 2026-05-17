@@ -27,5 +27,8 @@ plot_knowledge_graph(
 A \code{DiagrammeR} graph object.
 }
 \description{
-Plot a knowledge graph with DiagrammeR
+Returns an interactive DiagrammeR graph for human inspection of a
+\code{KnowledgeSpec} or \code{agentr_knowledge_graph_spec}. Use
+\code{render_knowledge_graphviz(..., as = "dot")} when a plain text artifact is
+easier to inspect or test.
 }

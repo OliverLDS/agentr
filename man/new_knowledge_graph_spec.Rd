@@ -21,5 +21,7 @@ new_knowledge_graph_spec(
 An object of class \code{agentr_knowledge_graph_spec}.
 }
 \description{
-Create a knowledge-graph specification
+A knowledge-graph specification is a graph-ready view of curated
+\code{KnowledgeSpec} content. It is intended for review, visualization, and
+design inspection rather than runtime execution.
 }

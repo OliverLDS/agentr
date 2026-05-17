@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.5.2
+
+Released: 2026-05-17
+
+- Tightened README wording so patch releases do not overstate the historical shift to agent-spec-first scaffolding.
+- Added explicit `state_spec`, `interface_spec`, and `autonomy_spec` examples for `AgentSpec` to prepare the package surface for design-review artifacts.
+- Added a reusable complete `AgentSpec` test fixture and round-trip tests covering `knowledge_spec`, `state_spec`, `interface_spec`, `autonomy_spec`, workflow knowledge references, and implementation-prompt knowledge selection.
+- Clarified generated knowledge-graph documentation and examples so the graph surface is framed as review and visualization support for curated `KnowledgeSpec` content.
+- Added the `v0.2.6` implementation plan for the standalone JS/HTML design-review and structured-feedback layer.
+
 ## agentr 0.2.5.1
 
 Released: 2026-05-13
