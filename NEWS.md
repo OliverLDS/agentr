@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.6
+
+Released: 2026-05-17
+
+- Added standalone, offline HTML review export with `design_review_html()` and `export_design_review_html()`.
+- Extended design-review data support with `new_design_review_spec()`, workflow-only, workflow-proposal, and knowledge-only inputs.
+- Added design-feedback issue types, target ids, RDS persistence helpers, target-id validation warnings, non-mutating preview, and scaffolder-routed application.
+- Added tests covering review HTML generation, feedback save/load, feedback validation, review-data adapters, and feedback application.
+- Added review-layer documentation clarifying that browser output is for inspection and structured feedback, not execution.
+
 ## agentr 0.2.5.6
 
 Released: 2026-05-17

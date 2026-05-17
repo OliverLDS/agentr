@@ -5,25 +5,50 @@
 
 #' @keywords internal
 .design_review_severities <- function() {
-  c("low", "medium", "high", "critical")
+  c("low", "medium", "high")
 }
 
 #' @keywords internal
 .design_review_feedback_targets <- function() {
   c(
-    "workflow_graph",
     "workflow_node",
     "workflow_edge",
     "memory_schema",
+    "knowledge_item",
+    "knowledge_edge",
+    "subsystem_assignment",
+    "review_gate",
+    "implementation_hint",
+    "interface_schema",
+    "agent_summary",
+    "workflow_graph",
     "memory_field",
     "narrative_knowledge",
-    "knowledge_item",
     "graph_knowledge",
     "graph_node",
     "graph_edge",
     "proposal_state",
     "feedback_schema",
     "design_bundle"
+  )
+}
+
+#' @keywords internal
+.design_review_issue_types <- function() {
+  c(
+    "missing",
+    "unclear",
+    "incorrect",
+    "inconsistent",
+    "unsafe",
+    "too_broad",
+    "too_narrow",
+    "duplicate",
+    "conflicting_assumption",
+    "needs_human_gate",
+    "needs_automation_status",
+    "needs_trace",
+    "implementation_gap"
   )
 }
 
@@ -40,6 +65,11 @@
 #' @keywords internal
 .normalize_design_review_target <- function(x) {
   match.arg(as.character(x)[1], choices = .design_review_feedback_targets())
+}
+
+#' @keywords internal
+.normalize_design_review_issue_type <- function(x) {
+  match.arg(as.character(x)[1], choices = .design_review_issue_types())
 }
 
 #' @keywords internal
@@ -190,13 +220,16 @@
   list(
     version = "agentr_design_feedback_v1",
     targets = .design_review_feedback_targets(),
+    issue_types = .design_review_issue_types(),
     severities = .design_review_severities(),
     statuses = .design_review_feedback_statuses(),
-    required_fields = c("target", "field", "issue", "suggestion", "severity"),
-    optional_fields = c("id", "item_id", "location", "status", "source", "created_at", "metadata"),
+    required_fields = c("target", "field", "issue_type", "issue", "suggestion", "severity"),
+    optional_fields = c("id", "target_id", "item_id", "location", "status", "source", "created_at", "metadata"),
     example = design_feedback_item(
       target = "memory_schema",
+      target_id = "agent.memory.state",
       field = "agent.memory.state",
+      issue_type = "unclear",
       issue = "State names are unclear.",
       suggestion = "Separate lifecycle_state from task_state.",
       severity = "medium"
@@ -214,10 +247,13 @@
 #' @param target Review target, such as `"workflow_node"`, `"memory_schema"`,
 #'   `"knowledge_item"`, or `"graph_edge"`.
 #' @param field Field path or semantic field name being reviewed.
+#' @param issue_type Issue type.
 #' @param issue Concise issue description.
 #' @param suggestion Concise suggested change.
-#' @param severity Severity label: `low`, `medium`, `high`, or `critical`.
+#' @param severity Severity label: `low`, `medium`, or `high`.
 #' @param id Optional feedback id.
+#' @param target_id Optional target identifier, such as a node id or
+#'   memory-field id.
 #' @param item_id Optional target item id, such as a node id or memory-field id.
 #' @param location Optional structured location metadata.
 #' @param status Feedback status.
@@ -233,7 +269,9 @@ design_feedback_item <- function(
   issue,
   suggestion,
   severity = "medium",
+  issue_type = "unclear",
   id = NULL,
+  target_id = NULL,
   item_id = NA_character_,
   location = list(),
   status = "open",
@@ -244,8 +282,14 @@ design_feedback_item <- function(
   item <- list(
     id = if (is.null(id)) .design_review_id("feedback") else as.character(id)[1],
     target = .normalize_design_review_target(target),
+    target_id = if (is.null(target_id)) {
+      if (is.null(item_id)) NA_character_ else as.character(item_id)[1]
+    } else {
+      as.character(target_id)[1]
+    },
     field = as.character(field)[1],
     item_id = if (is.null(item_id)) NA_character_ else as.character(item_id)[1],
+    issue_type = .normalize_design_review_issue_type(issue_type),
     issue = as.character(issue)[1],
     suggestion = as.character(suggestion)[1],
     severity = .normalize_design_review_severity(severity),
@@ -264,10 +308,12 @@ design_feedback_item <- function(
 #'
 #' @param x A feedback item, list of feedback items, or parsed feedback bundle
 #'   containing a `feedback` field.
+#' @param review_spec Optional [`DesignReviewSpec`] or review-spec list used to
+#'   warn when feedback target ids no longer exist in the reviewed design.
 #'
 #' @return The validated feedback, invisibly.
 #' @export
-validate_design_feedback <- function(x) {
+validate_design_feedback <- function(x, review_spec = NULL) {
   if (is.data.frame(x)) {
     x <- .design_df_records(x)
   }
@@ -278,6 +324,12 @@ validate_design_feedback <- function(x) {
     }
   }
   if (is.list(x) && all(c("target", "field", "issue", "suggestion", "severity") %in% names(x))) {
+    if (is.null(x$issue_type)) {
+      x$issue_type <- "unclear"
+    }
+    if (is.null(x$target_id) && !is.null(x$item_id)) {
+      x$target_id <- x$item_id
+    }
     if (!is.character(x$field) || length(x$field) != 1L || is.na(x$field) || !nzchar(x$field)) {
       stop("Design feedback `field` must be a non-empty string.", call. = FALSE)
     }
@@ -288,6 +340,7 @@ validate_design_feedback <- function(x) {
       stop("Design feedback `suggestion` must be a non-empty string.", call. = FALSE)
     }
     .normalize_design_review_target(x$target)
+    .normalize_design_review_issue_type(x$issue_type)
     .normalize_design_review_severity(x$severity)
     if (!is.null(x$status)) {
       .normalize_design_feedback_status(x$status)
@@ -298,11 +351,12 @@ validate_design_feedback <- function(x) {
     if (!is.null(x$metadata)) {
       .validate_metadata_list(x$metadata)
     }
+    .warn_missing_design_feedback_target(x, review_spec)
     return(invisible(x))
   }
   if (is.list(x) && length(x)) {
     for (item in x) {
-      validate_design_feedback(item)
+      validate_design_feedback(item, review_spec = review_spec)
     }
     return(invisible(x))
   }
@@ -330,6 +384,82 @@ parse_design_feedback_json <- function(x) {
   }
   validate_design_feedback(feedback)
   feedback
+}
+
+#' @keywords internal
+.design_review_target_ids <- function(review_spec) {
+  if (is.null(review_spec)) {
+    return(list())
+  }
+  if (inherits(review_spec, "DesignReviewSpec")) {
+    review_spec <- review_spec$to_list()
+  }
+  if (!is.list(review_spec)) {
+    return(list())
+  }
+  ids_from_records <- function(records, field = "id") {
+    if (!length(records)) {
+      return(character())
+    }
+    out <- vapply(records, function(record) {
+      value <- record[[field]]
+      if (is.null(value) || length(value) != 1L || is.na(value)) "" else as.character(value)
+    }, character(1))
+    out[nzchar(out)]
+  }
+  list(
+    workflow_node = ids_from_records(review_spec$workflow_graph$nodes),
+    workflow_edge = paste(
+      ids_from_records(review_spec$workflow_graph$edges, "from"),
+      ids_from_records(review_spec$workflow_graph$edges, "to"),
+      sep = "->"
+    ),
+    memory_schema = c("memory_schema", ids_from_records(review_spec$memory_schema$fields)),
+    memory_field = ids_from_records(review_spec$memory_schema$fields),
+    knowledge_item = ids_from_records(review_spec$narrative_knowledge$items),
+    knowledge_edge = paste(
+      ids_from_records(review_spec$graph_knowledge$edges, "from"),
+      ids_from_records(review_spec$graph_knowledge$edges, "to"),
+      sep = "->"
+    ),
+    graph_node = ids_from_records(review_spec$graph_knowledge$nodes),
+    graph_edge = paste(
+      ids_from_records(review_spec$graph_knowledge$edges, "from"),
+      ids_from_records(review_spec$graph_knowledge$edges, "to"),
+      sep = "->"
+    ),
+    interface_schema = c("interface_schema", names(review_spec$metadata$interface_spec)),
+    agent_summary = c("agent_summary", review_spec$agent_name)
+  )
+}
+
+#' @keywords internal
+.warn_missing_design_feedback_target <- function(item, review_spec = NULL) {
+  if (is.null(review_spec) || is.null(item$target_id) || is.na(item$target_id) || !nzchar(item$target_id)) {
+    return(invisible(NULL))
+  }
+  ids <- .design_review_target_ids(review_spec)
+  valid_ids <- ids[[as.character(item$target)[1]]]
+  if (!is.null(valid_ids) && length(valid_ids) && !(item$target_id %in% valid_ids)) {
+    warning(
+      "Design feedback target id not found in review spec: ",
+      item$target_id,
+      call. = FALSE
+    )
+  }
+  invisible(NULL)
+}
+
+#' Create a design-review specification
+#'
+#' Convenience constructor matching the public plan API.
+#'
+#' @param ... Arguments passed to [`DesignReviewSpec`]`$new()`.
+#'
+#' @return A [`DesignReviewSpec`] object.
+#' @export
+new_design_review_spec <- function(...) {
+  DesignReviewSpec$new(...)
 }
 
 #' DesignReviewSpec
@@ -505,8 +635,14 @@ validate_design_review_spec <- function(x) {
   if (!all(c("nodes", "edges") %in% names(x$graph_knowledge))) {
     stop("DesignReviewSpec `graph_knowledge` must contain nodes and edges.", call. = FALSE)
   }
-  if (!all(c("version", "targets", "severities", "required_fields", "example") %in% names(x$feedback_schema))) {
+  if (!all(c("version", "targets", "issue_types", "severities", "required_fields", "example") %in% names(x$feedback_schema))) {
     stop("DesignReviewSpec `feedback_schema` is incomplete.", call. = FALSE)
+  }
+  invalid_targets <- setdiff(x$feedback_schema$targets, .design_review_feedback_targets())
+  invalid_issue_types <- setdiff(x$feedback_schema$issue_types, .design_review_issue_types())
+  invalid_severities <- setdiff(x$feedback_schema$severities, .design_review_severities())
+  if (length(invalid_targets) || length(invalid_issue_types) || length(invalid_severities)) {
+    stop("DesignReviewSpec `feedback_schema` contains unsupported values.", call. = FALSE)
   }
   validate_design_feedback(x$feedback_schema$example)
   .validate_metadata_list(x$metadata)
@@ -519,7 +655,8 @@ validate_design_review_spec <- function(x) {
 #' JSON-ready review bundle. This prepares the data contract for a future
 #' JS/HTML review interface; it does not render a UI.
 #'
-#' @param x Optional [`AgentSpec`], [`IntelligentAgent`], or [`Scaffolder`].
+#' @param x Optional [`AgentSpec`], [`IntelligentAgent`], [`Scaffolder`],
+#'   `agentr_workflow_spec`, [`WorkflowProposal`], or [`KnowledgeSpec`].
 #' @param workflow Optional workflow spec overriding the workflow inferred from
 #'   `x`.
 #' @param memory_spec Optional [`MemorySpec`] overriding memory inferred from
@@ -558,6 +695,27 @@ build_design_review_data <- function(
   if (inherits(x, "IntelligentAgent")) {
     x <- x$spec
   }
+  if (inherits(x, "WorkflowProposal")) {
+    if (is.null(workflow)) {
+      workflow <- x$workflow
+    }
+    task <- workflow$task
+    proposal_states$workflow_proposal <- x$as_list()
+    x <- NULL
+  }
+  if (inherits(x, "agentr_workflow_spec")) {
+    if (is.null(workflow)) {
+      workflow <- x
+    }
+    task <- x$task
+    x <- NULL
+  }
+  if (inherits(x, "KnowledgeSpec")) {
+    if (is.null(knowledge_spec)) {
+      knowledge_spec <- x
+    }
+    x <- NULL
+  }
   if (inherits(x, "Scaffolder")) {
     if (is.null(workflow)) {
       workflow <- x$workflow()
@@ -595,7 +753,7 @@ build_design_review_data <- function(
       autonomy_stage = x$autonomy_stage
     ), metadata)
   } else if (!is.null(x) && !inherits(x, "Scaffolder")) {
-    stop("`x` must be NULL, AgentSpec, IntelligentAgent, or Scaffolder.", call. = FALSE)
+    stop("`x` must be NULL, AgentSpec, IntelligentAgent, Scaffolder, workflow spec, WorkflowProposal, or KnowledgeSpec.", call. = FALSE)
   }
 
   proposal_states_out <- list(
@@ -622,4 +780,161 @@ build_design_review_data <- function(
     feedback_schema = .design_review_feedback_schema(),
     metadata = metadata
   )
+}
+
+#' Save a design-review specification
+#'
+#' @param x A [`DesignReviewSpec`] object.
+#' @param path Output `.rds` path.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_design_review_spec <- function(x, path) {
+  if (!inherits(x, "DesignReviewSpec")) {
+    stop("`x` must be a `DesignReviewSpec`.", call. = FALSE)
+  }
+  x$validate()
+  saveRDS(x, path)
+  invisible(TRUE)
+}
+
+#' Load a design-review specification
+#'
+#' @param path Input `.rds` path.
+#'
+#' @return A [`DesignReviewSpec`] object.
+#' @export
+load_design_review_spec <- function(path) {
+  x <- readRDS(path)
+  if (!inherits(x, "DesignReviewSpec")) {
+    stop("Loaded object is not a `DesignReviewSpec`.", call. = FALSE)
+  }
+  x$validate()
+  x
+}
+
+#' Save structured design feedback
+#'
+#' @param x A design-feedback item or list of items.
+#' @param path Output `.rds` path.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_design_feedback <- function(x, path) {
+  validate_design_feedback(x)
+  saveRDS(x, path)
+  invisible(TRUE)
+}
+
+#' Load structured design feedback
+#'
+#' @param path Input `.rds` path.
+#'
+#' @return A design-feedback item or list of items.
+#' @export
+load_design_feedback <- function(path) {
+  x <- readRDS(path)
+  validate_design_feedback(x)
+  x
+}
+
+#' @keywords internal
+.design_feedback_items <- function(feedback) {
+  if (is.data.frame(feedback)) {
+    feedback <- .design_df_records(feedback)
+  }
+  if (is.list(feedback) && "feedback" %in% names(feedback) && is.list(feedback$feedback)) {
+    feedback <- feedback$feedback
+  }
+  if (is.list(feedback) && all(c("target", "field", "issue", "suggestion", "severity") %in% names(feedback))) {
+    return(list(feedback))
+  }
+  feedback
+}
+
+#' Preview design feedback application
+#'
+#' @param x A [`Scaffolder`] or design object.
+#' @param feedback Feedback item or list of items.
+#' @param review_spec Optional review spec used for target-id warnings.
+#'
+#' @return A non-mutating preview list.
+#' @export
+preview_design_feedback <- function(x, feedback, review_spec = NULL) {
+  items <- .design_feedback_items(feedback)
+  validate_design_feedback(items, review_spec = review_spec)
+  list(
+    action_count = length(items),
+    mutates = FALSE,
+    actions = lapply(items, function(item) {
+      target <- as.character(item$target)[1]
+      route <- if (target %in% c("workflow_node", "review_gate", "implementation_hint")) {
+        "scaffolder_node_review"
+      } else if (target %in% c("workflow_edge", "subsystem_assignment", "agent_summary")) {
+        "scaffolder_discussion"
+      } else {
+        "structured_design_discussion"
+      }
+      list(
+        feedback_id = item$id,
+        target = target,
+        target_id = item$target_id,
+        issue_type = item$issue_type,
+        route = route,
+        summary = paste(item$issue, item$suggestion, sep = " Suggestion: ")
+      )
+    })
+  )
+}
+
+#' Apply structured design feedback
+#'
+#' Applies feedback through existing scaffolder review/discussion mechanisms
+#' when a scaffolder is supplied. Non-workflow feedback is preserved as
+#' structured design discussion metadata; it is not auto-executed.
+#'
+#' @param x A [`Scaffolder`] object.
+#' @param feedback Feedback item or list of items.
+#' @param review_spec Optional review spec used for target-id warnings.
+#'
+#' @return The mutated `Scaffolder` object.
+#' @export
+apply_design_feedback <- function(x, feedback, review_spec = NULL) {
+  if (!inherits(x, "Scaffolder")) {
+    stop("`x` must be a `Scaffolder`.", call. = FALSE)
+  }
+  items <- .design_feedback_items(feedback)
+  validate_design_feedback(items, review_spec = review_spec)
+  for (item in items) {
+    target <- as.character(item$target)[1]
+    message <- paste0(
+      "[", item$target, "] ",
+      item$field,
+      " (", item$issue_type, ", ", item$severity, "): ",
+      item$issue,
+      " Suggestion: ",
+      item$suggestion
+    )
+    if (target %in% c("workflow_node", "review_gate", "implementation_hint") &&
+        !is.null(item$target_id) && !is.na(item$target_id) && nzchar(item$target_id) &&
+        item$target_id %in% x$workflow$nodes$id) {
+      x$review_node(
+        node_id = item$target_id,
+        status = "needs_revision",
+        notes = message
+      )
+    } else {
+      x$discuss_task(
+        feedback = message,
+        source = "human",
+        node_id = if (!is.null(item$target_id) && item$target_id %in% x$workflow$nodes$id) item$target_id else NULL
+      )
+    }
+    x$workflow$metadata$design_feedback <- c(
+      x$workflow$metadata$design_feedback,
+      list(.design_json_ready(item))
+    )
+    x$record_interaction("apply_design_feedback", .design_json_ready(item))
+  }
+  invisible(x)
 }

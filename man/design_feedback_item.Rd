@@ -10,7 +10,9 @@ design_feedback_item(
   issue,
   suggestion,
   severity = "medium",
+  issue_type = "unclear",
   id = NULL,
+  target_id = NULL,
   item_id = NA_character_,
   location = list(),
   status = "open",
@@ -29,9 +31,14 @@ design_feedback_item(
 
 \item{suggestion}{Concise suggested change.}
 
-\item{severity}{Severity label: \code{low}, \code{medium}, \code{high}, or \code{critical}.}
+\item{severity}{Severity label: \code{low}, \code{medium}, or \code{high}.}
+
+\item{issue_type}{Issue type.}
 
 \item{id}{Optional feedback id.}
+
+\item{target_id}{Optional target identifier, such as a node id or
+memory-field id.}
 
 \item{item_id}{Optional target item id, such as a node id or memory-field id.}
 

@@ -20,7 +20,8 @@ build_design_review_data(
 )
 }
 \arguments{
-\item{x}{Optional \code{\link{AgentSpec}}, \code{\link{IntelligentAgent}}, or \code{\link{Scaffolder}}.}
+\item{x}{Optional \code{\link{AgentSpec}}, \code{\link{IntelligentAgent}}, \code{\link{Scaffolder}},
+\code{agentr_workflow_spec}, \code{\link{WorkflowProposal}}, or \code{\link{KnowledgeSpec}}.}
 
 \item{workflow}{Optional workflow spec overriding the workflow inferred from
 \code{x}.}

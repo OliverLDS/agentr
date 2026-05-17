@@ -102,9 +102,13 @@
 | `preview_knowledge_graph_message()` | Preview graph-knowledge actions without mutating state |
 | `apply_knowledge_graph_message()` | Apply constrained graph-knowledge actions to a graph-proposal state |
 | `build_design_review_data()` | Package the current design into a JS/HTML-ready review data bundle |
+| `new_design_review_spec()` | Create a design-review data bundle directly |
+| `design_review_html()` / `export_design_review_html()` | Build or write a standalone offline review page |
 | `design_feedback_item()` | Create a structured design-review feedback item |
 | `validate_design_feedback()` | Validate one or more structured design-feedback items |
 | `parse_design_feedback_json()` | Parse structured design feedback from JSON |
+| `save_design_feedback()` / `load_design_feedback()` | Persist structured design feedback |
+| `preview_design_feedback()` / `apply_design_feedback()` | Preview or route design feedback through scaffolder mechanisms |
 | `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
 | `validate_scaffolder_message()` | Validate requested scaffolding actions |
 | `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |

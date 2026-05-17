@@ -131,3 +131,9 @@ Quantitative trading:
 - "Rising real yields often pressure gold in normal regimes, but crisis safe-haven demand can dominate."
 
 These are not only facts. They are practitioner knowledge candidates that need normalization, scope control, and human review before they guide an agent.
+
+## Design Review Layer
+
+In `0.2.6`, approved and proposed knowledge can also be inspected through the standalone design review layer. `build_design_review_data()` includes narrative knowledge and graph knowledge sections, while `export_design_review_html()` renders them alongside workflow and memory schema.
+
+Feedback exported from the browser remains structured data. It must pass `parse_design_feedback_json()` and `validate_design_feedback()` before it is routed back into scaffolding or proposal state.

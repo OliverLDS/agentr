@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.5.6` adds a design-review data contract for future JS/HTML review layers. `agentr` can now package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one review bundle while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.6` adds a standalone JS/HTML review layer for agent-design artifacts. `agentr` can now package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one offline review page while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -74,7 +74,7 @@ The current public surface includes:
 - `KnowledgeSpec` for curated domain knowledge, rules, heuristics, and exceptions
 - `MemorySpec` for context, semantic, episodic, and procedural memory schema
 - `MemoryProposalState` and `KnowledgeGraphProposalState` for reviewable memory and graph-knowledge design loops
-- `DesignReviewSpec` for review-layer data bundles and structured feedback contracts
+- `DesignReviewSpec` for review-layer data bundles, standalone HTML export, and structured feedback contracts
 - `SubsystemSpec` for sparse subsystem selection
 - `AgentScaffoldState` for approved agent-design state
 - `IntelligentAgent` for the runtime-oriented abstraction
@@ -306,14 +306,20 @@ review <- build_design_review_data(
 )
 
 bundle <- review$to_list()
+export_design_review_html(review, "agent_design_review.html")
 
 feedback <- design_feedback_item(
   target = "memory_schema",
+  target_id = "current_task_context",
   field = "agent.memory.state",
+  issue_type = "unclear",
   issue = "State names are unclear.",
   suggestion = "Separate lifecycle_state from task_state.",
   severity = "medium"
 )
+
+preview_design_feedback(scaffolder, feedback)
+apply_design_feedback(scaffolder, feedback)
 ```
 
 If you want a proposal-oriented design loop before final approval, use the draft agent-spec path:

@@ -1,6 +1,6 @@
 # Design Review Data Bundle
 
-`agentr` does not yet ship a JS/HTML review UI. Version `0.2.5.6` prepares the data contract that such a UI should consume and return.
+Version `0.2.6` ships the review data contract and a standalone offline JS/HTML review page. The browser artifact is for inspection and structured feedback, not workflow execution.
 
 The boundary object is `DesignReviewSpec`. It packages a current agent design into sections that a review page can render independently:
 
@@ -32,4 +32,4 @@ The returned list is JSON-ready. A future review layer can render the bundle, co
 
 Use `design_feedback_item()` to create feedback in R, `validate_design_feedback()` to check it, and `parse_design_feedback_json()` to parse feedback returned from a browser or external tool.
 
-This release intentionally stops at the data boundary. Rendering, browser event handling, and persistence of review sessions belong to the later JS/HTML review-layer work.
+Use `design_review_html()` to generate the HTML string or `export_design_review_html()` to write a portable file. The browser can add, delete, copy, and download structured feedback JSON; R must still parse and validate that JSON before applying it to scaffolder or proposal state.

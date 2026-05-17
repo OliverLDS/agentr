@@ -4,11 +4,14 @@
 \alias{validate_design_feedback}
 \title{Validate structured design feedback}
 \usage{
-validate_design_feedback(x)
+validate_design_feedback(x, review_spec = NULL)
 }
 \arguments{
 \item{x}{A feedback item, list of feedback items, or parsed feedback bundle
 containing a \code{feedback} field.}
+
+\item{review_spec}{Optional \code{\link{DesignReviewSpec}} or review-spec list used to
+warn when feedback target ids no longer exist in the reviewed design.}
 }
 \value{
 The validated feedback, invisibly.
