@@ -17,7 +17,7 @@ But it often does not capture the domain knowledge that makes those steps reliab
 - exceptions that should override the default rule
 - evaluation criteria that distinguish a good output from a weak one
 
-`KnowledgeSpec` is the package surface for that curated knowledge layer.
+`KnowledgeSpec` is the package surface for that curated knowledge layer. It can hold narrative knowledge items, first-class graph knowledge, and future references to external vector knowledge.
 
 ## Why Workflow Alone Is Insufficient
 
@@ -38,6 +38,20 @@ In transitional scaffolding, humans still perform part of this reasoning. `agent
 - `domain_constraint`
 - `style_preference`
 - `risk_warning`
+
+Knowledge can also be represented as graph relationships:
+
+```text
+ACT-R --is_a--> cognitive architecture
+Soar --is_a--> cognitive architecture
+BDI --has_component--> Belief
+BDI --has_component--> Desire
+BDI --has_component--> Intention
+ReAct --implements_part_of--> observe-decide-act
+ReAct --lacks_explicitly--> commitment mechanism
+```
+
+In `agentr`, `knowledge_graph_from_spec()` creates a projection graph from narrative knowledge items. A curated `agentr_knowledge_graph_spec` stores graph knowledge directly and can be embedded in `KnowledgeSpec`.
 
 ## Curation Lifecycle
 
@@ -107,4 +121,3 @@ Quantitative trading:
 - "Rising real yields often pressure gold in normal regimes, but crisis safe-haven demand can dominate."
 
 These are not only facts. They are practitioner knowledge candidates that need normalization, scope control, and human review before they guide an agent.
-

@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.5.3` adds a first-class `MemorySpec` so agent designs can describe context, semantic, episodic, and procedural memory before any runtime execution layer exists. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.5.4` promotes knowledge graphs into first-class graph knowledge, alongside narrative `KnowledgeSpec` items and the `MemorySpec` schema. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -92,6 +92,14 @@ For conceptual diagrams of the transition from human workflow to approved agent 
 `WorkflowSpec` captures procedural knowledge: what the agent does, in what order, with what review gates and implementation hints.
 
 `KnowledgeSpec` captures epistemic and domain knowledge: what the agent should know, assume, treat as an exception, or use as a heuristic while executing or reviewing workflow steps.
+
+Knowledge can be represented as narrative items, first-class graph knowledge, or future vector references. A knowledge graph stores typed relationships directly, for example:
+
+```text
+ACT-R --is_a--> cognitive architecture
+BDI --has_component--> Belief
+ReAct --implements_part_of--> observe-decide-act
+```
 
 `MemorySpec` captures the agent's memory schema: which fields hold current context, approved concepts, past events, and reusable procedures; how those fields update; and which fields persist across cold-start runs.
 
@@ -220,6 +228,43 @@ kg <- knowledge_graph_from_spec(knowledge_spec)
 dot <- render_knowledge_graphviz(kg, as = "dot")
 # graph <- render_knowledge_graphviz(kg, as = "diagrammer")
 # svg <- render_knowledge_graphviz(kg, as = "svg")
+```
+
+`knowledge_graph_from_spec()` creates a projection graph from narrative knowledge items. To author graph knowledge directly, build an `agentr_knowledge_graph_spec`:
+
+```r
+kg <- new_knowledge_graph_spec(metadata = list(graph_mode = "curated"))
+kg <- add_knowledge_graph_node(
+  kg,
+  id = "act_r",
+  label = "ACT-R",
+  node_type = "concept",
+  memory_type = "semantic",
+  review = list(status = "approved")
+)
+kg <- add_knowledge_graph_node(
+  kg,
+  id = "cognitive_architecture",
+  label = "cognitive architecture",
+  node_type = "concept",
+  memory_type = "semantic"
+)
+kg <- add_knowledge_graph_edge(
+  kg,
+  from = "act_r",
+  to = "cognitive_architecture",
+  relation = "is_a",
+  relation_type = "is_a",
+  memory_type = "semantic",
+  confidence = 0.95,
+  review = list(status = "approved")
+)
+
+knowledge_spec <- KnowledgeSpec$new(
+  items = knowledge_spec$items,
+  graph = kg,
+  vector_refs = list()
+)
 ```
 
 If you want a proposal-oriented design loop before final approval, use the draft agent-spec path:

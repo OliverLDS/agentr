@@ -8,12 +8,17 @@ knowledge_graph_node(
   id,
   label,
   node_type = "knowledge_item",
+  memory_type = NA_character_,
+  knowledge_form = "graph",
   item_type = NA_character_,
   review_status = NA_character_,
   domain = NA_character_,
   confidence = NA_character_,
   source_item_id = NA_character_,
-  notes = NA_character_
+  notes = NA_character_,
+  provenance = list(),
+  review = list(status = "draft"),
+  scope = list()
 )
 }
 \arguments{
@@ -22,6 +27,11 @@ knowledge_graph_node(
 \item{label}{Human-readable node label.}
 
 \item{node_type}{Knowledge-graph node type.}
+
+\item{memory_type}{Optional memory type: \code{context}, \code{semantic}, \code{episodic},
+or \code{procedural}.}
+
+\item{knowledge_form}{Knowledge form label. Defaults to \code{"graph"}.}
 
 \item{item_type}{Optional knowledge-item type.}
 
@@ -34,6 +44,12 @@ knowledge_graph_node(
 \item{source_item_id}{Optional source knowledge-item id.}
 
 \item{notes}{Optional node notes.}
+
+\item{provenance}{Provenance metadata list.}
+
+\item{review}{Review metadata list.}
+
+\item{scope}{Scope metadata list.}
 }
 \value{
 One-row data frame.

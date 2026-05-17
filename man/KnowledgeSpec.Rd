@@ -10,11 +10,30 @@ KnowledgeSpec
 }
 \details{
 Curated domain and epistemic knowledge used to guide agent behavior.
+\code{items} stores narrative knowledge items, \code{graph} stores first-class graph
+knowledge, and \code{vector_refs} reserves references to external vector stores.
 }
+\section{Methods}{
+
+\describe{
+\item{\verb{$initialize(items = list(), graph = NULL, vector_refs = list(), metadata = list())}}{Create a knowledge specification.}
+\item{\verb{$add_item(item)}}{Add a narrative knowledge item.}
+\item{\verb{$get_item(id)}}{Return a narrative knowledge item by id.}
+\item{\verb{$list_items(type = NULL, domain = NULL)}}{List narrative knowledge items, optionally filtered.}
+\item{\verb{$validate()}}{Validate the knowledge specification.}
+\item{\verb{$to_list()}}{Return a serializable list.}
+\item{\verb{$print(...)}}{Print a compact summary.}
+}
+}
+
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{items}}{Named list of knowledge items.}
+\item{\code{items}}{Named list of narrative knowledge items.}
+
+\item{\code{graph}}{Optional \code{agentr_knowledge_graph_spec}.}
+
+\item{\code{vector_refs}}{List of external vector-knowledge references.}
 
 \item{\code{metadata}}{Free-form metadata list.}
 }
@@ -39,9 +58,27 @@ Curated domain and epistemic knowledge used to guide agent behavior.
 \subsection{Method \code{new()}}{
 Create a knowledge specification.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{KnowledgeSpec$new(items = list(), metadata = list())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{KnowledgeSpec$new(
+  items = list(),
+  graph = NULL,
+  vector_refs = list(),
+  metadata = list()
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{items}}{List of narrative knowledge items.}
+
+\item{\code{graph}}{Optional \code{agentr_knowledge_graph_spec}.}
+
+\item{\code{vector_refs}}{List of external vector-knowledge references.}
+
+\item{\code{metadata}}{Free-form metadata list.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-KnowledgeSpec-add_item"></a>}}
@@ -52,6 +89,13 @@ Add a knowledge item.
 \if{html}{\out{<div class="r">}}\preformatted{KnowledgeSpec$add_item(item)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{item}}{Knowledge item used by \verb{$add_item()}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-KnowledgeSpec-get_item"></a>}}
@@ -62,6 +106,13 @@ Return a knowledge item by id.
 \if{html}{\out{<div class="r">}}\preformatted{KnowledgeSpec$get_item(id)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{Knowledge item id used by \verb{$get_item()}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-KnowledgeSpec-list_items"></a>}}
@@ -72,6 +123,15 @@ List knowledge items with optional filters.
 \if{html}{\out{<div class="r">}}\preformatted{KnowledgeSpec$list_items(type = NULL, domain = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{type}}{Optional knowledge type filter used by \verb{$list_items()}.}
+
+\item{\code{domain}}{Optional domain filter used by \verb{$list_items()}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-KnowledgeSpec-validate"></a>}}
@@ -102,6 +162,13 @@ Print a compact summary.
 \if{html}{\out{<div class="r">}}\preformatted{KnowledgeSpec$print(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Unused print arguments.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-KnowledgeSpec-clone"></a>}}

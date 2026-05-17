@@ -1,5 +1,16 @@
 # agentr news
 
+## agentr 0.2.5.4
+
+Released: 2026-05-17
+
+- Promoted `agentr_knowledge_graph_spec` from a visualization-only projection into a first-class graph-knowledge representation.
+- Added graph node metadata for memory type, knowledge form, provenance, review, and scope.
+- Added graph edge metadata for relation type, memory type, provenance, review, and scope.
+- Added `add_knowledge_graph_node()`, `add_knowledge_graph_edge()`, `save_knowledge_graph_spec()`, and `load_knowledge_graph_spec()`.
+- Extended `KnowledgeSpec` so it can hold narrative items, first-class graph knowledge, and future vector-reference metadata.
+- Clarified that `knowledge_graph_from_spec()` creates a projection graph from narrative knowledge items.
+
 ## agentr 0.2.5.3
 
 Released: 2026-05-17

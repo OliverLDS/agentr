@@ -21,7 +21,8 @@ new_knowledge_graph_spec(
 An object of class \code{agentr_knowledge_graph_spec}.
 }
 \description{
-A knowledge-graph specification is a graph-ready view of curated
-\code{KnowledgeSpec} content. It is intended for review, visualization, and
-design inspection rather than runtime execution.
+A knowledge-graph specification is a first-class graph-knowledge
+representation. It can store curated nodes and typed relationships directly,
+and it can also hold projection graphs derived from narrative \code{KnowledgeSpec}
+items for review and visualization.
 }

@@ -100,6 +100,7 @@ save_agent <- function(agent, file_path) {
     "SubsystemSpec",
     "MemorySpec",
     "KnowledgeSpec",
+    "agentr_knowledge_graph_spec",
     "KnowledgeProposal",
     "KnowledgeProposalState",
     "AgentScaffoldState",
@@ -188,6 +189,41 @@ load_subsystem_spec <- function(file_path) {
   spec
 }
 
+#' Save a knowledge graph specification to a file
+#'
+#' Saves an `agentr_knowledge_graph_spec` object to a specified `.rds` file.
+#'
+#' @param spec An `agentr_knowledge_graph_spec` object.
+#' @param file_path File path where the object should be saved.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_knowledge_graph_spec <- function(spec, file_path) {
+  validate_knowledge_graph_spec(spec)
+  .safe_save_rds(spec, file_path)
+  invisible(TRUE)
+}
+
+#' Load a knowledge graph specification from a file
+#'
+#' Loads a saved `agentr_knowledge_graph_spec` object from an `.rds` file.
+#'
+#' @param file_path File path from which to load the object.
+#'
+#' @return An `agentr_knowledge_graph_spec` object.
+#' @export
+load_knowledge_graph_spec <- function(file_path) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  spec <- .safe_read_rds(file_path)
+  if (!inherits(spec, "agentr_knowledge_graph_spec")) {
+    stop("Loaded object is not an `agentr_knowledge_graph_spec`.", call. = FALSE)
+  }
+  validate_knowledge_graph_spec(spec)
+  spec
+}
+
 #' Save a `MemorySpec` to a file
 #'
 #' Saves a [`MemorySpec`] object to a specified `.rds` file.
@@ -248,6 +284,7 @@ load_agent <- function(file_path) {
     "SubsystemSpec",
     "MemorySpec",
     "KnowledgeSpec",
+    "agentr_knowledge_graph_spec",
     "KnowledgeProposal",
     "KnowledgeProposalState",
     "AgentScaffoldState",

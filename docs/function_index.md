@@ -60,8 +60,10 @@
 | `knowledge_graph_node()` | Create a knowledge-graph node record |
 | `knowledge_graph_edge()` | Create a knowledge-graph edge record |
 | `new_knowledge_graph_spec()` | Build a knowledge-graph specification object |
+| `add_knowledge_graph_node()` | Add a first-class graph-knowledge node |
+| `add_knowledge_graph_edge()` | Add a first-class graph-knowledge edge |
 | `validate_knowledge_graph_spec()` | Validate knowledge-graph structure |
-| `knowledge_graph_from_spec()` | Build a knowledge-graph specification from a `KnowledgeSpec` |
+| `knowledge_graph_from_spec()` | Build a projection graph from narrative `KnowledgeSpec` items |
 | `knowledge_graph_data()` | Export graph-ready node and edge tables for a knowledge graph |
 | `render_knowledge_graphviz()` | Render a knowledge graph as Graphviz DOT, DiagrammeR, or SVG |
 | `plot_knowledge_graph()` | Plot a knowledge graph with DiagrammeR |
@@ -125,6 +127,8 @@
 | `load_memory_spec()` | Load a `MemorySpec` explicitly |
 | `save_knowledge_spec()` | Save a `KnowledgeSpec` explicitly |
 | `load_knowledge_spec()` | Load a `KnowledgeSpec` explicitly |
+| `save_knowledge_graph_spec()` | Save an `agentr_knowledge_graph_spec` explicitly |
+| `load_knowledge_graph_spec()` | Load an `agentr_knowledge_graph_spec` explicitly |
 | `save_knowledge_proposal()` | Save a `KnowledgeProposal` explicitly |
 | `load_knowledge_proposal()` | Load a `KnowledgeProposal` explicitly |
 | `load_agent()` | Load a supported `agentr` object |

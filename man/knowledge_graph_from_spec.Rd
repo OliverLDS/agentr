@@ -2,7 +2,7 @@
 % Please edit documentation in R/knowledge_graph.R
 \name{knowledge_graph_from_spec}
 \alias{knowledge_graph_from_spec}
-\title{Build a knowledge-graph specification from a KnowledgeSpec}
+\title{Build a projection graph from narrative KnowledgeSpec items}
 \usage{
 knowledge_graph_from_spec(
   x,
@@ -32,9 +32,10 @@ An \code{agentr_knowledge_graph_spec}.
 \description{
 Converts approved or draft knowledge items into a graph-ready structure with
 nodes for knowledge items, domains, conditions, exceptions, and
-structure-derived concepts. The resulting object can be rendered with
-\code{render_knowledge_graphviz()} or inspected as data with
-\code{knowledge_graph_data()}.
+structure-derived concepts. This creates a projection graph from narrative
+knowledge; curated graph knowledge can be authored directly with
+\code{new_knowledge_graph_spec()}, \code{add_knowledge_graph_node()}, and
+\code{add_knowledge_graph_edge()}.
 }
 \examples{
 ks <- KnowledgeSpec$new(items = list(list(

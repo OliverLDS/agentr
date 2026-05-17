@@ -8,8 +8,13 @@ knowledge_graph_edge(
   from,
   to,
   relation = "relates_to",
+  relation_type = relation,
+  memory_type = NA_character_,
   confidence = NA_real_,
-  notes = NA_character_
+  notes = NA_character_,
+  provenance = list(),
+  review = list(status = "draft"),
+  scope = list()
 )
 }
 \arguments{
@@ -19,9 +24,20 @@ knowledge_graph_edge(
 
 \item{relation}{Edge relation label.}
 
+\item{relation_type}{Optional relation type label.}
+
+\item{memory_type}{Optional memory type: \code{context}, \code{semantic}, \code{episodic},
+or \code{procedural}.}
+
 \item{confidence}{Optional edge confidence score between 0 and 1.}
 
 \item{notes}{Optional edge notes.}
+
+\item{provenance}{Provenance metadata list.}
+
+\item{review}{Review metadata list.}
+
+\item{scope}{Scope metadata list.}
 }
 \value{
 One-row data frame.

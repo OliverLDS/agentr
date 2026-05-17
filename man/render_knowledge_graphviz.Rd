@@ -31,9 +31,10 @@ exported \code{"svg"} text.}
 A Graphviz DOT string, \code{DiagrammeR} graph object, or SVG string.
 }
 \description{
-This helper renders the graph view of curated knowledge items. It mirrors the
-workflow graph rendering path, but the nodes and edges represent knowledge
-items, domains, conditions, exceptions, concepts, and conflicts.
+This helper renders first-class graph knowledge or projection graphs derived
+from narrative knowledge. It mirrors the workflow graph rendering path, but
+the nodes and edges represent concepts, knowledge items, conditions,
+exceptions, typed relations, and conflicts.
 }
 \examples{
 ks <- KnowledgeSpec$new(items = list(list(

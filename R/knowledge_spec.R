@@ -93,20 +93,47 @@ validate_knowledge_item <- function(item) {
 #' KnowledgeSpec
 #'
 #' Curated domain and epistemic knowledge used to guide agent behavior.
+#' `items` stores narrative knowledge items, `graph` stores first-class graph
+#' knowledge, and `vector_refs` reserves references to external vector stores.
 #'
-#' @field items Named list of knowledge items.
+#' @field items Named list of narrative knowledge items.
+#' @field graph Optional `agentr_knowledge_graph_spec`.
+#' @field vector_refs List of external vector-knowledge references.
 #' @field metadata Free-form metadata list.
+#' @param items List of narrative knowledge items.
+#' @param graph Optional `agentr_knowledge_graph_spec`.
+#' @param vector_refs List of external vector-knowledge references.
+#' @param metadata Free-form metadata list.
+#' @param item Knowledge item used by `$add_item()`.
+#' @param id Knowledge item id used by `$get_item()`.
+#' @param type Optional knowledge type filter used by `$list_items()`.
+#' @param domain Optional domain filter used by `$list_items()`.
+#' @param ... Unused print arguments.
+#' @section Methods:
+#' \describe{
+#'   \item{`$initialize(items = list(), graph = NULL, vector_refs = list(), metadata = list())`}{Create a knowledge specification.}
+#'   \item{`$add_item(item)`}{Add a narrative knowledge item.}
+#'   \item{`$get_item(id)`}{Return a narrative knowledge item by id.}
+#'   \item{`$list_items(type = NULL, domain = NULL)`}{List narrative knowledge items, optionally filtered.}
+#'   \item{`$validate()`}{Validate the knowledge specification.}
+#'   \item{`$to_list()`}{Return a serializable list.}
+#'   \item{`$print(...)`}{Print a compact summary.}
+#' }
 #' @export
 KnowledgeSpec <- R6::R6Class(
   classname = "KnowledgeSpec",
   public = list(
     items = NULL,
+    graph = NULL,
+    vector_refs = NULL,
     metadata = NULL,
 
     #' @description
     #' Create a knowledge specification.
-    initialize = function(items = list(), metadata = list()) {
+    initialize = function(items = list(), graph = NULL, vector_refs = list(), metadata = list()) {
       self$items <- list()
+      self$graph <- .coerce_knowledge_graph_or_null(graph)
+      self$vector_refs <- if (is.null(vector_refs)) list() else vector_refs
       self$metadata <- metadata
       if (length(items)) {
         for (item in items) {
@@ -167,6 +194,10 @@ KnowledgeSpec <- R6::R6Class(
       for (item in self$items) {
         validate_knowledge_item(item)
       }
+      if (!is.null(self$graph)) {
+        validate_knowledge_graph_spec(self$graph)
+      }
+      .validate_metadata_list(self$vector_refs, "vector_refs")
       invisible(self)
     },
 
@@ -176,6 +207,8 @@ KnowledgeSpec <- R6::R6Class(
       self$validate()
       list(
         items = unname(self$items),
+        graph = self$graph,
+        vector_refs = self$vector_refs,
         metadata = self$metadata
       )
     },
@@ -185,11 +218,32 @@ KnowledgeSpec <- R6::R6Class(
     print = function(...) {
       self$validate()
       cat("<KnowledgeSpec>\n")
-      cat("Items:", length(self$items), "\n")
+      cat("Narrative items:", length(self$items), "\n")
+      cat("Graph nodes:", if (is.null(self$graph)) 0L else nrow(self$graph$nodes), "\n")
+      cat("Vector refs:", length(self$vector_refs), "\n")
       invisible(self)
     }
   )
 )
+
+#' @keywords internal
+.coerce_knowledge_graph_or_null <- function(graph) {
+  if (is.null(graph)) {
+    return(NULL)
+  }
+  if (inherits(graph, "agentr_knowledge_graph_spec")) {
+    validate_knowledge_graph_spec(graph)
+    return(graph)
+  }
+  if (is.list(graph) && all(c("nodes", "edges", "metadata") %in% names(graph))) {
+    return(new_knowledge_graph_spec(
+      nodes = graph$nodes,
+      edges = graph$edges,
+      metadata = graph$metadata
+    ))
+  }
+  stop("`graph` must be `NULL` or an `agentr_knowledge_graph_spec`.", call. = FALSE)
+}
 
 #' Validate a knowledge specification
 #'
@@ -203,4 +257,3 @@ validate_knowledge_spec <- function(x) {
   }
   x$validate()
 }
-
