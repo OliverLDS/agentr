@@ -88,6 +88,25 @@ memory_spec <- MemorySpec$new(fields = list(
 
 Use `MemorySpec` when the memory schema should be inspected, reviewed, persisted, or shown in a future design-review layer. Use `state_spec` for simple loose state notes or legacy code that already stores state as plain lists.
 
+## Proposal Lifecycle
+
+`MemoryProposal` and `MemoryProposalState` let memory schemas follow the same review pattern as workflow proposals:
+
+```text
+initial memory schema
+-> pending proposal
+-> discussion or revision
+-> approved MemorySpec
+```
+
+The constrained message helpers are:
+
+- `build_memory_schema_prompt()`
+- `build_memory_revision_prompt()`
+- `parse_memory_message()`
+- `preview_memory_message()`
+- `apply_memory_message()`
+
 ## Relationship To KnowledgeSpec
 
 `KnowledgeSpec` stores curated knowledge items and proposals.
@@ -99,4 +118,3 @@ For example:
 - a `KnowledgeSpec` item may say `ACT-R is a cognitive architecture`;
 - a `MemorySpec` semantic field may say approved concept definitions are stored under `agent_concepts`;
 - a future knowledge graph can represent `ACT-R --is_a--> cognitive architecture`.
-

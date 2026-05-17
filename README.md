@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.5.4` promotes knowledge graphs into first-class graph knowledge, alongside narrative `KnowledgeSpec` items and the `MemorySpec` schema. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.5.5` adds proposal loops for memory schemas and graph knowledge, making the draft -> human feedback -> revision -> approval pattern consistent across workflows, memory, and knowledge. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -73,6 +73,7 @@ The current public surface includes:
 - `AgentSpec` for the approved agent design
 - `KnowledgeSpec` for curated domain knowledge, rules, heuristics, and exceptions
 - `MemorySpec` for context, semantic, episodic, and procedural memory schema
+- `MemoryProposalState` and `KnowledgeGraphProposalState` for reviewable memory and graph-knowledge design loops
 - `SubsystemSpec` for sparse subsystem selection
 - `AgentScaffoldState` for approved agent-design state
 - `IntelligentAgent` for the runtime-oriented abstraction
@@ -112,6 +113,16 @@ ReAct --implements_part_of--> observe-decide-act
 - `IAC` means Inter-Agent Communication
 
 Early-stage agents often still have human-owned reasoning nodes. `agentr` supports that transitional state by letting workflow nodes carry ownership, automation status, and trace requirements while tacit knowledge is progressively codified into `KnowledgeSpec`.
+
+Memory schemas and graph knowledge follow the same proposal-oriented pattern as workflows:
+
+```text
+initial model draft
+-> proposal object
+-> human discussion or structured feedback
+-> revision
+-> approval into active spec
+```
 
 ## Agent Design And Workflow Elicitation
 
@@ -265,6 +276,23 @@ knowledge_spec <- KnowledgeSpec$new(
   graph = kg,
   vector_refs = list()
 )
+```
+
+For memory and graph knowledge review loops, use the proposal states and constrained message handlers:
+
+```r
+memory_state <- MemoryProposalState$new()
+memory_prompt <- build_memory_schema_prompt(
+  context = "Design memory for a paper-reading agent."
+)
+# external model returns constrained JSON
+# memory_state <- apply_memory_message(memory_state, model_json)
+
+graph_state <- KnowledgeGraphProposalState$new()
+graph_prompt <- build_knowledge_graph_extraction_prompt(
+  context = "ACT-R is a cognitive architecture."
+)
+# graph_state <- apply_knowledge_graph_message(graph_state, model_json)
 ```
 
 If you want a proposal-oriented design loop before final approval, use the draft agent-spec path:

@@ -103,6 +103,10 @@ save_agent <- function(agent, file_path) {
     "agentr_knowledge_graph_spec",
     "KnowledgeProposal",
     "KnowledgeProposalState",
+    "MemoryProposal",
+    "MemoryProposalState",
+    "KnowledgeGraphProposal",
+    "KnowledgeGraphProposalState",
     "AgentScaffoldState",
     "IntelligentAgent"
   )
@@ -287,6 +291,10 @@ load_agent <- function(file_path) {
     "agentr_knowledge_graph_spec",
     "KnowledgeProposal",
     "KnowledgeProposalState",
+    "MemoryProposal",
+    "MemoryProposalState",
+    "KnowledgeGraphProposal",
+    "KnowledgeGraphProposalState",
     "AgentScaffoldState",
     "IntelligentAgent"
   )

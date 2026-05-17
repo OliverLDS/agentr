@@ -21,6 +21,10 @@
 | `KnowledgeProposal` | Proposal object for one knowledge item |
 | `KnowledgeProposalState` | Approved knowledge plus knowledge proposal history |
 | `agentr_knowledge_graph_spec` | Knowledge-graph specification object |
+| `MemoryProposal` | Proposal object for candidate memory schema |
+| `MemoryProposalState` | Approved memory schema plus proposal history |
+| `KnowledgeGraphProposal` | Proposal object for candidate graph knowledge |
+| `KnowledgeGraphProposalState` | Approved graph knowledge plus proposal history |
 | `AgentScaffoldState` | Approved agent-design state container |
 | `IntelligentAgent` | Runtime-oriented container around an `AgentSpec` |
 | `Scaffolder` | Human-in-the-loop intelligent-agent scaffolding interface |
@@ -83,9 +87,19 @@
 | `build_knowledge_normalization_prompt()` | Build a prompt to normalize raw knowledge |
 | `build_knowledge_conflict_check_prompt()` | Build a prompt to compare candidate knowledge against existing approved knowledge |
 | `build_knowledge_design_prompt()` | Build a prompt focused on knowledge proposals and review |
+| `build_memory_schema_prompt()` | Build a prompt for initial memory schema proposals |
+| `build_memory_revision_prompt()` | Build a prompt for revising memory schema proposals |
+| `build_knowledge_graph_extraction_prompt()` | Build a prompt for graph-knowledge extraction |
+| `build_knowledge_graph_revision_prompt()` | Build a prompt for revising graph-knowledge proposals |
 | `parse_knowledge_message()` | Parse constrained knowledge-action JSON |
 | `preview_knowledge_message()` | Preview knowledge actions without mutating state |
 | `apply_knowledge_message()` | Apply constrained knowledge actions to a knowledge-proposal state |
+| `parse_memory_message()` | Parse constrained memory-schema action JSON |
+| `preview_memory_message()` | Preview memory-schema actions without mutating state |
+| `apply_memory_message()` | Apply constrained memory-schema actions to a memory-proposal state |
+| `parse_knowledge_graph_message()` | Parse constrained graph-knowledge action JSON |
+| `preview_knowledge_graph_message()` | Preview graph-knowledge actions without mutating state |
+| `apply_knowledge_graph_message()` | Apply constrained graph-knowledge actions to a graph-proposal state |
 | `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
 | `validate_scaffolder_message()` | Validate requested scaffolding actions |
 | `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |

@@ -53,6 +53,16 @@ ReAct --lacks_explicitly--> commitment mechanism
 
 In `agentr`, `knowledge_graph_from_spec()` creates a projection graph from narrative knowledge items. A curated `agentr_knowledge_graph_spec` stores graph knowledge directly and can be embedded in `KnowledgeSpec`.
 
+Graph knowledge has its own proposal lifecycle through `KnowledgeGraphProposal` and `KnowledgeGraphProposalState`. This makes graph extraction reviewable before graph relationships become active knowledge.
+
+The constrained message helpers are:
+
+- `build_knowledge_graph_extraction_prompt()`
+- `build_knowledge_graph_revision_prompt()`
+- `parse_knowledge_graph_message()`
+- `preview_knowledge_graph_message()`
+- `apply_knowledge_graph_message()`
+
 ## Curation Lifecycle
 
 The important feature is not only storage. It is the curation path:

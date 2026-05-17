@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.5.5
+
+Released: 2026-05-17
+
+- Added `MemoryProposal` and `MemoryProposalState` so memory schemas can move through proposal, discussion, approval, rejection, and supersession.
+- Added `KnowledgeGraphProposal` and `KnowledgeGraphProposalState` so graph knowledge can use the same review lifecycle as workflow and narrative knowledge.
+- Added memory prompt builders and constrained message handlers for proposing, revising, discussing, approving, rejecting, and human-querying memory schemas.
+- Added knowledge-graph prompt builders and constrained message handlers for extracting, revising, discussing, approving, rejecting, and human-querying graph knowledge.
+- Added tests covering lifecycle transitions, preview non-mutation, constrained JSON application, and unsafe action rejection for memory and graph knowledge loops.
+
 ## agentr 0.2.5.4
 
 Released: 2026-05-17
