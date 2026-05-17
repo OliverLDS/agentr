@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.5.3
+
+Released: 2026-05-17
+
+- Added first-class `MemorySpec` support for context, semantic, episodic, and procedural memory schemas.
+- Added memory-field records with persistence policies for session memory, cold-start RDS state, JSONL traces, external stores, and non-persistent fields.
+- Extended `AgentSpec` with optional `memory_spec` while preserving existing `state_spec` and `state_requirements` compatibility.
+- Added `save_memory_spec()`, `load_memory_spec()`, `validate_memory_spec()`, `memory_types()`, and `memory_persistence_policies()`.
+- Added MemorySpec tests and updated the complete AgentSpec fixture to cover memory schema round trips.
+
 ## agentr 0.2.5.2
 
 Released: 2026-05-17

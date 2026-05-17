@@ -200,6 +200,23 @@ normalize_subsystem_key <- function(x) {
 }
 
 #' @keywords internal
+.coerce_memory_spec_or_null <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  if (inherits(x, "MemorySpec")) {
+    x$validate()
+    return(x)
+  }
+  if (is.list(x)) {
+    spec <- do.call(MemorySpec$new, x)
+    spec$validate()
+    return(spec)
+  }
+  stop("`memory_spec` must be `NULL`, a list payload, or a `MemorySpec`.", call. = FALSE)
+}
+
+#' @keywords internal
 .normalize_autonomy_stage <- function(x) {
   match.arg(
     x,
@@ -976,6 +993,7 @@ SubsystemSpec <- R6::R6Class(
 #' @field subsystems A `SubsystemSpec` object.
 #' @field workflow Embedded workflow specification or `NULL`.
 #' @field knowledge_spec Embedded `KnowledgeSpec` or `NULL`.
+#' @field memory_spec Embedded `MemorySpec` or `NULL`.
 #' @field state_requirements Free-form list of state requirements.
 #' @field state_spec Optional structured state-spec list.
 #' @field interfaces Free-form list of interfaces.
@@ -990,6 +1008,7 @@ SubsystemSpec <- R6::R6Class(
 #' @param subsystems A `SubsystemSpec` object or list payload.
 #' @param workflow Embedded workflow specification or `NULL`.
 #' @param knowledge_spec Embedded `KnowledgeSpec` or `NULL`.
+#' @param memory_spec Embedded `MemorySpec` or `NULL`.
 #' @param state_requirements Free-form list of state requirements.
 #' @param state_spec Optional structured state-spec list.
 #' @param interfaces Free-form list of interfaces.
@@ -1002,7 +1021,7 @@ SubsystemSpec <- R6::R6Class(
 #' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
-#'   \item{`$initialize(task, agent_name = "agentr-agent", summary = NULL, subsystems = SubsystemSpec$new(), workflow = NULL, knowledge_spec = NULL, state_requirements = list(), state_spec = NULL, interfaces = list(), interface_spec = NULL, autonomy_spec = NULL, autonomy_stage = NULL, implementation_targets = list(), metadata = list())`}{Create an agent-design artifact.}
+#'   \item{`$initialize(task, agent_name = "agentr-agent", summary = NULL, subsystems = SubsystemSpec$new(), workflow = NULL, knowledge_spec = NULL, memory_spec = NULL, state_requirements = list(), state_spec = NULL, interfaces = list(), interface_spec = NULL, autonomy_spec = NULL, autonomy_stage = NULL, implementation_targets = list(), metadata = list())`}{Create an agent-design artifact.}
 #'   \item{`$validate()`}{Validate the agent design.}
 #'   \item{`$selected_subsystems()`}{Return the selected subsystem names.}
 #'   \item{`$workflow_spec()`}{Return the embedded workflow specification.}
@@ -1020,6 +1039,7 @@ AgentSpec <- R6::R6Class(
     subsystems = NULL,
     workflow = NULL,
     knowledge_spec = NULL,
+    memory_spec = NULL,
     state_requirements = NULL,
     state_spec = NULL,
     interfaces = NULL,
@@ -1038,6 +1058,7 @@ AgentSpec <- R6::R6Class(
       subsystems = SubsystemSpec$new(),
       workflow = NULL,
       knowledge_spec = NULL,
+      memory_spec = NULL,
       state_requirements = list(),
       state_spec = NULL,
       interfaces = list(),
@@ -1053,6 +1074,7 @@ AgentSpec <- R6::R6Class(
       self$subsystems <- if (inherits(subsystems, "SubsystemSpec")) subsystems else do.call(SubsystemSpec$new, subsystems)
       self$workflow <- .coerce_workflow_or_null(workflow)
       self$knowledge_spec <- .coerce_knowledge_spec_or_null(knowledge_spec)
+      self$memory_spec <- .coerce_memory_spec_or_null(memory_spec)
       self$state_requirements <- state_requirements
       self$state_spec <- if (is.null(state_spec)) list() else state_spec
       self$interfaces <- interfaces
@@ -1080,6 +1102,9 @@ AgentSpec <- R6::R6Class(
       selected <- self$selected_subsystems()
       if (!is.null(self$knowledge_spec)) {
         self$knowledge_spec$validate()
+      }
+      if (!is.null(self$memory_spec)) {
+        self$memory_spec$validate()
       }
       if (!is.null(self$workflow)) {
         validate_workflow_spec(self$workflow, knowledge_spec = self$knowledge_spec)
@@ -1134,6 +1159,7 @@ AgentSpec <- R6::R6Class(
         selected_subsystems = paste(self$selected_subsystems(), collapse = ", "),
         workflow_nodes = if (is.null(self$workflow)) 0L else nrow(self$workflow$nodes),
         knowledge_items = if (is.null(self$knowledge_spec)) 0L else length(self$knowledge_spec$items),
+        memory_fields = if (is.null(self$memory_spec)) 0L else length(self$memory_spec$fields),
         stringsAsFactors = FALSE
       )
     },
@@ -1149,6 +1175,7 @@ AgentSpec <- R6::R6Class(
         subsystems = self$subsystems$as_list(),
         workflow = self$workflow,
         knowledge_spec = if (is.null(self$knowledge_spec)) NULL else self$knowledge_spec$to_list(),
+        memory_spec = if (is.null(self$memory_spec)) NULL else self$memory_spec$to_list(),
         state_requirements = self$state_requirements,
         state_spec = self$state_spec,
         interfaces = self$interfaces,
@@ -1178,6 +1205,7 @@ AgentSpec <- R6::R6Class(
       cat("Subsystems:", if (length(selected)) paste(selected, collapse = ", ") else "<none>", "\n")
       cat("Workflow nodes:", if (is.null(self$workflow)) 0L else nrow(self$workflow$nodes), "\n")
       cat("Knowledge items:", if (is.null(self$knowledge_spec)) 0L else length(self$knowledge_spec$items), "\n")
+      cat("Memory fields:", if (is.null(self$memory_spec)) 0L else length(self$memory_spec$fields), "\n")
       cat("Autonomy stage:", if (is.na(self$autonomy_stage)) "<unspecified>" else self$autonomy_stage, "\n")
       invisible(self)
     }

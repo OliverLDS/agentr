@@ -13,6 +13,43 @@
     )
   ))
 
+  memory_spec <- MemorySpec$new(fields = list(
+    memory_field(
+      id = "current_task_context",
+      label = "Current task context",
+      memory_type = "context",
+      description = "Current dataset, selected paragraph, and active analysis state.",
+      schema = list(fields = c("current_dataset", "active_paragraph", "task_state")),
+      persistence = "session",
+      update_policy = list(updated_by = "scaffolder")
+    ),
+    memory_field(
+      id = "approved_macro_concepts",
+      label = "Approved macro concepts",
+      memory_type = "semantic",
+      description = "Reviewed macro-analysis concepts and charting heuristics.",
+      schema = list(fields = c("term", "definition", "source")),
+      persistence = "cold_start_rds",
+      review = list(status = "approved")
+    ),
+    memory_field(
+      id = "human_chart_decisions",
+      label = "Human chart decisions",
+      memory_type = "episodic",
+      description = "Past human decisions about chart interpretation.",
+      schema = list(fields = c("trace_id", "decision", "rationale", "outcome")),
+      persistence = "jsonl_trace"
+    ),
+    memory_field(
+      id = "paper_reading_workflow",
+      label = "Paper reading workflow",
+      memory_type = "procedural",
+      description = "Reusable procedure for reading papers and extracting schema fields.",
+      schema = list(workflow_ref = "workflow:paper_reading"),
+      persistence = "cold_start_rds"
+    )
+  ))
+
   workflow <- new_workflow_spec(
     nodes = rbind(
       workflow_node(
@@ -49,6 +86,7 @@
     ),
     workflow = workflow,
     knowledge_spec = knowledge_spec,
+    memory_spec = memory_spec,
     state_spec = list(
       lifecycle_state = list(
         allowed_values = c("idle", "refreshing_data", "interpreting", "awaiting_review"),
@@ -86,4 +124,3 @@
     )
   )
 }
-

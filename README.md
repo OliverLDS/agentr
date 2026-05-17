@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.5.2` is a stabilization release on the agent-spec-first surface. It clarifies package-facing documentation, adds complete `AgentSpec` round-trip coverage, and prepares the design artifacts for the planned review layer while keeping `agentr` as the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.5.3` adds a first-class `MemorySpec` so agent designs can describe context, semantic, episodic, and procedural memory before any runtime execution layer exists. `agentr` remains the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -72,6 +72,7 @@ The current public surface includes:
 - `WorkflowProposalState` for approved workflow plus proposal history
 - `AgentSpec` for the approved agent design
 - `KnowledgeSpec` for curated domain knowledge, rules, heuristics, and exceptions
+- `MemorySpec` for context, semantic, episodic, and procedural memory schema
 - `SubsystemSpec` for sparse subsystem selection
 - `AgentScaffoldState` for approved agent-design state
 - `IntelligentAgent` for the runtime-oriented abstraction
@@ -86,11 +87,13 @@ The current public surface includes:
 
 For conceptual diagrams of the transition from human workflow to approved agent design, see [docs/conceptual_figures.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/conceptual_figures.md), [docs/figures/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/figures/index.md), and [docs/tables/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/tables/index.md).
 
-## WorkflowSpec vs KnowledgeSpec
+## WorkflowSpec, KnowledgeSpec, And MemorySpec
 
 `WorkflowSpec` captures procedural knowledge: what the agent does, in what order, with what review gates and implementation hints.
 
 `KnowledgeSpec` captures epistemic and domain knowledge: what the agent should know, assume, treat as an exception, or use as a heuristic while executing or reviewing workflow steps.
+
+`MemorySpec` captures the agent's memory schema: which fields hold current context, approved concepts, past events, and reusable procedures; how those fields update; and which fields persist across cold-start runs.
 
 `SubsystemSpec` is a diagnostic design layer rather than direct runtime logic. In the corrected five-module schema:
 
@@ -139,11 +142,48 @@ knowledge_spec <- KnowledgeSpec$new(items = list(
   )
 ))
 
+memory_spec <- MemorySpec$new(fields = list(
+  memory_field(
+    id = "current_task_context",
+    label = "Current task context",
+    memory_type = "context",
+    description = "Current dataset, selected paragraph, and active analysis state.",
+    schema = list(fields = c("current_dataset", "active_paragraph", "task_state")),
+    persistence = "session"
+  ),
+  memory_field(
+    id = "approved_macro_concepts",
+    label = "Approved macro concepts",
+    memory_type = "semantic",
+    description = "Reviewed macro-analysis concepts and charting heuristics.",
+    schema = list(fields = c("term", "definition", "source")),
+    persistence = "cold_start_rds",
+    review = list(status = "approved")
+  ),
+  memory_field(
+    id = "human_chart_decisions",
+    label = "Human chart decisions",
+    memory_type = "episodic",
+    description = "Past human decisions about chart interpretation.",
+    schema = list(fields = c("trace_id", "decision", "rationale", "outcome")),
+    persistence = "jsonl_trace"
+  ),
+  memory_field(
+    id = "paper_reading_workflow",
+    label = "Paper reading workflow",
+    memory_type = "procedural",
+    description = "Reusable procedure for reading papers and extracting schema fields.",
+    schema = list(workflow_ref = "workflow:paper_reading"),
+    persistence = "cold_start_rds"
+  )
+))
+
 agent_spec <- AgentSpec$new(
   task = "Draft a macro-analysis agent",
   agent_name = "macro-agent",
   workflow = reloaded_spec$workflow,
   knowledge_spec = knowledge_spec,
+  memory_spec = memory_spec,
   state_spec = list(
     lifecycle_state = list(
       allowed_values = c("idle", "refreshing_data", "drafting_report", "awaiting_review"),
@@ -171,7 +211,7 @@ agent_spec <- AgentSpec$new(
 )
 ```
 
-`state_spec` and `interface_spec` are plain structured lists. They make memory fields, persistent state, files, tools, and external surfaces explicit before any execution runtime exists. This is useful for later review artifacts because humans can comment on unclear memory fields or missing interface constraints without changing workflow logic directly.
+`MemorySpec` is the preferred structured schema for agent memory. `state_spec` remains a backward-compatible plain-list field for existing users and simple designs. `interface_spec` is still a plain structured list for files, tools, APIs, and other external surfaces.
 
 If you want a visual knowledge map, build a graph spec from `KnowledgeSpec` and render it through the same Graphviz/DiagrammeR path used for workflows:
 

@@ -82,7 +82,7 @@
 #'
 #' Saves an [`AgentCore`], [`CognitiveState`], [`AffectiveState`], or
 #' [`Scaffolder`] object to a specified `.rds` file. `AgentSpec`,
-#' `SubsystemSpec`, `AgentScaffoldState`, and `IntelligentAgent` are also
+#' `SubsystemSpec`, `MemorySpec`, `AgentScaffoldState`, and `IntelligentAgent` are also
 #' supported.
 #'
 #' @param agent An object created by `agentr`.
@@ -98,6 +98,7 @@ save_agent <- function(agent, file_path) {
     "Scaffolder",
     "AgentSpec",
     "SubsystemSpec",
+    "MemorySpec",
     "KnowledgeSpec",
     "KnowledgeProposal",
     "KnowledgeProposalState",
@@ -187,6 +188,44 @@ load_subsystem_spec <- function(file_path) {
   spec
 }
 
+#' Save a `MemorySpec` to a file
+#'
+#' Saves a [`MemorySpec`] object to a specified `.rds` file.
+#'
+#' @param spec A [`MemorySpec`] object.
+#' @param file_path File path where the object should be saved.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_memory_spec <- function(spec, file_path) {
+  if (!inherits(spec, "MemorySpec")) {
+    stop("`spec` must be a `MemorySpec`.", call. = FALSE)
+  }
+  spec$validate()
+  .safe_save_rds(spec, file_path)
+  invisible(TRUE)
+}
+
+#' Load a `MemorySpec` from a file
+#'
+#' Loads a saved [`MemorySpec`] object from an `.rds` file.
+#'
+#' @param file_path File path from which to load the object.
+#'
+#' @return A [`MemorySpec`] object.
+#' @export
+load_memory_spec <- function(file_path) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  spec <- .safe_read_rds(file_path)
+  if (!inherits(spec, "MemorySpec")) {
+    stop("Loaded object is not a `MemorySpec`.", call. = FALSE)
+  }
+  spec$validate()
+  spec
+}
+
 #' Load an `agentr` object from a file
 #'
 #' Loads an `agentr` core object from a saved `.rds` file.
@@ -207,6 +246,7 @@ load_agent <- function(file_path) {
     "Scaffolder",
     "AgentSpec",
     "SubsystemSpec",
+    "MemorySpec",
     "KnowledgeSpec",
     "KnowledgeProposal",
     "KnowledgeProposalState",

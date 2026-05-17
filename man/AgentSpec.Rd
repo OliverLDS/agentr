@@ -14,7 +14,7 @@ Public agent-design artifact combining subsystem selection and workflow.
 \section{Methods}{
 
 \describe{
-\item{\verb{$initialize(task, agent_name = "agentr-agent", summary = NULL, subsystems = SubsystemSpec$new(), workflow = NULL, knowledge_spec = NULL, state_requirements = list(), state_spec = NULL, interfaces = list(), interface_spec = NULL, autonomy_spec = NULL, autonomy_stage = NULL, implementation_targets = list(), metadata = list())}}{Create an agent-design artifact.}
+\item{\verb{$initialize(task, agent_name = "agentr-agent", summary = NULL, subsystems = SubsystemSpec$new(), workflow = NULL, knowledge_spec = NULL, memory_spec = NULL, state_requirements = list(), state_spec = NULL, interfaces = list(), interface_spec = NULL, autonomy_spec = NULL, autonomy_stage = NULL, implementation_targets = list(), metadata = list())}}{Create an agent-design artifact.}
 \item{\verb{$validate()}}{Validate the agent design.}
 \item{\verb{$selected_subsystems()}}{Return the selected subsystem names.}
 \item{\verb{$workflow_spec()}}{Return the embedded workflow specification.}
@@ -38,6 +38,8 @@ Public agent-design artifact combining subsystem selection and workflow.
 \item{\code{workflow}}{Embedded workflow specification or \code{NULL}.}
 
 \item{\code{knowledge_spec}}{Embedded \code{KnowledgeSpec} or \code{NULL}.}
+
+\item{\code{memory_spec}}{Embedded \code{MemorySpec} or \code{NULL}.}
 
 \item{\code{state_requirements}}{Free-form list of state requirements.}
 
@@ -84,6 +86,7 @@ Create an agent-design artifact.
   subsystems = SubsystemSpec$new(),
   workflow = NULL,
   knowledge_spec = NULL,
+  memory_spec = NULL,
   state_requirements = list(),
   state_spec = NULL,
   interfaces = list(),
@@ -109,6 +112,8 @@ Create an agent-design artifact.
 \item{\code{workflow}}{Embedded workflow specification or \code{NULL}.}
 
 \item{\code{knowledge_spec}}{Embedded \code{KnowledgeSpec} or \code{NULL}.}
+
+\item{\code{memory_spec}}{Embedded \code{MemorySpec} or \code{NULL}.}
 
 \item{\code{state_requirements}}{Free-form list of state requirements.}
 

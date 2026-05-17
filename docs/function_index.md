@@ -17,6 +17,7 @@
 | `SubsystemSpec` | Sparse diagnostic subsystem inventory for an agent design |
 | `AgentSpec` | Public intelligent-agent design artifact |
 | `KnowledgeSpec` | Curated knowledge specification |
+| `MemorySpec` | Context, semantic, episodic, and procedural memory schema |
 | `KnowledgeProposal` | Proposal object for one knowledge item |
 | `KnowledgeProposalState` | Approved knowledge plus knowledge proposal history |
 | `agentr_knowledge_graph_spec` | Knowledge-graph specification object |
@@ -50,6 +51,12 @@
 | `save_workflow_proposal()` | Save a workflow proposal |
 | `load_workflow_proposal()` | Load a workflow proposal |
 | `workflow_proposal_graph_data()` | Export graph-ready node and edge tables from a workflow proposal |
+| `memory_field()` | Create one memory-field record |
+| `MemorySpec$new()` | Create a memory specification |
+| `validate_memory_field()` | Validate one memory-field record |
+| `validate_memory_spec()` | Validate a memory specification |
+| `memory_types()` | List supported memory types |
+| `memory_persistence_policies()` | List supported memory persistence policies |
 | `knowledge_graph_node()` | Create a knowledge-graph node record |
 | `knowledge_graph_edge()` | Create a knowledge-graph edge record |
 | `new_knowledge_graph_spec()` | Build a knowledge-graph specification object |
@@ -114,6 +121,8 @@
 | `load_agent_spec()` | Load an `AgentSpec` explicitly |
 | `save_subsystem_spec()` | Save a `SubsystemSpec` explicitly |
 | `load_subsystem_spec()` | Load a `SubsystemSpec` explicitly |
+| `save_memory_spec()` | Save a `MemorySpec` explicitly |
+| `load_memory_spec()` | Load a `MemorySpec` explicitly |
 | `save_knowledge_spec()` | Save a `KnowledgeSpec` explicitly |
 | `load_knowledge_spec()` | Load a `KnowledgeSpec` explicitly |
 | `save_knowledge_proposal()` | Save a `KnowledgeProposal` explicitly |
