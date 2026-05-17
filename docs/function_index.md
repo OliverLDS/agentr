@@ -25,6 +25,7 @@
 | `MemoryProposalState` | Approved memory schema plus proposal history |
 | `KnowledgeGraphProposal` | Proposal object for candidate graph knowledge |
 | `KnowledgeGraphProposalState` | Approved graph knowledge plus proposal history |
+| `DesignReviewSpec` | Review-layer data bundle for workflow, memory, knowledge, graph, proposal, and feedback sections |
 | `AgentScaffoldState` | Approved agent-design state container |
 | `IntelligentAgent` | Runtime-oriented container around an `AgentSpec` |
 | `Scaffolder` | Human-in-the-loop intelligent-agent scaffolding interface |
@@ -100,6 +101,10 @@
 | `parse_knowledge_graph_message()` | Parse constrained graph-knowledge action JSON |
 | `preview_knowledge_graph_message()` | Preview graph-knowledge actions without mutating state |
 | `apply_knowledge_graph_message()` | Apply constrained graph-knowledge actions to a graph-proposal state |
+| `build_design_review_data()` | Package the current design into a JS/HTML-ready review data bundle |
+| `design_feedback_item()` | Create a structured design-review feedback item |
+| `validate_design_feedback()` | Validate one or more structured design-feedback items |
+| `parse_design_feedback_json()` | Parse structured design feedback from JSON |
 | `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
 | `validate_scaffolder_message()` | Validate requested scaffolding actions |
 | `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |

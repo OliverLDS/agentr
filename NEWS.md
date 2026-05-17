@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.5.6
+
+Released: 2026-05-17
+
+- Added `DesignReviewSpec` as a data contract for a future JS/HTML design review layer.
+- Added `build_design_review_data()` to package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and feedback schema into one review bundle.
+- Added structured design-feedback helpers: `design_feedback_item()`, `validate_design_feedback()`, and `parse_design_feedback_json()`.
+- Added tests for review bundle construction, proposal-state snapshots, and structured feedback validation.
+
 ## agentr 0.2.5.5
 
 Released: 2026-05-17

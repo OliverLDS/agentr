@@ -82,8 +82,8 @@
 #'
 #' Saves an [`AgentCore`], [`CognitiveState`], [`AffectiveState`], or
 #' [`Scaffolder`] object to a specified `.rds` file. `AgentSpec`,
-#' `SubsystemSpec`, `MemorySpec`, `AgentScaffoldState`, and `IntelligentAgent` are also
-#' supported.
+#' `SubsystemSpec`, `MemorySpec`, `DesignReviewSpec`, `AgentScaffoldState`,
+#' and `IntelligentAgent` are also supported.
 #'
 #' @param agent An object created by `agentr`.
 #' @param file_path File path where the object should be saved.
@@ -107,6 +107,7 @@ save_agent <- function(agent, file_path) {
     "MemoryProposalState",
     "KnowledgeGraphProposal",
     "KnowledgeGraphProposalState",
+    "DesignReviewSpec",
     "AgentScaffoldState",
     "IntelligentAgent"
   )
@@ -295,6 +296,7 @@ load_agent <- function(file_path) {
     "MemoryProposalState",
     "KnowledgeGraphProposal",
     "KnowledgeGraphProposalState",
+    "DesignReviewSpec",
     "AgentScaffoldState",
     "IntelligentAgent"
   )
