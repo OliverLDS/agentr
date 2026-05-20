@@ -1,8 +1,8 @@
-# agentr 0.2.6 Architecture
+# agentr Architecture
 
 `agentr` is the agent core, not the execution layer.
 
-For diagram-oriented summaries of the architecture and lifecycle, see [conceptual_figures.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/conceptual_figures.md), [figures/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/figures/index.md), and [manuscript_assets.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/manuscript_assets.md).
+For diagram-oriented summaries of the architecture and lifecycle, see [conceptual_figures.md](conceptual_figures.md), [figures/index.md](figures/index.md), and [manuscript_assets.md](manuscript_assets.md).
 
 ## Layers
 

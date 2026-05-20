@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.6` adds a standalone JS/HTML review layer for agent-design artifacts. `agentr` can now package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one offline review page while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.6.1` adds generic workspace/CLI lifecycle utilities for manual LLM prompt-response scaffolding and improves design-review workflow label rendering. `agentr` can package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one offline review page while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -87,7 +87,7 @@ The current public surface includes:
 2. workflow proposal review and approval
 3. implementation and extraction handoff
 
-For conceptual diagrams of the transition from human workflow to approved agent design, see [docs/conceptual_figures.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/conceptual_figures.md), [docs/figures/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/figures/index.md), and [docs/tables/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/tables/index.md).
+For conceptual diagrams of the transition from human workflow to approved agent design, see [docs/conceptual_figures.md](docs/conceptual_figures.md), [docs/figures/index.md](docs/figures/index.md), and [docs/tables/index.md](docs/tables/index.md).
 
 ## WorkflowSpec, KnowledgeSpec, And MemorySpec
 
@@ -124,6 +124,40 @@ initial model draft
 -> revision
 -> approval into active spec
 ```
+
+## Workspace CLI Lifecycle
+
+For manual LLM workflows, `agentr` can create a generic design workspace outside the package:
+
+```r
+workspace <- "my_agent_design"
+init_agentr_workspace(workspace)
+
+build_initial_spec_prompt(
+  workspace,
+  target = "workflow",
+  comment = "Design a workflow for reading a paper and extracting schema fields."
+)
+
+# Send prompts/initial/workflow_initial_prompt.md to an external LLM,
+# save the JSON response, then apply it into proposal state.
+apply_initial_spec_message(
+  workspace,
+  target = "workflow",
+  message = file.path(workspace, "responses", "workflow_initial.json")
+)
+```
+
+The same workspace helpers support `workflow`, `agent`, `memory`, and `knowledge` prompt/response loops. Revision application stores proposal state; approval is a separate explicit boundary:
+
+```r
+build_revision_prompt(workspace, target = "memory", comment = "Separate lifecycle state from task state.")
+apply_revision_message(workspace, target = "memory", message = file.path(workspace, "responses", "memory_revision.json"))
+list_workspace_proposals(workspace, type = "memory")
+approve_workspace_proposal(workspace, type = "memory", proposal_id = "memory_proposal_1")
+```
+
+The CLI wrapper in `inst/cli/agentr-cli.R` exposes the same lifecycle for shell use while remaining a scaffolding utility, not an execution engine. See [docs/workspace_cli_lifecycle.md](docs/workspace_cli_lifecycle.md).
 
 ## Agent Design And Workflow Elicitation
 

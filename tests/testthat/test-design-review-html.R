@@ -13,6 +13,23 @@ test_that("design_review_html returns standalone review page", {
   expect_false(grepl("http://", html, fixed = TRUE))
 })
 
+test_that("design_review_html wraps workflow graph labels without truncation", {
+  long_label <- "Select the most appropriate chart type for the economic analysis and document why alternatives were rejected"
+  workflow <- new_workflow_spec(
+    nodes = workflow_node("node_long", long_label),
+    edges = .empty_workflow_edges(),
+    task = "Long label review"
+  )
+  html <- design_review_html(workflow, title = "Long label review")
+
+  expect_false(grepl("slice(0,24)", html, fixed = TRUE))
+  expect_true(grepl("wrapSvgText", html, fixed = TRUE))
+  expect_true(grepl("<tspan", html, fixed = TRUE))
+  expect_true(grepl("_cy=n._y+n._h/2", html, fixed = TRUE))
+  expect_true(grepl("overflow-wrap:anywhere", html, fixed = TRUE))
+  expect_true(grepl(long_label, html, fixed = TRUE))
+})
+
 test_that("export_design_review_html writes a file", {
   spec <- .test_complete_agent_spec()
   path <- tempfile(fileext = ".html")

@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.6.1
+
+Released: 2026-05-20
+
+- Added generic workspace lifecycle helpers and a thin CLI wrapper for manual prompt/response scaffolding loops across workflow, agent, memory, and knowledge design.
+- Added workspace-scoped proposal listing, approval, rejection, review HTML export, and implementation handoff prompt helpers.
+- Updated design-review workflow graph rendering so long labels wrap in SVG instead of being hard-truncated.
+
 ## agentr 0.2.6
 
 Released: 2026-05-17

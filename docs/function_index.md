@@ -109,6 +109,18 @@
 | `parse_design_feedback_json()` | Parse structured design feedback from JSON |
 | `save_design_feedback()` / `load_design_feedback()` | Persist structured design feedback |
 | `preview_design_feedback()` / `apply_design_feedback()` | Preview or route design feedback through scaffolder mechanisms |
+| `agentr_workspace_paths()` | Return standard workspace paths for lifecycle artifacts |
+| `init_agentr_workspace()` | Create generic workspace directories for specs, states, prompts, reviews, traces, and responses |
+| `init_agentr_proposal_states()` | Initialize workflow, memory, knowledge, and scaffolder proposal-state artifacts |
+| `build_initial_spec_prompt()` | Write an initial manual-LLM prompt for workflow, agent, memory, or knowledge design |
+| `build_revision_prompt()` | Write a revision prompt from current workspace state plus human feedback |
+| `apply_initial_spec_message()` | Apply an initial constrained JSON response into workspace proposal state |
+| `apply_revision_message()` | Apply a revision JSON response without implicitly approving specs |
+| `list_workspace_proposals()` | List workflow, agent, memory, or knowledge proposals in a workspace |
+| `approve_workspace_proposal()` | Explicitly approve a workspace proposal and update approved artifacts |
+| `reject_workspace_proposal()` | Reject a workspace proposal without mutating approved specs |
+| `export_workspace_design_review()` | Export review HTML from workspace artifacts |
+| `build_workspace_implementation_prompt()` | Write an implementation handoff prompt from approved workspace specs |
 | `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
 | `validate_scaffolder_message()` | Validate requested scaffolding actions |
 | `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |

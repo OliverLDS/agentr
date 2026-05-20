@@ -12,9 +12,9 @@ These assets are intended to support:
 
 ## Structure
 
-- [figures/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/figures/index.md): figure inventory with source, render, and caption links
-- [tables/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/tables/index.md): table inventory with Markdown and LaTeX links
-- [conceptual_figures.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/conceptual_figures.md): narrative hub for the main conceptual figures
+- [figures/index.md](figures/index.md): figure inventory with source, render, and caption links
+- [tables/index.md](tables/index.md): table inventory with Markdown and LaTeX links
+- [conceptual_figures.md](conceptual_figures.md): narrative hub for the main conceptual figures
 
 ## Design intent
 

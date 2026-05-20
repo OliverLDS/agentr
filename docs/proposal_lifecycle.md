@@ -1,6 +1,6 @@
 # Proposal Lifecycle
 
-For proposal and artifact diagrams, see [conceptual_figures.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/conceptual_figures.md) and [figures/index.md](/Users/oliver/Documents/2025/_2025-05-11_XAgent/agentr/docs/figures/index.md).
+For proposal and artifact diagrams, see [conceptual_figures.md](conceptual_figures.md) and [figures/index.md](figures/index.md).
 
 `agentr` separates scaffolding work into three stages:
 
