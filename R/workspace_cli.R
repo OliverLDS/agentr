@@ -258,11 +258,26 @@ apply_initial_spec_message <- function(
 ) {
   target <- match.arg(target)
   paths <- init_agentr_workspace(workspace, create_readme = FALSE)
-  if (target %in% c("workflow", "agent")) {
+  if (identical(target, "workflow")) {
     scaffolder <- Scaffolder$new()
-    if (!is.null(comment)) {
-      scaffolder$evaluate_task(.workspace_read_text(comment))
-    }
+    task <- if (is.null(comment)) "Workspace design imported from initial LLM response" else .workspace_read_text(comment)
+    scaffolder$evaluate_task(task)
+    result <- preview_scaffolder_message(
+      scaffolder,
+      message,
+      store_proposal = TRUE,
+      source = "model",
+      proposal_notes = "Workspace initial workflow proposal"
+    )
+    saveRDS(scaffolder, paths$scaffolder_state)
+    saveRDS(scaffolder$workflow_state, paths$workflow_state)
+    return(invisible(result))
+  }
+
+  if (identical(target, "agent")) {
+    scaffolder <- Scaffolder$new()
+    task <- if (is.null(comment)) "Workspace design imported from initial LLM response" else .workspace_read_text(comment)
+    scaffolder$evaluate_task(task)
     result <- apply_scaffolder_message(scaffolder, message)
     saveRDS(scaffolder, paths$scaffolder_state)
     saveRDS(scaffolder$workflow_state, paths$workflow_state)
@@ -495,6 +510,8 @@ reject_workspace_proposal <- function(
 #' @param agent_spec_path Optional path to approved [`AgentSpec`] `.rds`.
 #' @param out Optional output HTML path.
 #' @param title Review title.
+#' @param graph_layout Workflow graph layout passed to [design_review_html()].
+#' @param edge_style Workflow edge style passed to [design_review_html()].
 #'
 #' @return Output HTML path.
 #' @export
@@ -502,26 +519,44 @@ export_workspace_design_review <- function(
   workspace,
   agent_spec_path = NULL,
   out = NULL,
-  title = "agentr design review"
+  title = "agentr design review",
+  graph_layout = c("grid", "layered", "swimlane", "process"),
+  edge_style = c("curved", "straight", "orthogonal")
 ) {
+  graph_layout <- match.arg(graph_layout)
+  edge_style <- match.arg(edge_style)
   paths <- init_agentr_workspace(workspace, create_readme = FALSE)
   spec <- .workspace_load_agent_spec(agent_spec_path, paths)
-  if (is.null(spec)) {
-    stop("No AgentSpec found. Provide `agent_spec_path` or save `specs/agent_spec.rds`.", call. = FALSE)
-  }
   if (is.null(out)) {
     out <- file.path(paths$reviews, "design_review.html")
   }
   workflow_state <- .workspace_load_or_null(paths$workflow_state)
   memory_state <- .workspace_load_or_null(paths$memory_state)
   knowledge_state <- .workspace_load_or_null(paths$knowledge_state)
+  x <- spec
+  if (is.null(x)) {
+    workflow <- NULL
+    if (!is.null(workflow_state)) {
+      latest <- workflow_state$latest_proposal()
+      workflow <- if (is.null(latest)) workflow_state$approved_workflow else latest$workflow
+    }
+    if (is.null(workflow)) {
+      stop(
+        "No AgentSpec or workflow proposal state found. Apply or approve a design before exporting review HTML.",
+        call. = FALSE
+      )
+    }
+    x <- workflow
+  }
   export_design_review_html(
-    spec,
+    x,
     path = out,
     workflow_state = workflow_state,
     memory_state = memory_state,
     knowledge_state = knowledge_state,
-    title = title
+    title = title,
+    graph_layout = graph_layout,
+    edge_style = edge_style
   )
   invisible(out)
 }

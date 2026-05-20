@@ -57,6 +57,114 @@ scaffolder_action_methods <- function() {
 }
 
 #' @keywords internal
+.decompose_task_metadata_args <- function() {
+  c(
+    "branching_rules",
+    "review_gates",
+    "decision_points",
+    "inputs",
+    "outputs",
+    "dependencies",
+    "triggers",
+    "checkpoints",
+    "acceptance_criteria",
+    "assumptions",
+    "source",
+    "summary",
+    "state_variables",
+    "memory_schema",
+    "state_schema"
+  )
+}
+
+#' @keywords internal
+.sanitize_scaffolder_action_args <- function(method, args) {
+  if (is.null(args)) {
+    return(list())
+  }
+  if (method %in% c("review_workflow", "review_node") && !is.null(args$status)) {
+    status <- as.character(args$status)[1]
+    status_aliases <- c(
+      draft = "needs_revision",
+      needs_review = "needs_revision",
+      review_required = "needs_revision",
+      under_review = "needs_revision",
+      draft_decomposed_needs_review = "needs_revision",
+      complete = "approved"
+    )
+    if (status %in% names(status_aliases)) {
+      args$status <- unname(status_aliases[[status]])
+    }
+  }
+  if (identical(method, "recommend_subsystems")) {
+    args[intersect(names(args), c("recommendations", "sparse_selection", "rationale"))] <- NULL
+    return(args)
+  }
+  if (identical(method, "select_subsystems")) {
+    if (is.list(args$subsystems) && is.null(names(args$subsystems))) {
+      args$subsystems <- unlist(args$subsystems, use.names = FALSE)
+    }
+    return(args)
+  }
+  if (identical(method, "label_workflow_subsystems")) {
+    if (is.null(args$labels) && !is.null(args$node_subsystems)) {
+      args$labels <- args$node_subsystems
+    }
+    args$node_subsystems <- NULL
+    if (is.list(args$labels) && length(args$labels) && is.null(names(args$labels))) {
+      if (all(vapply(args$labels, function(item) {
+        is.list(item) && !is.null(item$node_id) && !is.null(item$subsystems)
+      }, logical(1)))) {
+        labels <- list()
+        for (item in args$labels) {
+          labels[[as.character(item$node_id)[1]]] <- unlist(item$subsystems, use.names = FALSE)
+        }
+        args$labels <- labels
+      }
+    }
+    return(args)
+  }
+  if (identical(method, "propose_agent_spec")) {
+    if (!is.null(args$autonomy_stage)) {
+      if (is.null(args$metadata)) {
+        args$metadata <- list()
+      }
+      args$metadata$autonomy_stage <- args$autonomy_stage
+      args$autonomy_stage <- NULL
+    }
+    for (field in c("state_requirements", "interfaces", "implementation_targets")) {
+      value <- args[[field]]
+      if (is.list(value) && length(value) && (is.null(names(value)) || any(!nzchar(names(value))))) {
+        args[[field]] <- list(items = unlist(value, use.names = FALSE))
+      }
+    }
+    return(args)
+  }
+  if (!identical(method, "decompose_task")) {
+    return(args)
+  }
+
+  metadata_names <- intersect(names(args), .decompose_task_metadata_args())
+  if (!length(metadata_names)) {
+    return(args)
+  }
+
+  metadata <- args[metadata_names]
+  args[metadata_names] <- NULL
+  metadata_note <- paste(
+    "Additional workflow metadata supplied by model:",
+    jsonlite::toJSON(metadata, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"),
+    sep = "\n"
+  )
+  if (is.null(args$notes) || !nzchar(as.character(args$notes)[1])) {
+    args$notes <- metadata_note
+  } else {
+    args$notes <- paste(as.character(args$notes)[1], metadata_note, sep = "\n\n")
+  }
+  args
+}
+
+#' @keywords internal
 .predict_node_ids <- function(current_ids, specs, start_index = length(current_ids) + 1L) {
   if (is.null(specs) || !length(specs)) {
     return(character())
@@ -143,6 +251,7 @@ scaffolder_action_methods <- function() {
   if (!is.list(args)) {
     stop("Each action `args` field must be a list.", call. = FALSE)
   }
+  args <- .sanitize_scaffolder_action_args(method, args)
 
   known_args <- switch(
     method,
@@ -1021,7 +1130,7 @@ apply_scaffolder_message <- function(
   if (is.character(message)) {
     message <- parse_scaffolder_message(message)
   }
-  validate_scaffolder_message(message, allowed_methods = allowed_methods)
+  message <- validate_scaffolder_message(message, allowed_methods = allowed_methods)
 
   .scaffolder_apply_message_actions(
     scaffolder = scaffolder,
@@ -1063,7 +1172,7 @@ preview_scaffolder_message <- function(
   stopifnot(inherits(scaffolder, "Scaffolder"))
 
   parsed_message <- if (is.character(message)) parse_scaffolder_message(message) else message
-  validate_scaffolder_message(parsed_message, allowed_methods = allowed_methods)
+  parsed_message <- validate_scaffolder_message(parsed_message, allowed_methods = allowed_methods)
 
   preview_scaffolder <- scaffolder$clone(deep = TRUE)
   preview_dispatch <- apply_scaffolder_message(

@@ -104,6 +104,47 @@ test_that("workspace workflow revisions store proposals without mutating approve
   expect_equal(nrow(preview$workflow_after$nodes), 2L)
 })
 
+test_that("workspace initial workflow application stores a pending proposal when omitted", {
+  workspace <- tempfile("agentr_workspace_")
+  on.exit(unlink(workspace, recursive = TRUE), add = TRUE)
+  paths <- init_agentr_workspace(workspace)
+
+  message <- jsonlite::toJSON(list(actions = list(list(
+    method = "decompose_task",
+    args = list(nodes = list(list(id = "node_1", label = "Draft workflow")))
+  ))), auto_unbox = TRUE, null = "null")
+
+  apply_initial_spec_message(workspace, target = "workflow", message = message)
+  workflow_state <- readRDS(paths$workflow_state)
+  proposals <- workflow_state$list_proposals()
+
+  expect_equal(workflow_state$approved_workflow$task, "Workspace design imported from initial LLM response")
+  expect_equal(nrow(workflow_state$approved_workflow$nodes), 0L)
+  expect_equal(nrow(proposals), 1L)
+  expect_equal(proposals$status[[1]], "pending")
+  expect_equal(proposals$node_count[[1]], 1L)
+})
+
+test_that("workspace review export supports workflow-only proposal state", {
+  workspace <- tempfile("agentr_workspace_")
+  on.exit(unlink(workspace, recursive = TRUE), add = TRUE)
+
+  message <- jsonlite::toJSON(list(actions = list(list(
+    method = "decompose_task",
+    args = list(nodes = list(list(id = "node_1", label = "Draft workflow")))
+  ))), auto_unbox = TRUE, null = "null")
+
+  apply_initial_spec_message(workspace, target = "workflow", message = message)
+  review_path <- export_workspace_design_review(workspace, graph_layout = "process", edge_style = "orthogonal")
+  html <- paste(readLines(review_path, warn = FALSE), collapse = "\n")
+
+  expect_true(file.exists(review_path))
+  expect_true(grepl("Draft workflow", html, fixed = TRUE))
+  expect_true(grepl("proposal_1", html, fixed = TRUE))
+  expect_true(grepl('"graph_layout":"process"', html, fixed = TRUE))
+  expect_true(grepl('"edge_style":"orthogonal"', html, fixed = TRUE))
+})
+
 test_that("workspace review and handoff exporters write artifacts", {
   workspace <- tempfile("agentr_workspace_")
   on.exit(unlink(workspace, recursive = TRUE), add = TRUE)
@@ -133,4 +174,9 @@ test_that("CLI wrapper exposes help text and supported commands", {
   expect_true(grepl("apply-revision-message", cli, fixed = TRUE))
   expect_true(grepl("approve-proposal", cli, fixed = TRUE))
   expect_true(grepl("export-review", cli, fixed = TRUE))
+  expect_true(grepl("--workspace PATH", cli, fixed = TRUE))
+  expect_true(grepl("--message RESPONSE_JSON", cli, fixed = TRUE))
+  expect_false(grepl("pos = 1", cli, fixed = TRUE))
+  expect_true(grepl("--graph-layout", cli, fixed = TRUE))
+  expect_true(grepl("--edge-style", cli, fixed = TRUE))
 })

@@ -12,6 +12,8 @@ design_review_html(
   include_feedback_panel = TRUE,
   self_contained = TRUE,
   title = NULL,
+  graph_layout = c("grid", "layered", "swimlane", "process"),
+  edge_style = c("curved", "straight", "orthogonal"),
   ...
 )
 }
@@ -32,6 +34,14 @@ form and JSON export controls.}
 implementation is always self-contained and uses no remote resources.}
 
 \item{title}{Optional page title.}
+
+\item{graph_layout}{Workflow graph layout. \code{"grid"} preserves the original
+row/column placement; \code{"layered"} places nodes by DAG depth; \code{"swimlane"}
+groups nodes into responsibility lanes; \code{"process"} renders loop-heavy
+workflows as a vertical process spine with side branches.}
+
+\item{edge_style}{Workflow edge routing style: \code{"straight"}, \code{"curved"}, or
+\code{"orthogonal"}.}
 
 \item{...}{Additional arguments passed to \code{\link[=build_design_review_data]{build_design_review_data()}} when
 \code{x} is not already a \code{\link{DesignReviewSpec}}.}

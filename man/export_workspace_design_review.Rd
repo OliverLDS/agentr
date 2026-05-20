@@ -8,7 +8,9 @@ export_workspace_design_review(
   workspace,
   agent_spec_path = NULL,
   out = NULL,
-  title = "agentr design review"
+  title = "agentr design review",
+  graph_layout = c("grid", "layered", "swimlane", "process"),
+  edge_style = c("curved", "straight", "orthogonal")
 )
 }
 \arguments{
@@ -19,6 +21,10 @@ export_workspace_design_review(
 \item{out}{Optional output HTML path.}
 
 \item{title}{Review title.}
+
+\item{graph_layout}{Workflow graph layout passed to \code{\link[=design_review_html]{design_review_html()}}.}
+
+\item{edge_style}{Workflow edge style passed to \code{\link[=design_review_html]{design_review_html()}}.}
 }
 \value{
 Output HTML path.

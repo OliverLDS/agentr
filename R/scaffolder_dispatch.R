@@ -16,7 +16,7 @@
     stop("Each action `args` field must be a list.", call. = FALSE)
   }
 
-  .validate_scaffolder_action_args(action$method, action$args)
+  action$args <- .validate_scaffolder_action_args(action$method, action$args)
   action
 }
 

@@ -100,15 +100,15 @@ It is a thin shell-facing wrapper around the exported R functions.
 
 ```sh
 Rscript inst/cli/agentr-cli.R --help
-Rscript inst/cli/agentr-cli.R init my_agent_design "Generic review workspace"
-Rscript inst/cli/agentr-cli.R build-initial-prompt my_agent_design workflow task.txt
-Rscript inst/cli/agentr-cli.R apply-initial-message my_agent_design workflow responses/workflow_initial.json
-Rscript inst/cli/agentr-cli.R build-revision-prompt my_agent_design knowledge feedback.txt
-Rscript inst/cli/agentr-cli.R apply-revision-message my_agent_design knowledge responses/knowledge_revision.json
-Rscript inst/cli/agentr-cli.R list-proposals my_agent_design knowledge
-Rscript inst/cli/agentr-cli.R approve-proposal my_agent_design knowledge ki_proposal_1
-Rscript inst/cli/agentr-cli.R export-review my_agent_design
-Rscript inst/cli/agentr-cli.R build-handoff my_agent_design
+Rscript inst/cli/agentr-cli.R init --workspace my_agent_design --comment "Generic review workspace"
+Rscript inst/cli/agentr-cli.R build-initial-prompt --workspace my_agent_design --target workflow --comment task.txt
+Rscript inst/cli/agentr-cli.R apply-initial-message --workspace my_agent_design --target workflow --message responses/workflow_initial.json
+Rscript inst/cli/agentr-cli.R build-revision-prompt --workspace my_agent_design --target knowledge --comment feedback.txt
+Rscript inst/cli/agentr-cli.R apply-revision-message --workspace my_agent_design --target knowledge --message responses/knowledge_revision.json
+Rscript inst/cli/agentr-cli.R list-proposals --workspace my_agent_design --type knowledge
+Rscript inst/cli/agentr-cli.R approve-proposal --workspace my_agent_design --type knowledge --proposal-id ki_proposal_1
+Rscript inst/cli/agentr-cli.R export-review --workspace my_agent_design --graph-layout process --edge-style orthogonal
+Rscript inst/cli/agentr-cli.R build-handoff --workspace my_agent_design
 ```
 
 Every command supports `--help` after the command name:

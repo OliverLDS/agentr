@@ -698,6 +698,133 @@ test_that("apply_scaffolder_message accepts a downloaded json file path", {
   expect_true(identical(nrow(out$workflow_after$nodes), 2L))
 })
 
+test_that("decompose_task tolerates common workflow metadata extras from LLM JSON", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Draft a workflow with a branch.")
+
+  message <- list(actions = list(list(
+    method = "decompose_task",
+    args = list(
+      nodes = list(
+        list(id = "node_start", label = "Start analysis"),
+        list(id = "node_review", label = "Review branch outcome")
+      ),
+      edges = list(list(from = "node_start", to = "node_review")),
+      branching_rules = list(
+        list(condition = "If confidence is low", next_node = "node_review")
+      ),
+      source = "model_revision",
+      summary = "Draft workflow with state variables.",
+      state_variables = list(lifecycle_state = "reviewing")
+    )
+  )))
+
+  out <- apply_scaffolder_message(scaffolder, message)
+
+  expect_equal(nrow(out$workflow_after$nodes), 2L)
+  expect_true(grepl("branching_rules", scaffolder$workflow$metadata$decomposition$notes, fixed = TRUE))
+  expect_true(grepl("state_variables", scaffolder$workflow$metadata$decomposition$notes, fixed = TRUE))
+})
+
+test_that("scaffolder bridge normalizes common LLM review and recommendation drift", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Draft a workflow with model-generated review status.")
+
+  message <- list(actions = list(
+    list(
+      method = "decompose_task",
+      args = list(nodes = list(list(id = "node_1", label = "Draft workflow")))
+    ),
+    list(
+      method = "review_workflow",
+      args = list(status = "draft_decomposed_needs_review", notes = "Model thinks this needs review.")
+    ),
+    list(
+      method = "recommend_subsystems",
+      args = list(
+        recommendations = list(rwm = "needed"),
+        sparse_selection = c("rwm")
+      )
+    )
+  ))
+
+  out <- apply_scaffolder_message(scaffolder, message)
+
+  expect_equal(length(out$errors), 0L)
+  expect_equal(scaffolder$workflow$metadata$workflow_review$status, "needs_revision")
+  expect_true(length(scaffolder$subsystem_recommendations()) > 0L)
+})
+
+test_that("select_subsystems accepts JSON-array list payloads", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Draft subsystem selection.")
+
+  message <- list(actions = list(list(
+    method = "select_subsystems",
+    args = list(subsystems = list("pg", "rwm", "ae"))
+  )))
+
+  apply_scaffolder_message(scaffolder, message)
+
+  expect_equal(scaffolder$selected_subsystems(), c("rwm", "pg", "ae"))
+})
+
+test_that("label_workflow_subsystems accepts node_subsystems alias from LLM JSON", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Draft workflow labels.")
+  scaffolder$decompose_task(suggestions = list(nodes = list(list(id = "node_1", label = "Draft workflow"))))
+  scaffolder$select_subsystems(c("rwm", "pg"))
+
+  message <- list(actions = list(list(
+    method = "label_workflow_subsystems",
+    args = list(node_subsystems = list(node_1 = c("rwm", "pg")))
+  )))
+
+  apply_scaffolder_message(scaffolder, message)
+
+  expect_equal(scaffolder$workflow$metadata$node_subsystems$node_1, c("rwm", "pg"))
+})
+
+test_that("label_workflow_subsystems accepts record-form node_subsystems from LLM JSON", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Draft workflow labels.")
+  scaffolder$decompose_task(suggestions = list(nodes = list(list(id = "node_1", label = "Draft workflow"))))
+  scaffolder$select_subsystems(c("rwm", "pg"))
+
+  message <- list(actions = list(list(
+    method = "label_workflow_subsystems",
+    args = list(node_subsystems = list(list(node_id = "node_1", subsystems = c("rwm", "pg"))))
+  )))
+
+  apply_scaffolder_message(scaffolder, message)
+
+  expect_equal(scaffolder$workflow$metadata$node_subsystems$node_1, c("rwm", "pg"))
+})
+
+test_that("propose_agent_spec preserves autonomy_stage alias in metadata", {
+  scaffolder <- Scaffolder$new(agent = AgentCore$new())
+  scaffolder$evaluate_task("Draft agent proposal.")
+  scaffolder$decompose_task(suggestions = list(nodes = list(list(id = "node_1", label = "Draft workflow"))))
+
+  message <- list(actions = list(list(
+    method = "propose_agent_spec",
+    args = list(
+      agent_name = "draft-agent",
+      summary = "Draft agent.",
+      autonomy_stage = "human_in_loop",
+      implementation_targets = list("R scripts", "local files"),
+      state_requirements = list("candidate ids", "processed logs")
+    )
+  )))
+
+  apply_scaffolder_message(scaffolder, message)
+  proposal <- scaffolder$get_agent_spec_proposal("agent_proposal_1")
+
+  expect_equal(proposal$agent_spec$metadata$autonomy_stage, "human_in_loop")
+  expect_equal(proposal$agent_spec$implementation_targets$items, c("R scripts", "local files"))
+  expect_equal(proposal$agent_spec$state_requirements$items, c("candidate ids", "processed logs"))
+})
+
 test_that("workflow proposals can be previewed, discussed, and approved", {
   scaffolder <- Scaffolder$new(agent = AgentCore$new())
   scaffolder$evaluate_task("Design an autonomous workflow")

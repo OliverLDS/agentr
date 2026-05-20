@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.6.2
+
+Released: 2026-05-20
+
+- Hardened workspace CLI argument handling around explicit `--` options and made initial workflow imports create pending workflow proposals instead of silently mutating approved state.
+- Made review export work for workflow-only proposal states when no approved `AgentSpec` is available.
+- Added design-review workflow graph layout controls for `grid`, `layered`, `swimlane`, and loop-aware `process` layouts, with `curved`, `straight`, and `orthogonal` edge styles.
+- Improved review graph rendering with wrapped SVG labels, scrollable graph panels, swimlane stacking, cycle-aware layout warnings, and process-spine rendering for loop-heavy workflows.
+- Relaxed scaffolder-message handling for common LLM JSON drift while still rejecting unsupported actions and preserving constrained dispatch semantics.
+
 ## agentr 0.2.6.1
 
 Released: 2026-05-20
