@@ -29,6 +29,8 @@ explicit lifecycle state.
 \item{\verb{$review_workflow(status = "pending", notes = NULL, confidence = NA_real_)}}{Store workflow-level completeness or revision review state.}
 \item{\verb{$review_node(node_id, status = "pending", notes = NULL, confidence = NA_real_, complete = NULL)}}{Store node-level correctness or completion review state.}
 \item{\verb{$edit_workflow(add = NULL, insert = NULL, remove = NULL, add_edges = NULL, remove_edges = NULL, rule_specs = list(), confidence = list())}}{Apply first-class node and edge edits to the current workflow.}
+\item{\verb{$set_node_schema(node_id, input_schema = NULL, output_schema = NULL)}}{Set input/output schema metadata for one workflow node.}
+\item{\verb{$set_node_nested_workflow(node_id, subworkflow_ref = NULL, nested_workflow = NULL)}}{Attach a nested workflow reference or embedded nested workflow to one node.}
 \item{\verb{$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())}}{Compatibility wrapper for structured human workflow edits.}
 \item{\verb{$recommend_subsystems(task = self$task)}}{Recommend a sparse subsystem set for the current task and workflow.}
 \item{\verb{$subsystem_recommendations()}}{Return the current subsystem recommendation records.}
@@ -92,6 +94,8 @@ approved, superseded, and rejected lifecycle states.}
 \item \href{#method-Scaffolder-review_workflow}{\code{Scaffolder$review_workflow()}}
 \item \href{#method-Scaffolder-review_node}{\code{Scaffolder$review_node()}}
 \item \href{#method-Scaffolder-edit_workflow}{\code{Scaffolder$edit_workflow()}}
+\item \href{#method-Scaffolder-set_node_schema}{\code{Scaffolder$set_node_schema()}}
+\item \href{#method-Scaffolder-set_node_nested_workflow}{\code{Scaffolder$set_node_nested_workflow()}}
 \item \href{#method-Scaffolder-apply_human_feedback}{\code{Scaffolder$apply_human_feedback()}}
 \item \href{#method-Scaffolder-recommend_subsystems}{\code{Scaffolder$recommend_subsystems()}}
 \item \href{#method-Scaffolder-subsystem_recommendations}{\code{Scaffolder$subsystem_recommendations()}}
@@ -386,6 +390,54 @@ Apply first-class node and edge edits to the current workflow.
 \item{\code{rule_specs}}{Named list of rule specs used by \verb{$edit_workflow()}.}
 
 \item{\code{confidence}}{Confidence value used by review/edit helpers.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-set_node_schema"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-set_node_schema}{}}}
+\subsection{Method \code{set_node_schema()}}{
+Set structured input and output schema metadata for one workflow node.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$set_node_schema(node_id, input_schema = NULL, output_schema = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{node_id}}{Workflow node identifier used by node-specific methods.}
+
+\item{\code{input_schema}}{Structured input schema used by \verb{$set_node_schema()}.}
+
+\item{\code{output_schema}}{Structured output schema used by \verb{$set_node_schema()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Scaffolder-set_node_nested_workflow"></a>}}
+\if{latex}{\out{\hypertarget{method-Scaffolder-set_node_nested_workflow}{}}}
+\subsection{Method \code{set_node_nested_workflow()}}{
+Attach a nested workflow reference or embedded nested workflow to one node.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Scaffolder$set_node_nested_workflow(
+  node_id,
+  subworkflow_ref = NULL,
+  nested_workflow = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{node_id}}{Workflow node identifier used by node-specific methods.}
+
+\item{\code{subworkflow_ref}}{Nested workflow reference used by
+\verb{$set_node_nested_workflow()}.}
+
+\item{\code{nested_workflow}}{Embedded nested workflow used by
+\verb{$set_node_nested_workflow()}.}
 }
 \if{html}{\out{</div>}}
 }

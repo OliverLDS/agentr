@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.6.2` hardens workspace/CLI lifecycle utilities for manual LLM prompt-response scaffolding and improves design-review workflow rendering with wrapped labels, explicit edge routing options, swimlane grouping, and a process layout for loop-heavy workflows. `agentr` can package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one offline review page while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.6.3` adds node-detail scaffolding for workflow-node input/output schemas and nested workflows while preserving proposal approval as the mutation boundary. `agentr` can package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one offline review page while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -155,6 +155,23 @@ build_revision_prompt(workspace, target = "memory", comment = "Separate lifecycl
 apply_revision_message(workspace, target = "memory", message = file.path(workspace, "responses", "memory_revision.json"))
 list_workspace_proposals(workspace, type = "memory")
 approve_workspace_proposal(workspace, type = "memory", proposal_id = "memory_proposal_1")
+```
+
+Workflow node details can be revised without changing the approved top-level workflow immediately. The response is stored as a workflow proposal until explicitly approved:
+
+```r
+build_revision_prompt(
+  workspace,
+  target = "workflow",
+  node_id = "node_interpret",
+  comment = "Add input/output schemas and a nested workflow for this node."
+)
+
+apply_node_detail_message(
+  workspace,
+  node_id = "node_interpret",
+  message = file.path(workspace, "responses", "node_interpret_detail.json")
+)
 ```
 
 The CLI wrapper in `inst/cli/agentr-cli.R` exposes the same lifecycle for shell use while remaining a scaffolding utility, not an execution engine. See [docs/workspace_cli_lifecycle.md](docs/workspace_cli_lifecycle.md).
@@ -660,6 +677,13 @@ The workflow object is intentionally simple and includes:
 - `review_status`
 - `review_notes`
 - `review_confidence`
+- `owner`
+- `automation_status`
+- `knowledge_refs`
+- `subworkflow_ref`
+- `input_schema`
+- `output_schema`
+- `nested_workflow`
 
 These structures are outputs of scaffolding and reasoning, not hard-coded package workflows.
 

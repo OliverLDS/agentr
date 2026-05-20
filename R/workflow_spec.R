@@ -16,6 +16,11 @@
 #' @param target_automation_status Optional target automation status for the node.
 #' @param trace_required Optional logical flag indicating whether decision traces should be collected.
 #' @param knowledge_refs Optional character vector of referenced knowledge-item ids.
+#' @param subworkflow_ref Optional identifier or path for a nested workflow.
+#' @param input_schema Optional structured input schema for the node.
+#' @param output_schema Optional structured output schema for the node.
+#' @param nested_workflow Optional nested workflow spec or list with `nodes` and
+#'   `edges`, used by review UIs for drilldown.
 #'
 #' @return One-row data frame.
 #' @export
@@ -35,7 +40,11 @@ workflow_node <- function(
   human_owned_reason = NA_character_,
   target_automation_status = NA_character_,
   trace_required = NA,
-  knowledge_refs = character()
+  knowledge_refs = character(),
+  subworkflow_ref = NA_character_,
+  input_schema = list(),
+  output_schema = list(),
+  nested_workflow = NULL
 ) {
   out <- data.frame(
     id = as.character(id),
@@ -53,9 +62,13 @@ workflow_node <- function(
     human_owned_reason = as.character(human_owned_reason),
     target_automation_status = as.character(target_automation_status),
     trace_required = as.logical(trace_required),
+    subworkflow_ref = as.character(subworkflow_ref),
     stringsAsFactors = FALSE
   )
   out$knowledge_refs <- I(replicate(nrow(out), as.character(knowledge_refs), simplify = FALSE))
+  out$input_schema <- I(replicate(nrow(out), input_schema, simplify = FALSE))
+  out$output_schema <- I(replicate(nrow(out), output_schema, simplify = FALSE))
+  out$nested_workflow <- I(replicate(nrow(out), nested_workflow, simplify = FALSE))
   out
 }
 
@@ -104,9 +117,13 @@ workflow_edge <- function(
     human_owned_reason = character(),
     target_automation_status = character(),
     trace_required = logical(),
+    subworkflow_ref = character(),
     stringsAsFactors = FALSE
   )
   out$knowledge_refs <- I(list())
+  out$input_schema <- I(list())
+  out$output_schema <- I(list())
+  out$nested_workflow <- I(list())
   out
 }
 
@@ -174,7 +191,11 @@ new_workflow_spec <- function(
     "human_owned_reason",
     "target_automation_status",
     "trace_required",
-    "knowledge_refs"
+    "knowledge_refs",
+    "subworkflow_ref",
+    "input_schema",
+    "output_schema",
+    "nested_workflow"
   )
 }
 
@@ -216,6 +237,9 @@ new_workflow_spec <- function(
   if (!"trace_required" %in% names(nodes)) {
     nodes$trace_required <- NA
   }
+  if (!"subworkflow_ref" %in% names(nodes)) {
+    nodes$subworkflow_ref <- NA_character_
+  }
   if (!"knowledge_refs" %in% names(nodes)) {
     nodes$knowledge_refs <- I(replicate(nrow(nodes), character(), simplify = FALSE))
   } else if (!is.list(nodes$knowledge_refs)) {
@@ -227,6 +251,25 @@ new_workflow_spec <- function(
       }
       as.character(unlist(x, use.names = FALSE))
     }))
+  }
+  for (field in c("input_schema", "output_schema", "nested_workflow")) {
+    if (!field %in% names(nodes)) {
+      nodes[[field]] <- I(replicate(nrow(nodes), list(), simplify = FALSE))
+    } else if (!is.list(nodes[[field]])) {
+      nodes[[field]] <- I(lapply(nodes[[field]], function(x) {
+        if (is.null(x) || (length(x) == 1L && is.na(x))) {
+          return(list())
+        }
+        list(value = x)
+      }))
+    } else {
+      nodes[[field]] <- I(lapply(nodes[[field]], function(x) {
+        if (is.null(x)) {
+          return(list())
+        }
+        x
+      }))
+    }
   }
 
   nodes
@@ -309,6 +352,9 @@ validate_workflow_spec <- function(x, knowledge_spec = NULL, warn_missing_knowle
   if (!is.logical(x$nodes$trace_required)) {
     stop("Workflow node `trace_required` must be logical.", call. = FALSE)
   }
+  if (!"subworkflow_ref" %in% names(x$nodes)) {
+    stop("Workflow node `subworkflow_ref` must be present after normalization.", call. = FALSE)
+  }
   if (!is.list(x$nodes$knowledge_refs)) {
     stop("Workflow node `knowledge_refs` must be a list-column of character vectors.", call. = FALSE)
   }
@@ -319,6 +365,14 @@ validate_workflow_spec <- function(x, knowledge_spec = NULL, warn_missing_knowle
     refs <- x$nodes$knowledge_refs[[i]]
     if (!is.character(refs)) {
       stop("Each workflow node `knowledge_refs` entry must be a character vector.", call. = FALSE)
+    }
+  }
+  for (field in c("input_schema", "output_schema", "nested_workflow")) {
+    if (!is.list(x$nodes[[field]])) {
+      stop("Workflow node `", field, "` must be a list-column.", call. = FALSE)
+    }
+    if (length(x$nodes[[field]]) != nrow(x$nodes)) {
+      stop("Workflow node `", field, "` must align row-wise with workflow nodes.", call. = FALSE)
     }
   }
 
@@ -457,7 +511,11 @@ print.agentr_workflow_spec <- function(x, ...) {
       human_owned_reason = item$human_owned_reason %||% NA_character_,
       target_automation_status = item$target_automation_status %||% NA_character_,
       trace_required = item$trace_required %||% NA,
-      knowledge_refs = item$knowledge_refs %||% character()
+      knowledge_refs = item$knowledge_refs %||% character(),
+      subworkflow_ref = item$subworkflow_ref %||% NA_character_,
+      input_schema = item$input_schema %||% list(),
+      output_schema = item$output_schema %||% list(),
+      nested_workflow = item$nested_workflow %||% NULL
     )
   }))
 

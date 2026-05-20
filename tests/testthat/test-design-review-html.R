@@ -13,6 +13,47 @@ test_that("design_review_html returns standalone review page", {
   expect_false(grepl("http://", html, fixed = TRUE))
 })
 
+test_that("design_review_html shows node detail schemas and nested workflow drilldown", {
+  nested <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node("nested_1", "Read input"),
+      workflow_node("nested_2", "Return output")
+    ),
+    edges = workflow_edge("nested_1", "nested_2"),
+    task = "Nested task"
+  )
+  workflow <- new_workflow_spec(
+    nodes = workflow_node(
+      "node_detail",
+      "High-level step with nested workflow",
+      rule_spec = "Use the nested workflow for detailed review.",
+      implementation_hint = "Return JSON with answer and confidence.",
+      owner = "human",
+      automation_status = "human_in_loop",
+      knowledge_refs = "ki_nested",
+      subworkflow_ref = "workflows/node_detail.json",
+      input_schema = list(type = "object", required = "question"),
+      output_schema = list(type = "object", properties = list(answer = "string")),
+      nested_workflow = nested
+    ),
+    edges = .empty_workflow_edges(),
+    task = "Node detail review"
+  )
+  html <- design_review_html(workflow, title = "Node detail review")
+
+  expect_true(grepl("Node detail", html, fixed = TRUE))
+  expect_true(grepl("renderNodeDetail", html, fixed = TRUE))
+  expect_true(grepl("selectWorkflowNode", html, fixed = TRUE))
+  expect_true(grepl("data-node-id", html, fixed = TRUE))
+  expect_true(grepl("Input schema", html, fixed = TRUE))
+  expect_true(grepl("Output schema", html, fixed = TRUE))
+  expect_true(grepl("Nested workflow", html, fixed = TRUE))
+  expect_true(grepl("workflows/node_detail.json", html, fixed = TRUE))
+  expect_true(grepl('"input_schema":{"type":"object","required":"question"}', html, fixed = TRUE))
+  expect_true(grepl('"output_schema":{"type":"object","properties":{"answer":"string"}}', html, fixed = TRUE))
+  expect_true(grepl('"nested_workflow":{"nodes"', html, fixed = TRUE))
+})
+
 test_that("design_review_html wraps workflow graph labels without truncation", {
   long_label <- "Select the most appropriate chart type for the economic analysis and document why alternatives were rejected"
   workflow <- new_workflow_spec(
@@ -117,6 +158,9 @@ test_that("design_review_html supports process layout for loop workflows", {
   expect_true(grepl("hasBackwardEdges", html, fixed = TRUE))
   expect_true(grepl("_processBranch", html, fixed = TRUE))
   expect_true(grepl("_processIndex", html, fixed = TRUE))
+  expect_true(grepl("sameProcessColumn", html, fixed = TRUE))
+  expect_true(grepl("const startX=sameProcessColumn?a._x", html, fixed = TRUE))
+  expect_true(grepl("const endX=sameProcessColumn?b._x", html, fixed = TRUE))
   expect_true(grepl("railX", html, fixed = TRUE))
   expect_true(grepl('"graph_layout":"process"', html, fixed = TRUE))
 })

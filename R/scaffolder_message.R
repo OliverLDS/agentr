@@ -13,6 +13,8 @@ scaffolder_action_methods <- function() {
     "review_workflow",
     "review_node",
     "edit_workflow",
+    "set_node_schema",
+    "set_node_nested_workflow",
     "recommend_subsystems",
     "select_subsystems",
     "label_workflow_subsystems",
@@ -261,6 +263,8 @@ scaffolder_action_methods <- function() {
     review_workflow = c("status", "notes", "confidence"),
     review_node = c("node_id", "status", "notes", "confidence", "complete"),
     edit_workflow = c("add", "insert", "remove", "add_edges", "remove_edges", "rule_specs", "confidence"),
+    set_node_schema = c("node_id", "input_schema", "output_schema"),
+    set_node_nested_workflow = c("node_id", "subworkflow_ref", "nested_workflow"),
     recommend_subsystems = c("task"),
     select_subsystems = c("subsystems"),
     label_workflow_subsystems = c("labels"),
@@ -413,10 +417,46 @@ scaffolder_action_methods <- function() {
     }
   }
 
-  if (method %in% c("review_node", "ask_human_complete", "ask_human_rule")) {
+  if (method %in% c(
+    "review_node",
+    "set_node_schema",
+    "set_node_nested_workflow",
+    "ask_human_complete",
+    "ask_human_rule"
+  )) {
     node_id_arg <- .arg_get(args, "node_id")
     if (!is.character(node_id_arg) || length(node_id_arg) != 1L || !nzchar(node_id_arg)) {
       stop("`", method, "` requires a non-empty `node_id` string.", call. = FALSE)
+    }
+  }
+
+  if (identical(method, "set_node_schema")) {
+    input_schema_arg <- .arg_get(args, "input_schema")
+    output_schema_arg <- .arg_get(args, "output_schema")
+    if (!is.null(input_schema_arg) && !is.list(input_schema_arg)) {
+      stop("`set_node_schema.input_schema` must be a list when provided.", call. = FALSE)
+    }
+    if (!is.null(output_schema_arg) && !is.list(output_schema_arg)) {
+      stop("`set_node_schema.output_schema` must be a list when provided.", call. = FALSE)
+    }
+    if (is.null(input_schema_arg) && is.null(output_schema_arg)) {
+      stop("`set_node_schema` requires `input_schema` or `output_schema`.", call. = FALSE)
+    }
+  }
+
+  if (identical(method, "set_node_nested_workflow")) {
+    subworkflow_ref_arg <- .arg_get(args, "subworkflow_ref")
+    nested_workflow_arg <- .arg_get(args, "nested_workflow")
+    if (!is.null(subworkflow_ref_arg) &&
+        (!is.character(subworkflow_ref_arg) || length(subworkflow_ref_arg) != 1L || !nzchar(subworkflow_ref_arg))) {
+      stop("`set_node_nested_workflow.subworkflow_ref` must be a non-empty string when provided.", call. = FALSE)
+    }
+    if (!is.null(nested_workflow_arg) && !is.list(nested_workflow_arg) &&
+        !inherits(nested_workflow_arg, "agentr_workflow_spec")) {
+      stop("`set_node_nested_workflow.nested_workflow` must be a workflow-like list when provided.", call. = FALSE)
+    }
+    if (is.null(subworkflow_ref_arg) && is.null(nested_workflow_arg)) {
+      stop("`set_node_nested_workflow` requires `subworkflow_ref` or `nested_workflow`.", call. = FALSE)
     }
   }
 
@@ -540,7 +580,13 @@ scaffolder_action_methods <- function() {
 
   existing_ids <- scaffolder$workflow$nodes$id
 
-  if (method %in% c("review_node", "ask_human_complete", "ask_human_rule")) {
+  if (method %in% c(
+    "review_node",
+    "set_node_schema",
+    "set_node_nested_workflow",
+    "ask_human_complete",
+    "ask_human_rule"
+  )) {
     node_id_arg <- .arg_get(args, "node_id")
     if (!(node_id_arg %in% existing_ids)) {
       stop("Unknown workflow node reference: ", node_id_arg, call. = FALSE)
@@ -742,6 +788,25 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
         )
       ),
       list(
+        method = "set_node_schema",
+        args = list(
+          node_id = "node_1",
+          input_schema = list(type = "object", required = c("source_text")),
+          output_schema = list(type = "object", required = c("findings"))
+        )
+      ),
+      list(
+        method = "set_node_nested_workflow",
+        args = list(
+          node_id = "node_1",
+          subworkflow_ref = "workflows/node_1_detail.json",
+          nested_workflow = list(
+            nodes = list(list(id = "node_1a", label = "Inspect source text")),
+            edges = list()
+          )
+        )
+      ),
+      list(
         method = "select_subsystems",
         args = list(
           subsystems = c("pg", "ae")
@@ -788,6 +853,8 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
     review_workflow = "Record workflow-level completeness or revision status.",
     review_node = "Record node-level correctness or completion status.",
     edit_workflow = "Apply first-class node and edge edits, including insertions.",
+    set_node_schema = "Set structured input and output schema metadata for one workflow node.",
+    set_node_nested_workflow = "Attach a lower-level workflow reference or embedded nested workflow to one node.",
     recommend_subsystems = "Recommend a sparse subsystem set for the current task and workflow.",
     select_subsystems = "Store the selected subsystem configuration.",
     label_workflow_subsystems = "Assign subsystem owners to workflow nodes.",
@@ -873,6 +940,154 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
     "## Expected JSON Shape",
     "```json",
     schema_json,
+    "```",
+    sep = "\n"
+  )
+}
+
+#' Build a node-detail revision prompt
+#'
+#' Creates a constrained prompt for revising only one workflow node's interface
+#' schema or nested workflow detail. The expected response uses
+#' `set_node_schema()` and/or `set_node_nested_workflow()` actions.
+#'
+#' @param workflow Workflow spec containing the target node.
+#' @param node_id Workflow node id to revise.
+#' @param include_nested_workflow Whether to include existing nested workflow
+#'   payload in the prompt.
+#' @param feedback Optional human revision feedback.
+#' @param format Prompt payload format. Use `"json"` or `"markdown"`.
+#'
+#' @return Character string prompt.
+#' @export
+build_node_detail_prompt <- function(
+  workflow,
+  node_id,
+  include_nested_workflow = TRUE,
+  feedback = NULL,
+  format = c("json", "markdown")
+) {
+  format <- match.arg(format)
+  workflow <- validate_workflow_spec(workflow)
+  if (!is.character(node_id) || length(node_id) != 1L || !nzchar(node_id)) {
+    stop("`node_id` must be a non-empty string.", call. = FALSE)
+  }
+
+  idx <- which(workflow$nodes$id == node_id)
+  if (!length(idx)) {
+    stop("Unknown workflow node: ", node_id, call. = FALSE)
+  }
+
+  node <- as.list(workflow$nodes[idx[[1]], , drop = FALSE])
+  for (field in c("input_schema", "output_schema", "nested_workflow")) {
+    value <- node[[field]]
+    if (is.list(value) && length(value) == 1L) {
+      node[[field]] <- value[[1]]
+    }
+  }
+  if (!isTRUE(include_nested_workflow)) {
+    node$nested_workflow <- NULL
+  }
+
+  allowed_methods <- c("set_node_schema", "set_node_nested_workflow", "discuss_task", "review_node")
+  action_schema <- list(
+    actions = list(
+      list(
+        method = "set_node_schema",
+        args = list(
+          node_id = node_id,
+          input_schema = list(
+            type = "object",
+            required = c("source_text"),
+            properties = list(source_text = list(type = "string"))
+          ),
+          output_schema = list(
+            type = "object",
+            required = c("findings"),
+            properties = list(findings = list(type = "array"))
+          )
+        )
+      ),
+      list(
+        method = "set_node_nested_workflow",
+        args = list(
+          node_id = node_id,
+          subworkflow_ref = paste0("workflows/", node_id, "_detail.json"),
+          nested_workflow = list(
+            nodes = list(
+              list(id = paste0(node_id, "_a"), label = "Prepare node inputs"),
+              list(id = paste0(node_id, "_b"), label = "Produce node outputs")
+            ),
+            edges = list(list(from = paste0(node_id, "_a"), to = paste0(node_id, "_b")))
+          )
+        )
+      )
+    ),
+    notes = "Optional short reasoning note."
+  )
+  rules <- c(
+    paste0("Revise only workflow node `", node_id, "`."),
+    "Use `set_node_schema` for node input/output JSON-like schema metadata.",
+    "Use `set_node_nested_workflow` for a lower-level workflow chart inside this node.",
+    "Do not add, remove, rename, or reconnect top-level workflow nodes.",
+    "Do not mutate the approved top-level workflow unless the resulting proposal is explicitly approved.",
+    "Return only constrained JSON actions; do not include arbitrary R code."
+  )
+
+  contract <- new_prompt_contract(
+    input_type = "WorkflowNode",
+    target_role = "node_detail_reasoner",
+    expected_output = "JSON object with node-detail `actions` and optional `notes`."
+  )
+
+  payload <- .prompt_contract_payload(contract, list(
+    role = "node_detail_reasoner",
+    target_node_id = node_id,
+    human_feedback = feedback,
+    available_methods = allowed_methods,
+    decision_policy = rules,
+    current_node = node,
+    response_requirements = list(
+      format = "json",
+      rules = c(
+        "Return machine-readable JSON only.",
+        "Do not include markdown fences or prose outside JSON.",
+        "Every action that has a `node_id` argument must use the target node id.",
+        "The top-level object must contain `actions` and may contain `notes`."
+      ),
+      schema = action_schema
+    )
+  ))
+
+  if (identical(format, "json")) {
+    return(.prompt_json(payload))
+  }
+
+  paste(
+    "# Node Detail Revision Prompt",
+    "",
+    "You are revising one workflow node's interface schema and optional nested workflow.",
+    "",
+    "## Target Node",
+    node_id,
+    "",
+    "## Human Feedback",
+    if (is.null(feedback) || !nzchar(as.character(feedback)[1])) "<none>" else as.character(feedback)[1],
+    "",
+    "## Current Node",
+    "```json",
+    jsonlite::toJSON(node, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"),
+    "```",
+    "",
+    "## Allowed Methods",
+    paste(paste0("- `", allowed_methods, "`"), collapse = "\n"),
+    "",
+    "## Rules",
+    paste(paste0("- ", rules), collapse = "\n"),
+    "",
+    "## Expected JSON Shape",
+    "```json",
+    jsonlite::toJSON(action_schema, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"),
     "```",
     sep = "\n"
   )

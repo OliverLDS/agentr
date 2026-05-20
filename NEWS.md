@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.6.3
+
+Released: 2026-05-20
+
+- Added workflow-node `subworkflow_ref`, `input_schema`, `output_schema`, and `nested_workflow` fields for hierarchical workflow review and schema inspection.
+- Added a right-side node-detail panel in design-review HTML, with clickable workflow nodes/cards and local nested-workflow rendering when available.
+- Added constrained scaffolder actions `set_node_schema` and `set_node_nested_workflow`.
+- Added `build_node_detail_prompt()` and workspace/CLI support for node-scoped workflow revisions through `apply_node_detail_message()` and `--node-id`.
+- Updated workflow field docs, CLI lifecycle docs, scaffolder message schema, and tests for node-detail proposal flows.
+
 ## agentr 0.2.6.2
 
 Released: 2026-05-20

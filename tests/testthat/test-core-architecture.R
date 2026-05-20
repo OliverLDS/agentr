@@ -212,6 +212,79 @@ test_that("Scaffolder supports discussion, review, and graph editing", {
   expect_true(identical(nrow(scaffolder$low_confidence_nodes()), 2L))
 })
 
+test_that("Scaffolder supports node schema and nested workflow actions", {
+  scaffolder <- Scaffolder$new()
+  scaffolder$evaluate_task("Design a detailed workflow")
+  scaffolder$decompose_task(nodes = list(list(id = "node_1", label = "Analyze source")))
+
+  nested <- list(
+    nodes = list(
+      list(id = "node_1a", label = "Read input"),
+      list(id = "node_1b", label = "Write output")
+    ),
+    edges = list(list(from = "node_1a", to = "node_1b"))
+  )
+  message <- list(actions = list(
+    list(
+      method = "set_node_schema",
+      args = list(
+        node_id = "node_1",
+        input_schema = list(type = "object", required = c("source")),
+        output_schema = list(type = "object", required = c("summary"))
+      )
+    ),
+    list(
+      method = "set_node_nested_workflow",
+      args = list(
+        node_id = "node_1",
+        subworkflow_ref = "workflows/node_1_detail.json",
+        nested_workflow = nested
+      )
+    )
+  ))
+
+  preview <- preview_scaffolder_message(
+    scaffolder,
+    message,
+    allowed_methods = c("set_node_schema", "set_node_nested_workflow")
+  )
+  original_node <- scaffolder$workflow$nodes[scaffolder$workflow$nodes$id == "node_1", , drop = FALSE]
+  proposed_node <- preview$workflow_after$nodes[preview$workflow_after$nodes$id == "node_1", , drop = FALSE]
+
+  expect_true("set_node_schema" %in% scaffolder_action_methods())
+  expect_true("set_node_nested_workflow" %in% scaffolder_action_methods())
+  expect_equal(original_node$input_schema[[1]], list())
+  expect_equal(proposed_node$input_schema[[1]]$required, "source")
+  expect_equal(proposed_node$output_schema[[1]]$required, "summary")
+  expect_equal(proposed_node$subworkflow_ref[[1]], "workflows/node_1_detail.json")
+  expect_equal(proposed_node$nested_workflow[[1]]$nodes[[1]]$id, "node_1a")
+})
+
+test_that("Node detail prompt constrains revisions to one node", {
+  workflow <- new_workflow_spec(
+    nodes = workflow_node(
+      "node_1",
+      "Analyze source",
+      input_schema = list(type = "object"),
+      output_schema = list(type = "object")
+    ),
+    edges = .empty_workflow_edges(),
+    task = "Node detail prompt"
+  )
+
+  prompt <- build_node_detail_prompt(
+    workflow,
+    node_id = "node_1",
+    feedback = "Add exact input and output JSON shapes.",
+    format = "markdown"
+  )
+
+  expect_true(grepl("set_node_schema", prompt, fixed = TRUE))
+  expect_true(grepl("set_node_nested_workflow", prompt, fixed = TRUE))
+  expect_true(grepl("Revise only workflow node `node_1`", prompt, fixed = TRUE))
+  expect_true(grepl("Do not mutate the approved top-level workflow", prompt, fixed = TRUE))
+})
+
 test_that("Scaffolder supports sparse subsystem selection and agent-spec approval", {
   scaffolder <- Scaffolder$new(agent = AgentCore$new())
   scaffolder$evaluate_task("Design an approval-aware release agent")

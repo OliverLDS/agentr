@@ -157,6 +157,13 @@ Node records include:
 - `review_status`
 - `review_notes`
 - `review_confidence`
+- `owner`
+- `automation_status`
+- `knowledge_refs`
+- `subworkflow_ref`
+- `input_schema`
+- `output_schema`
+- `nested_workflow`
 
 Workflow specs can also be:
 

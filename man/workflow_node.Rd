@@ -20,7 +20,11 @@ workflow_node(
   human_owned_reason = NA_character_,
   target_automation_status = NA_character_,
   trace_required = NA,
-  knowledge_refs = character()
+  knowledge_refs = character(),
+  subworkflow_ref = NA_character_,
+  input_schema = list(),
+  output_schema = list(),
+  nested_workflow = NULL
 )
 }
 \arguments{
@@ -55,6 +59,15 @@ workflow_node(
 \item{trace_required}{Optional logical flag indicating whether decision traces should be collected.}
 
 \item{knowledge_refs}{Optional character vector of referenced knowledge-item ids.}
+
+\item{subworkflow_ref}{Optional identifier or path for a nested workflow.}
+
+\item{input_schema}{Optional structured input schema for the node.}
+
+\item{output_schema}{Optional structured output schema for the node.}
+
+\item{nested_workflow}{Optional nested workflow spec or list with \code{nodes} and
+\code{edges}, used by review UIs for drilldown.}
 }
 \value{
 One-row data frame.

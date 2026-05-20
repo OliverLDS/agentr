@@ -8,7 +8,8 @@ apply_revision_message(
   workspace,
   target = c("workflow", "agent", "memory", "knowledge"),
   message,
-  agent_spec_path = NULL
+  agent_spec_path = NULL,
+  node_id = NULL
 )
 }
 \arguments{
@@ -19,6 +20,9 @@ apply_revision_message(
 \item{message}{JSON string, parsed list, or path to a JSON response file.}
 
 \item{agent_spec_path}{Optional path to approved \code{\link{AgentSpec}} \code{.rds}.}
+
+\item{node_id}{Optional workflow node id. When supplied for workflow targets,
+only node-detail actions for this node are accepted.}
 }
 \value{
 Mutated state object or preview result.

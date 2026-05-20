@@ -21,6 +21,7 @@ main <- function(args = commandArgs(trailingOnly = TRUE)) {
     "apply-initial-message" = cmd_apply_initial_message(rest),
     "build-revision-prompt" = cmd_build_revision_prompt(rest),
     "apply-revision-message" = cmd_apply_revision_message(rest),
+    "apply-node-detail-message" = cmd_apply_node_detail_message(rest),
     "list-proposals" = cmd_list_proposals(rest),
     "approve-proposal" = cmd_approve_proposal(rest),
     "reject-proposal" = cmd_reject_proposal(rest),
@@ -47,8 +48,9 @@ print_help <- function() {
     "  init-states --workspace PATH [--agent-spec PATH]\n",
     "  build-initial-prompt --workspace PATH --target TARGET --comment TEXT_OR_FILE [--out PATH]\n",
     "  apply-initial-message --workspace PATH --target TARGET --message RESPONSE_JSON [--comment TEXT_OR_FILE]\n",
-    "  build-revision-prompt --workspace PATH --target TARGET --comment TEXT_OR_FILE [--out PATH]\n",
-    "  apply-revision-message --workspace PATH --target TARGET --message RESPONSE_JSON\n",
+    "  build-revision-prompt --workspace PATH --target TARGET --comment TEXT_OR_FILE [--node-id NODE_ID] [--out PATH]\n",
+    "  apply-revision-message --workspace PATH --target TARGET --message RESPONSE_JSON [--node-id NODE_ID]\n",
+    "  apply-node-detail-message --workspace PATH --node-id NODE_ID --message RESPONSE_JSON\n",
     "  list-proposals --workspace PATH --type TYPE [--status STATUS]\n",
     "  approve-proposal --workspace PATH --type TYPE --proposal-id ID [--note TEXT_OR_FILE]\n",
     "  reject-proposal --workspace PATH --type TYPE --proposal-id ID [--note TEXT_OR_FILE]\n",
@@ -70,8 +72,9 @@ print_command_help <- function(cmd) {
     "init-states" = "init-states --workspace PATH [--agent-spec PATH]\nCreate workflow, memory, knowledge, and scaffolder proposal states.",
     "build-initial-prompt" = "build-initial-prompt --workspace PATH --target TARGET --comment TEXT_OR_FILE [--out PATH]\nWrite an initial manual-LLM prompt.",
     "apply-initial-message" = "apply-initial-message --workspace PATH --target TARGET --message RESPONSE_JSON [--comment TEXT_OR_FILE]\nApply an initial constrained JSON response into proposal state.",
-    "build-revision-prompt" = "build-revision-prompt --workspace PATH --target TARGET --comment TEXT_OR_FILE [--out PATH]\nWrite a revision prompt from current workspace state and human feedback.",
-    "apply-revision-message" = "apply-revision-message --workspace PATH --target TARGET --message RESPONSE_JSON\nApply a revision response. Workflow revisions are stored as proposals.",
+    "build-revision-prompt" = "build-revision-prompt --workspace PATH --target TARGET --comment TEXT_OR_FILE [--node-id NODE_ID] [--out PATH]\nWrite a revision prompt from current workspace state and human feedback. For workflow targets, --node-id builds a node-detail schema/nested-workflow prompt.",
+    "apply-revision-message" = "apply-revision-message --workspace PATH --target TARGET --message RESPONSE_JSON [--node-id NODE_ID]\nApply a revision response. Workflow revisions are stored as proposals; --node-id constrains workflow revisions to node schema/nested workflow.",
+    "apply-node-detail-message" = "apply-node-detail-message --workspace PATH --node-id NODE_ID --message RESPONSE_JSON\nApply node schema or nested-workflow response as a workflow proposal.",
     "list-proposals" = "list-proposals --workspace PATH --type TYPE [--status STATUS]\nList proposals in a workspace.",
     "approve-proposal" = "approve-proposal --workspace PATH --type TYPE --proposal-id ID [--note TEXT_OR_FILE]\nExplicitly approve a proposal and update approved state/spec artifacts.",
     "reject-proposal" = "reject-proposal --workspace PATH --type TYPE --proposal-id ID [--note TEXT_OR_FILE]\nReject a proposal without mutating approved specs.",
@@ -177,7 +180,8 @@ cmd_build_revision_prompt <- function(args) {
     command_option(args, "workspace", required = TRUE),
     target = command_option(args, "target", required = TRUE),
     comment = command_option(args, "comment", required = TRUE),
-    out = command_option(args, "out")
+    out = command_option(args, "out"),
+    node_id = command_option(args, "node-id")
   )
 }
 
@@ -185,9 +189,19 @@ cmd_apply_revision_message <- function(args) {
   apply_revision_message(
     command_option(args, "workspace", required = TRUE),
     target = command_option(args, "target", required = TRUE),
-    message = command_option(args, "message", required = TRUE)
+    message = command_option(args, "message", required = TRUE),
+    node_id = command_option(args, "node-id")
   )
   "revision response applied"
+}
+
+cmd_apply_node_detail_message <- function(args) {
+  apply_node_detail_message(
+    command_option(args, "workspace", required = TRUE),
+    node_id = command_option(args, "node-id", required = TRUE),
+    message = command_option(args, "message", required = TRUE)
+  )
+  "node detail response applied"
 }
 
 cmd_list_proposals <- function(args) {

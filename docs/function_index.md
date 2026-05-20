@@ -114,8 +114,10 @@
 | `init_agentr_proposal_states()` | Initialize workflow, memory, knowledge, and scaffolder proposal-state artifacts |
 | `build_initial_spec_prompt()` | Write an initial manual-LLM prompt for workflow, agent, memory, or knowledge design |
 | `build_revision_prompt()` | Write a revision prompt from current workspace state plus human feedback |
+| `build_node_detail_prompt()` | Build a constrained prompt for one workflow node's schemas and nested workflow |
 | `apply_initial_spec_message()` | Apply an initial constrained JSON response into workspace proposal state |
 | `apply_revision_message()` | Apply a revision JSON response without implicitly approving specs |
+| `apply_node_detail_message()` | Apply one node-detail response as a workflow proposal |
 | `list_workspace_proposals()` | List workflow, agent, memory, or knowledge proposals in a workspace |
 | `approve_workspace_proposal()` | Explicitly approve a workspace proposal and update approved artifacts |
 | `reject_workspace_proposal()` | Reject a workspace proposal without mutating approved specs |

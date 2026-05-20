@@ -73,6 +73,23 @@ apply_revision_message(
 )
 ```
 
+Workflow node details can be scoped to one node. This is useful when the top-level workflow is broadly right, but a human wants to refine a node's input schema, output schema, or nested lower-level workflow:
+
+```r
+build_revision_prompt(
+  workspace,
+  target = "workflow",
+  node_id = "node_interpret",
+  comment = "Revise only this node's schema and nested workflow."
+)
+
+apply_node_detail_message(
+  workspace,
+  node_id = "node_interpret",
+  message = file.path(workspace, "responses", "node_interpret_detail.json")
+)
+```
+
 Workflow revision responses are previewed and stored as workflow proposals. They do not mutate the approved workflow until an explicit approval call is made.
 
 ```r
@@ -105,6 +122,8 @@ Rscript inst/cli/agentr-cli.R build-initial-prompt --workspace my_agent_design -
 Rscript inst/cli/agentr-cli.R apply-initial-message --workspace my_agent_design --target workflow --message responses/workflow_initial.json
 Rscript inst/cli/agentr-cli.R build-revision-prompt --workspace my_agent_design --target knowledge --comment feedback.txt
 Rscript inst/cli/agentr-cli.R apply-revision-message --workspace my_agent_design --target knowledge --message responses/knowledge_revision.json
+Rscript inst/cli/agentr-cli.R build-revision-prompt --workspace my_agent_design --target workflow --node-id node_interpret --comment node_feedback.txt
+Rscript inst/cli/agentr-cli.R apply-node-detail-message --workspace my_agent_design --node-id node_interpret --message responses/node_interpret_detail.json
 Rscript inst/cli/agentr-cli.R list-proposals --workspace my_agent_design --type knowledge
 Rscript inst/cli/agentr-cli.R approve-proposal --workspace my_agent_design --type knowledge --proposal-id ki_proposal_1
 Rscript inst/cli/agentr-cli.R export-review --workspace my_agent_design --graph-layout process --edge-style orthogonal

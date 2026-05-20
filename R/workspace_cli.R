@@ -166,6 +166,8 @@ build_initial_spec_prompt <- function(
 #' @param comment Human revision feedback.
 #' @param out Optional output file path.
 #' @param agent_spec_path Optional path to approved [`AgentSpec`] `.rds`.
+#' @param node_id Optional workflow node id. When supplied for workflow targets,
+#'   the prompt is constrained to node schema and nested-workflow revision.
 #' @param format Prompt payload format.
 #'
 #' @return Output prompt path.
@@ -176,9 +178,13 @@ build_revision_prompt <- function(
   comment,
   out = NULL,
   agent_spec_path = NULL,
+  node_id = NULL,
   format = c("markdown", "json")
 ) {
   target <- match.arg(target)
+  if (!is.null(node_id) && !identical(target, "workflow")) {
+    stop("`node_id` is only supported when `target = \"workflow\"`.", call. = FALSE)
+  }
   format <- match.arg(format)
   paths <- init_agentr_workspace(workspace, create_readme = FALSE)
   comment <- .workspace_read_text(comment)
@@ -193,7 +199,17 @@ build_revision_prompt <- function(
       )
       scaffolder <- .workspace_scaffolder(spec, workflow_state)
       scaffolder$discuss_task(comment, source = "human")
-      build_scaffolder_prompt(scaffolder, format = format)
+      if (!is.null(node_id)) {
+        build_node_detail_prompt(
+          scaffolder$workflow_spec(),
+          node_id = node_id,
+          feedback = comment,
+          include_nested_workflow = TRUE,
+          format = format
+        )
+      } else {
+        build_scaffolder_prompt(scaffolder, format = format)
+      }
     },
     agent = {
       workflow_state <- .workspace_load_or_default(
@@ -310,6 +326,8 @@ apply_initial_spec_message <- function(
 #' @param target Target state: workflow, agent, memory, or knowledge.
 #' @param message JSON string, parsed list, or path to a JSON response file.
 #' @param agent_spec_path Optional path to approved [`AgentSpec`] `.rds`.
+#' @param node_id Optional workflow node id. When supplied for workflow targets,
+#'   only node-detail actions for this node are accepted.
 #'
 #' @return Mutated state object or preview result.
 #' @export
@@ -317,9 +335,13 @@ apply_revision_message <- function(
   workspace,
   target = c("workflow", "agent", "memory", "knowledge"),
   message,
-  agent_spec_path = NULL
+  agent_spec_path = NULL,
+  node_id = NULL
 ) {
   target <- match.arg(target)
+  if (!is.null(node_id) && !identical(target, "workflow")) {
+    stop("`node_id` is only supported when `target = \"workflow\"`.", call. = FALSE)
+  }
   paths <- init_agentr_workspace(workspace, create_readme = FALSE)
   spec <- .workspace_load_agent_spec(agent_spec_path, paths)
 
@@ -329,12 +351,23 @@ apply_revision_message <- function(
       WorkflowProposalState$new(approved_workflow = .workspace_agent_workflow(spec))
     )
     scaffolder <- .workspace_scaffolder(spec, workflow_state)
+    allowed_methods <- scaffolder_action_methods()
+    proposal_notes <- "Workspace workflow revision preview"
+    if (!is.null(node_id)) {
+      allowed_methods <- c("set_node_schema", "set_node_nested_workflow", "discuss_task", "review_node")
+      parsed <- if (is.character(message)) parse_scaffolder_message(message) else message
+      parsed <- validate_scaffolder_message(parsed, allowed_methods = allowed_methods)
+      .workspace_validate_node_detail_actions(parsed, node_id)
+      message <- parsed
+      proposal_notes <- paste0("Workspace node-detail revision preview for `", node_id, "`")
+    }
     result <- preview_scaffolder_message(
       scaffolder,
       message,
+      allowed_methods = allowed_methods,
       store_proposal = TRUE,
       source = "model",
-      proposal_notes = "Workspace workflow revision preview"
+      proposal_notes = proposal_notes
     )
     saveRDS(scaffolder, paths$scaffolder_state)
     saveRDS(scaffolder$workflow_state, paths$workflow_state)
@@ -376,6 +409,35 @@ apply_revision_message <- function(
   apply_knowledge_message(state, message)
   saveRDS(state, paths$knowledge_state)
   invisible(state)
+}
+
+#' Apply a node-detail LLM response into a workspace workflow proposal
+#'
+#' This is a convenience wrapper for `apply_revision_message(target =
+#' "workflow", node_id = ...)`. It previews the proposed node schema or nested
+#' workflow edits and stores them as a workflow proposal; approved workflow state
+#' is not mutated until the proposal is explicitly approved.
+#'
+#' @param workspace Workspace root directory.
+#' @param node_id Workflow node id to revise.
+#' @param message JSON string, parsed list, or path to a JSON response file.
+#' @param agent_spec_path Optional path to approved [`AgentSpec`] `.rds`.
+#'
+#' @return Preview result.
+#' @export
+apply_node_detail_message <- function(
+  workspace,
+  node_id,
+  message,
+  agent_spec_path = NULL
+) {
+  apply_revision_message(
+    workspace = workspace,
+    target = "workflow",
+    message = message,
+    agent_spec_path = agent_spec_path,
+    node_id = node_id
+  )
 }
 
 #' List workspace proposals
@@ -646,6 +708,24 @@ build_workspace_implementation_prompt <- function(
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
   writeLines(text, path, useBytes = TRUE)
   path
+}
+
+.workspace_validate_node_detail_actions <- function(message, node_id) {
+  if (!is.character(node_id) || length(node_id) != 1L || !nzchar(node_id)) {
+    stop("`node_id` must be a non-empty string.", call. = FALSE)
+  }
+  for (action in message$actions) {
+    args <- action$args
+    action_node_id <- if (is.null(args)) NULL else args$node_id
+    if (!is.null(action_node_id) && !identical(as.character(action_node_id)[1], node_id)) {
+      stop(
+        "Node-detail messages may only target `", node_id, "`; found `",
+        as.character(action_node_id)[1], "`.",
+        call. = FALSE
+      )
+    }
+  }
+  invisible(TRUE)
 }
 
 .workspace_load_or_null <- function(path) {

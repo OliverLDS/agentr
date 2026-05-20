@@ -273,6 +273,93 @@
 }
 
 #' @keywords internal
+.scaffolder_set_node_schema <- function(
+  scaffolder,
+  node_id,
+  input_schema = NULL,
+  output_schema = NULL
+) {
+  stopifnot(inherits(scaffolder, "Scaffolder"))
+  nodes <- scaffolder$workflow$nodes
+  idx <- which(nodes$id == node_id)
+  if (!length(idx)) {
+    stop("Unknown workflow node: ", node_id, call. = FALSE)
+  }
+  idx <- idx[[1]]
+
+  if (!is.null(input_schema) && !is.list(input_schema)) {
+    stop("`input_schema` must be a list when provided.", call. = FALSE)
+  }
+  if (!is.null(output_schema) && !is.list(output_schema)) {
+    stop("`output_schema` must be a list when provided.", call. = FALSE)
+  }
+  if (is.null(input_schema) && is.null(output_schema)) {
+    stop("At least one of `input_schema` or `output_schema` must be provided.", call. = FALSE)
+  }
+
+  if (!is.null(input_schema)) {
+    nodes$input_schema[idx] <- I(list(input_schema))
+  }
+  if (!is.null(output_schema)) {
+    nodes$output_schema[idx] <- I(list(output_schema))
+  }
+
+  scaffolder$workflow <- new_workflow_spec(
+    nodes = nodes,
+    edges = scaffolder$workflow$edges,
+    task = scaffolder$task,
+    metadata = scaffolder$workflow$metadata
+  )
+  .scaffolder_sync_approved_workflow(scaffolder)
+  scaffolder$workflow
+}
+
+#' @keywords internal
+.scaffolder_set_node_nested_workflow <- function(
+  scaffolder,
+  node_id,
+  subworkflow_ref = NULL,
+  nested_workflow = NULL
+) {
+  stopifnot(inherits(scaffolder, "Scaffolder"))
+  nodes <- scaffolder$workflow$nodes
+  idx <- which(nodes$id == node_id)
+  if (!length(idx)) {
+    stop("Unknown workflow node: ", node_id, call. = FALSE)
+  }
+  idx <- idx[[1]]
+
+  if (!is.null(subworkflow_ref) &&
+      (!is.character(subworkflow_ref) || length(subworkflow_ref) != 1L || !nzchar(subworkflow_ref))) {
+    stop("`subworkflow_ref` must be a non-empty string when provided.", call. = FALSE)
+  }
+  if (!is.null(nested_workflow) &&
+      !inherits(nested_workflow, "agentr_workflow_spec") &&
+      !is.list(nested_workflow)) {
+    stop("`nested_workflow` must be a workflow-like list when provided.", call. = FALSE)
+  }
+  if (is.null(subworkflow_ref) && is.null(nested_workflow)) {
+    stop("At least one of `subworkflow_ref` or `nested_workflow` must be provided.", call. = FALSE)
+  }
+
+  if (!is.null(subworkflow_ref)) {
+    nodes$subworkflow_ref[idx] <- subworkflow_ref
+  }
+  if (!is.null(nested_workflow)) {
+    nodes$nested_workflow[idx] <- I(list(nested_workflow))
+  }
+
+  scaffolder$workflow <- new_workflow_spec(
+    nodes = nodes,
+    edges = scaffolder$workflow$edges,
+    task = scaffolder$task,
+    metadata = scaffolder$workflow$metadata
+  )
+  .scaffolder_sync_approved_workflow(scaffolder)
+  scaffolder$workflow
+}
+
+#' @keywords internal
 .scaffolder_implementation_spec <- function(scaffolder) {
   stopifnot(inherits(scaffolder, "Scaffolder"))
   nodes <- scaffolder$workflow_spec()$nodes

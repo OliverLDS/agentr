@@ -387,6 +387,12 @@
 #' @param add_edges List of edge records to add in `$edit_workflow()`.
 #' @param remove_edges List of edge specs to remove in `$edit_workflow()`.
 #' @param rule_specs Named list of rule specs used by `$edit_workflow()`.
+#' @param input_schema Structured input schema used by `$set_node_schema()`.
+#' @param output_schema Structured output schema used by `$set_node_schema()`.
+#' @param subworkflow_ref Nested workflow reference used by
+#'   `$set_node_nested_workflow()`.
+#' @param nested_workflow Embedded nested workflow used by
+#'   `$set_node_nested_workflow()`.
 #' @param completeness Named list of completion flags used by
 #'   `$apply_human_feedback()`.
 #' @param type Interaction type used by `$record_interaction()`.
@@ -426,6 +432,8 @@
 #'   \item{`$review_workflow(status = "pending", notes = NULL, confidence = NA_real_)`}{Store workflow-level completeness or revision review state.}
 #'   \item{`$review_node(node_id, status = "pending", notes = NULL, confidence = NA_real_, complete = NULL)`}{Store node-level correctness or completion review state.}
 #'   \item{`$edit_workflow(add = NULL, insert = NULL, remove = NULL, add_edges = NULL, remove_edges = NULL, rule_specs = list(), confidence = list())`}{Apply first-class node and edge edits to the current workflow.}
+#'   \item{`$set_node_schema(node_id, input_schema = NULL, output_schema = NULL)`}{Set input/output schema metadata for one workflow node.}
+#'   \item{`$set_node_nested_workflow(node_id, subworkflow_ref = NULL, nested_workflow = NULL)`}{Attach a nested workflow reference or embedded nested workflow to one node.}
 #'   \item{`$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())`}{Compatibility wrapper for structured human workflow edits.}
 #'   \item{`$recommend_subsystems(task = self$task)`}{Recommend a sparse subsystem set for the current task and workflow.}
 #'   \item{`$subsystem_recommendations()`}{Return the current subsystem recommendation records.}
@@ -731,6 +739,44 @@ Scaffolder <- R6::R6Class(
           remove_edges = remove_edges,
           rule_specs = rule_specs,
           confidence = confidence
+        )
+      )
+      invisible(self$workflow)
+    },
+
+    #' @description
+    #' Set structured input and output schema metadata for one workflow node.
+    set_node_schema = function(node_id, input_schema = NULL, output_schema = NULL) {
+      self$workflow <- .scaffolder_set_node_schema(
+        scaffolder = self,
+        node_id = node_id,
+        input_schema = input_schema,
+        output_schema = output_schema
+      )
+
+      self$record_interaction(
+        "set_node_schema",
+        list(node_id = node_id, input_schema = input_schema, output_schema = output_schema)
+      )
+      invisible(self$workflow)
+    },
+
+    #' @description
+    #' Attach a nested workflow reference or embedded nested workflow to one node.
+    set_node_nested_workflow = function(node_id, subworkflow_ref = NULL, nested_workflow = NULL) {
+      self$workflow <- .scaffolder_set_node_nested_workflow(
+        scaffolder = self,
+        node_id = node_id,
+        subworkflow_ref = subworkflow_ref,
+        nested_workflow = nested_workflow
+      )
+
+      self$record_interaction(
+        "set_node_nested_workflow",
+        list(
+          node_id = node_id,
+          subworkflow_ref = subworkflow_ref,
+          nested_workflow = nested_workflow
         )
       )
       invisible(self$workflow)

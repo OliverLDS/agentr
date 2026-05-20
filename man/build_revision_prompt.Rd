@@ -10,6 +10,7 @@ build_revision_prompt(
   comment,
   out = NULL,
   agent_spec_path = NULL,
+  node_id = NULL,
   format = c("markdown", "json")
 )
 }
@@ -23,6 +24,9 @@ build_revision_prompt(
 \item{out}{Optional output file path.}
 
 \item{agent_spec_path}{Optional path to approved \code{\link{AgentSpec}} \code{.rds}.}
+
+\item{node_id}{Optional workflow node id. When supplied for workflow targets,
+the prompt is constrained to node schema and nested-workflow revision.}
 
 \item{format}{Prompt payload format.}
 }

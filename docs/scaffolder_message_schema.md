@@ -37,6 +37,15 @@ Allowed methods:
 - `review_workflow`
 - `review_node`
 - `edit_workflow`
+- `set_node_schema`
+- `set_node_nested_workflow`
+- `recommend_subsystems`
+- `select_subsystems`
+- `label_workflow_subsystems`
+- `edit_workflow_subsystems`
+- `propose_agent_spec`
+- `approve_agent_spec_proposal`
+- `approve_agent_spec`
 - `ask_human_complete`
 - `ask_human_changes`
 - `ask_human_rule`
@@ -153,6 +162,54 @@ Validation rules:
 - explicit added-node `id` values must be unique.
 - edge specs must include non-empty `from` and `to` ids.
 - inserted anchors such as `between`, `after`, and `before` must reference known nodes.
+
+### `set_node_schema`
+
+```json
+{
+  "method": "set_node_schema",
+  "args": {
+    "node_id": "node_3",
+    "input_schema": {
+      "type": "object",
+      "required": ["source_text"]
+    },
+    "output_schema": {
+      "type": "object",
+      "required": ["findings"]
+    }
+  }
+}
+```
+
+- `node_id` is required and must reference an existing workflow node.
+- `input_schema` and `output_schema` are optional lists, but at least one must be supplied.
+- in workspace revision flows, node-detail updates are stored as workflow proposals until explicit approval.
+
+### `set_node_nested_workflow`
+
+```json
+{
+  "method": "set_node_nested_workflow",
+  "args": {
+    "node_id": "node_3",
+    "subworkflow_ref": "workflows/node_3_detail.json",
+    "nested_workflow": {
+      "nodes": [
+        {"id": "node_3a", "label": "Inspect input"},
+        {"id": "node_3b", "label": "Produce structured output"}
+      ],
+      "edges": [
+        {"from": "node_3a", "to": "node_3b"}
+      ]
+    }
+  }
+}
+```
+
+- `node_id` is required and must reference an existing workflow node.
+- `subworkflow_ref` and `nested_workflow` are optional, but at least one must be supplied.
+- this action attaches lower-level workflow detail to one node; it should not add, remove, rename, or reconnect top-level workflow nodes.
 
 ### `ask_human_complete`
 
