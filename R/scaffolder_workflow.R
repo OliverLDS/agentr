@@ -1,6 +1,6 @@
 #' @keywords internal
 .scaffolder_next_workflow_proposal_id <- function(scaffolder) {
-  paste0("proposal_", length(scaffolder$proposal_log) + 1L)
+  paste0("proposal_", length(scaffolder$workflow_state$proposal_history()) + 1L)
 }
 
 #' @keywords internal
@@ -280,6 +280,7 @@
   output_schema = NULL
 ) {
   stopifnot(inherits(scaffolder, "Scaffolder"))
+  scaffolder$workflow <- validate_workflow_spec(scaffolder$workflow)
   nodes <- scaffolder$workflow$nodes
   idx <- which(nodes$id == node_id)
   if (!length(idx)) {
@@ -298,10 +299,14 @@
   }
 
   if (!is.null(input_schema)) {
-    nodes$input_schema[idx] <- I(list(input_schema))
+    input_schemas <- nodes$input_schema
+    input_schemas[[idx]] <- input_schema
+    nodes$input_schema <- I(input_schemas)
   }
   if (!is.null(output_schema)) {
-    nodes$output_schema[idx] <- I(list(output_schema))
+    output_schemas <- nodes$output_schema
+    output_schemas[[idx]] <- output_schema
+    nodes$output_schema <- I(output_schemas)
   }
 
   scaffolder$workflow <- new_workflow_spec(
@@ -322,6 +327,7 @@
   nested_workflow = NULL
 ) {
   stopifnot(inherits(scaffolder, "Scaffolder"))
+  scaffolder$workflow <- validate_workflow_spec(scaffolder$workflow)
   nodes <- scaffolder$workflow$nodes
   idx <- which(nodes$id == node_id)
   if (!length(idx)) {
@@ -346,7 +352,9 @@
     nodes$subworkflow_ref[idx] <- subworkflow_ref
   }
   if (!is.null(nested_workflow)) {
-    nodes$nested_workflow[idx] <- I(list(nested_workflow))
+    nested_workflows <- nodes$nested_workflow
+    nested_workflows[[idx]] <- nested_workflow
+    nodes$nested_workflow <- I(nested_workflows)
   }
 
   scaffolder$workflow <- new_workflow_spec(

@@ -1,5 +1,13 @@
 # agentr news
 
+# agentr 0.2.6.4
+
+Released: 2026-05-21
+
+- Added task-family helpers so one workspace can group multiple related tasks under a shared root workflow while keeping each child task reviewable through its own subworkflow reference.
+- Added task-family design documentation and review-page task tabs so the main browser preview can switch between child tasks instead of forcing all nested workflows into one narrow detail panel.
+- Improved design-review rendering so nested workflow clicks preserve the selected preview context and the right-side detail panel continues to show the clicked node.
+
 ## agentr 0.2.6.3
 
 Released: 2026-05-20

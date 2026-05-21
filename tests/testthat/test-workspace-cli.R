@@ -174,6 +174,82 @@ test_that("workspace node-detail revisions are scoped and stored as proposals", 
   )
 })
 
+test_that("workspace node-detail prompts can use latest pending workflow proposal", {
+  workspace <- tempfile("agentr_workspace_")
+  on.exit(unlink(workspace, recursive = TRUE), add = TRUE)
+
+  message <- jsonlite::toJSON(list(actions = list(list(
+    method = "decompose_task",
+    args = list(nodes = list(list(id = "node_8", label = "Draft digest schema")))
+  ))), auto_unbox = TRUE, null = "null")
+
+  apply_initial_spec_message(workspace, target = "workflow", message = message)
+  prompt_path <- build_revision_prompt(
+    workspace,
+    target = "workflow",
+    node_id = "node_8",
+    comment = "Generate output_schema JSON for this node.",
+    format = "markdown"
+  )
+  workflow_state <- readRDS(agentr_workspace_paths(workspace)$workflow_state)
+  prompt <- paste(readLines(prompt_path, warn = FALSE), collapse = "\n")
+
+  expect_equal(nrow(workflow_state$approved_workflow$nodes), 0L)
+  expect_true(grepl("node_8", prompt, fixed = TRUE))
+  expect_true(grepl("set_node_schema", prompt, fixed = TRUE))
+})
+
+test_that("workspace node-detail schema application preserves large named schema lists", {
+  workspace <- tempfile("agentr_workspace_")
+  on.exit(unlink(workspace, recursive = TRUE), add = TRUE)
+
+  initial_message <- jsonlite::toJSON(list(actions = list(list(
+    method = "decompose_task",
+    args = list(nodes = list(list(id = "node_8", label = "Draft digest schema")))
+  ))), auto_unbox = TRUE, null = "null")
+  apply_initial_spec_message(workspace, target = "workflow", message = initial_message)
+  paths <- agentr_workspace_paths(workspace)
+  workflow_state <- readRDS(paths$workflow_state)
+  legacy_proposal <- workflow_state$latest_proposal()
+  legacy_proposal$workflow$nodes$input_schema <- NULL
+  legacy_proposal$workflow$nodes$output_schema <- NULL
+  workflow_state$proposals[[legacy_proposal$id]] <- legacy_proposal
+  saveRDS(workflow_state, paths$workflow_state)
+
+  output_schema <- list(
+    type = "object",
+    schema_name = "digest_schema_v2",
+    required = as.list(paste0("field_", seq_len(8))),
+    properties = stats::setNames(
+      lapply(seq_len(8), function(i) list(type = "string")),
+      paste0("field_", seq_len(8))
+    )
+  )
+  message <- jsonlite::toJSON(list(actions = list(list(
+    method = "set_node_schema",
+    args = list(
+      node_id = "node_8",
+      input_schema = list(
+        type = "object",
+        required = as.list(c("source", "schema")),
+        properties = list(source = list(type = "string"), schema = list(type = "string"))
+      ),
+      output_schema = output_schema
+    )
+  ))), auto_unbox = TRUE, null = "null")
+
+  preview <- apply_node_detail_message(workspace, node_id = "node_8", message = message)
+  node <- preview$workflow_after$nodes[preview$workflow_after$nodes$id == "node_8", , drop = FALSE]
+  workflow_state <- readRDS(paths$workflow_state)
+
+  expect_equal(preview$proposal_id, "proposal_2")
+  expect_equal(length(workflow_state$list_proposals()$id), 2L)
+  expect_equal(nrow(preview$workflow_after$nodes), 1L)
+  expect_equal(node$output_schema[[1]]$schema_name, "digest_schema_v2")
+  expect_equal(length(node$output_schema[[1]]$properties), 8L)
+  expect_equal(node$input_schema[[1]]$properties$source$type, "string")
+})
+
 test_that("workspace initial workflow application stores a pending proposal when omitted", {
   workspace <- tempfile("agentr_workspace_")
   on.exit(unlink(workspace, recursive = TRUE), add = TRUE)

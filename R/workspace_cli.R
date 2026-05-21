@@ -792,7 +792,7 @@ build_workspace_implementation_prompt <- function(
     workflow_state <- WorkflowProposalState$new(approved_workflow = .workspace_agent_workflow(spec))
   }
   scaffolder$workflow_state <- workflow_state
-  scaffolder$workflow <- workflow_state$approved_workflow
+  scaffolder$workflow <- .workspace_current_workflow(workflow_state)
   if (!is.null(scaffolder$workflow$task)) {
     scaffolder$task <- scaffolder$workflow$task
   }
@@ -802,6 +802,14 @@ build_workspace_implementation_prompt <- function(
     scaffolder$agent_state$metadata$draft_agent_spec <- spec
   }
   scaffolder
+}
+
+.workspace_current_workflow <- function(workflow_state) {
+  latest <- workflow_state$latest_proposal()
+  if (!is.null(latest) && latest$status %in% c("pending", "under_discussion")) {
+    return(validate_workflow_spec(latest$workflow))
+  }
+  validate_workflow_spec(workflow_state$approved_workflow)
 }
 
 .workspace_update_agent_spec <- function(paths, spec, workflow = NULL, memory_spec = NULL, knowledge_spec = NULL) {

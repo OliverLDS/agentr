@@ -45,6 +45,10 @@
 | `validate_workflow_spec()` | Validate workflow structure |
 | `save_workflow_spec()` | Save a workflow specification |
 | `load_workflow_spec()` | Load a workflow specification |
+| `task_family_metadata()` | Create metadata for a root workflow that groups related child tasks |
+| `child_task_node()` | Create a workflow node that represents one child task |
+| `new_task_family_workflow()` | Create a root task-family workflow spec |
+| `add_child_task_node()` | Add a child-task node and update task-family metadata |
 | `set_workflow_node_owner()` | Set one workflow node owner |
 | `set_workflow_node_automation_status()` | Set one workflow node automation status |
 | `mark_node_human_owned()` | Mark a workflow node as human-owned |

@@ -43,6 +43,11 @@ test_that("design_review_html shows node detail schemas and nested workflow dril
 
   expect_true(grepl("Node detail", html, fixed = TRUE))
   expect_true(grepl("renderNodeDetail", html, fixed = TRUE))
+  expect_true(grepl("renderNestedNodeDetail", html, fixed = TRUE))
+  expect_true(grepl("renderTaskTabs", html, fixed = TRUE))
+  expect_true(grepl("Task previews", html, fixed = TRUE))
+  expect_true(grepl("task-tab", html, fixed = TRUE))
+  expect_true(grepl("onNodeClick=onNodeClick||selectWorkflowNode", html, fixed = TRUE))
   expect_true(grepl("selectWorkflowNode", html, fixed = TRUE))
   expect_true(grepl("data-node-id", html, fixed = TRUE))
   expect_true(grepl("Input schema", html, fixed = TRUE))
