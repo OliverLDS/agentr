@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.6.4` adds task-family helpers and tabbed task previews on top of the node-detail scaffolding for workflow-node input/output schemas and nested workflows while preserving proposal approval as the mutation boundary. `agentr` can package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one offline review page while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.6.5` adds a Codex task-spec inference guide aligned with task-local `docs/` artifacts and node-folder subworkflow conventions, while preserving `agentr` as a descriptive scaffolding and review layer rather than an execution runtime. `agentr` can package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one offline review page while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 

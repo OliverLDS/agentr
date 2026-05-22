@@ -1,6 +1,15 @@
 # agentr news
 
-# agentr 0.2.6.4
+## agentr 0.2.6.5
+
+Released: 2026-05-22
+
+- Added `inst/guides/codex_task_spec_inference.md` as a Codex-facing inference contract for task codebases.
+- Aligned the guide with node-folder subworkflow conventions under `tasks/<task_id>/nodes/<subworkflow_node_id>/`.
+- Added guidance for task-local `docs/` artifacts, `memory/agent_paths.json` path-memory loading, side-effect-safe validation practices, and supported `KnowledgeSpec` item types.
+- Clarified that generated specs are descriptive/reviewable artifacts and should not introduce runtime behavior beyond observed task code.
+
+## agentr 0.2.6.4
 
 Released: 2026-05-21
 
