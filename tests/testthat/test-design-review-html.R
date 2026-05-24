@@ -41,7 +41,7 @@ test_that("design_review_html shows node detail schemas and nested workflow dril
   )
   html <- design_review_html(workflow, title = "Node detail review")
 
-  expect_true(grepl("Node detail", html, fixed = TRUE))
+  expect_true(grepl("Detail inspector", html, fixed = TRUE))
   expect_true(grepl("renderNodeDetail", html, fixed = TRUE))
   expect_true(grepl("renderNestedNodeDetail", html, fixed = TRUE))
   expect_true(grepl("renderTaskTabs", html, fixed = TRUE))
@@ -50,6 +50,8 @@ test_that("design_review_html shows node detail schemas and nested workflow dril
   expect_true(grepl("onNodeClick=onNodeClick||selectWorkflowNode", html, fixed = TRUE))
   expect_true(grepl("selectWorkflowNode", html, fixed = TRUE))
   expect_true(grepl("data-node-id", html, fixed = TRUE))
+  expect_true(grepl("data-edge-index", html, fixed = TRUE))
+  expect_true(grepl("renderEdgeDetailObject", html, fixed = TRUE))
   expect_true(grepl("Input schema", html, fixed = TRUE))
   expect_true(grepl("Output schema", html, fixed = TRUE))
   expect_true(grepl("Nested workflow", html, fixed = TRUE))
@@ -61,6 +63,12 @@ test_that("design_review_html shows node detail schemas and nested workflow dril
   expect_true(grepl('"input_schema":{"type":"object","required":["question"]}', html, fixed = TRUE))
   expect_true(grepl('"output_schema":{"type":"object","properties":{"answer":"string"}}', html, fixed = TRUE))
   expect_true(grepl('"nested_workflow":{"nodes"', html, fixed = TRUE))
+  expect_false(grepl("font-size='11'>${esc(n.id)}</text>", html, fixed = TRUE))
+  expect_false(grepl("owner: ${esc(val(n.owner))} | automation: ${esc(val(n.automation_status))}", html, fixed = TRUE))
+  expect_false(grepl("human gate: ${esc(n.human_required)} | review: ${esc(val(n.review_status))}", html, fixed = TRUE))
+  expect_false(grepl("knowledge refs: ${esc(knowledgeRefs(n.knowledge_refs).join(', '))}", html, fixed = TRUE))
+  expect_false(grepl("<h3>Edges</h3>", html, fixed = TRUE))
+  expect_false(grepl("d.className='edge';", html, fixed = TRUE))
 })
 
 test_that("design_review_html wraps workflow graph labels without truncation", {
