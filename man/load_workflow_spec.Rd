@@ -4,10 +4,12 @@
 \alias{load_workflow_spec}
 \title{Load a workflow specification}
 \usage{
-load_workflow_spec(file_path)
+load_workflow_spec(file_path, format = c("rds", "json"))
 }
 \arguments{
 \item{file_path}{File path from which to load the workflow.}
+
+\item{format}{File format, either \code{rds} or \code{json}.}
 }
 \value{
 Workflow specification.

@@ -215,6 +215,58 @@ knowledge_graph_edge <- function(
   edges
 }
 
+#' @keywords internal
+.knowledge_graph_node_to_list <- function(nodes, i) {
+  list(
+    id = nodes$id[[i]],
+    label = nodes$label[[i]],
+    node_type = nodes$node_type[[i]],
+    memory_type = nodes$memory_type[[i]],
+    knowledge_form = nodes$knowledge_form[[i]],
+    item_type = nodes$item_type[[i]],
+    review_status = nodes$review_status[[i]],
+    domain = nodes$domain[[i]],
+    confidence = nodes$confidence[[i]],
+    source_item_id = nodes$source_item_id[[i]],
+    notes = nodes$notes[[i]],
+    provenance = nodes$provenance[[i]],
+    review = nodes$review[[i]],
+    scope = nodes$scope[[i]]
+  )
+}
+
+#' @keywords internal
+.knowledge_graph_edge_to_list <- function(edges, i) {
+  list(
+    from = edges$from[[i]],
+    to = edges$to[[i]],
+    relation = edges$relation[[i]],
+    relation_type = edges$relation_type[[i]],
+    memory_type = edges$memory_type[[i]],
+    confidence = edges$confidence[[i]],
+    notes = edges$notes[[i]],
+    provenance = edges$provenance[[i]],
+    review = edges$review[[i]],
+    scope = edges$scope[[i]]
+  )
+}
+
+#' @keywords internal
+.knowledge_graph_spec_to_list <- function(spec) {
+  validate_knowledge_graph_spec(spec)
+  nodes <- lapply(seq_len(nrow(spec$nodes)), function(i) {
+    .knowledge_graph_node_to_list(spec$nodes, i)
+  })
+  edges <- lapply(seq_len(nrow(spec$edges)), function(i) {
+    .knowledge_graph_edge_to_list(spec$edges, i)
+  })
+  list(
+    nodes = nodes,
+    edges = edges,
+    metadata = spec$metadata
+  )
+}
+
 #' Create a knowledge-graph specification
 #'
 #' A knowledge-graph specification is a first-class graph-knowledge
@@ -307,6 +359,67 @@ validate_knowledge_graph_spec <- function(x) {
   invisible(lapply(x$edges$review, .normalize_knowledge_graph_review))
 
   invisible(x)
+}
+
+#' @keywords internal
+.knowledge_graph_spec_from_list <- function(x) {
+  if (!is.list(x) || !all(c("nodes", "edges", "metadata") %in% names(x))) {
+    stop("Knowledge graph JSON must contain top-level `nodes`, `edges`, and `metadata` fields.", call. = FALSE)
+  }
+  if (!is.list(x$nodes)) {
+    stop("Knowledge graph JSON `nodes` must be a list.", call. = FALSE)
+  }
+  if (!is.list(x$edges)) {
+    stop("Knowledge graph JSON `edges` must be a list.", call. = FALSE)
+  }
+
+  nodes <- if (length(x$nodes)) {
+    do.call(rbind, lapply(x$nodes, function(item) {
+      knowledge_graph_node(
+        id = item$id,
+        label = item$label,
+        node_type = item$node_type %||% "knowledge_item",
+        memory_type = item$memory_type %||% NA_character_,
+        knowledge_form = item$knowledge_form %||% "graph",
+        item_type = item$item_type %||% NA_character_,
+        review_status = item$review_status %||% NA_character_,
+        domain = item$domain %||% NA_character_,
+        confidence = item$confidence %||% NA_character_,
+        source_item_id = item$source_item_id %||% NA_character_,
+        notes = item$notes %||% NA_character_,
+        provenance = item$provenance %||% list(),
+        review = item$review %||% list(status = "draft"),
+        scope = item$scope %||% list()
+      )
+    }))
+  } else {
+    .empty_knowledge_graph_nodes()
+  }
+
+  edges <- if (length(x$edges)) {
+    do.call(rbind, lapply(x$edges, function(item) {
+      knowledge_graph_edge(
+        from = item$from,
+        to = item$to,
+        relation = item$relation %||% "relates_to",
+        relation_type = item$relation_type %||% item$relation %||% "relates_to",
+        memory_type = item$memory_type %||% NA_character_,
+        confidence = item$confidence %||% NA_real_,
+        notes = item$notes %||% NA_character_,
+        provenance = item$provenance %||% list(),
+        review = item$review %||% list(status = "draft"),
+        scope = item$scope %||% list()
+      )
+    }))
+  } else {
+    .empty_knowledge_graph_edges()
+  }
+
+  new_knowledge_graph_spec(
+    nodes = nodes,
+    edges = edges,
+    metadata = x$metadata %||% list()
+  )
 }
 
 #' Add a node to a knowledge graph specification

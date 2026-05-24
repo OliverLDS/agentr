@@ -207,7 +207,7 @@ KnowledgeSpec <- R6::R6Class(
       self$validate()
       list(
         items = unname(self$items),
-        graph = self$graph,
+        graph = if (is.null(self$graph)) NULL else .knowledge_graph_spec_to_list(self$graph),
         vector_refs = self$vector_refs,
         metadata = self$metadata
       )
@@ -236,11 +236,7 @@ KnowledgeSpec <- R6::R6Class(
     return(graph)
   }
   if (is.list(graph) && all(c("nodes", "edges", "metadata") %in% names(graph))) {
-    return(new_knowledge_graph_spec(
-      nodes = graph$nodes,
-      edges = graph$edges,
-      metadata = graph$metadata
-    ))
+    return(.knowledge_graph_spec_from_list(graph))
   }
   stop("`graph` must be `NULL` or an `agentr_knowledge_graph_spec`.", call. = FALSE)
 }
@@ -256,4 +252,17 @@ validate_knowledge_spec <- function(x) {
     stop("`x` must be a `KnowledgeSpec`.", call. = FALSE)
   }
   x$validate()
+}
+
+#' @keywords internal
+.knowledge_spec_from_list <- function(x) {
+  if (!is.list(x) || !all(c("items", "graph", "vector_refs", "metadata") %in% names(x))) {
+    stop("Knowledge spec JSON must contain top-level `items`, `graph`, `vector_refs`, and `metadata` fields.", call. = FALSE)
+  }
+  KnowledgeSpec$new(
+    items = x$items,
+    graph = x$graph,
+    vector_refs = x$vector_refs,
+    metadata = x$metadata
+  )
 }

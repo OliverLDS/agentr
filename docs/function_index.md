@@ -43,8 +43,10 @@
 | `article_workflow_specs_from_json()` | Build workflow specifications from article extraction JSON |
 | `import_extracted_workflow()` | Import extracted workflow JSON and optionally store it on a `Scaffolder` |
 | `validate_workflow_spec()` | Validate workflow structure |
-| `save_workflow_spec()` | Save a workflow specification |
-| `load_workflow_spec()` | Load a workflow specification |
+| `save_workflow_spec()` | Save a workflow specification as RDS or JSON |
+| `save_workflow_spec_json()` | Save a workflow specification as JSON |
+| `load_workflow_spec()` | Load a workflow specification from RDS or JSON |
+| `load_workflow_spec_json()` | Load a workflow specification from JSON |
 | `task_family_metadata()` | Create metadata for a root workflow that groups related child tasks |
 | `child_task_node()` | Create a workflow node that represents one child task |
 | `new_task_family_workflow()` | Create a root task-family workflow spec |
@@ -164,12 +166,18 @@
 | `load_agent_spec()` | Load an `AgentSpec` explicitly |
 | `save_subsystem_spec()` | Save a `SubsystemSpec` explicitly |
 | `load_subsystem_spec()` | Load a `SubsystemSpec` explicitly |
-| `save_memory_spec()` | Save a `MemorySpec` explicitly |
-| `load_memory_spec()` | Load a `MemorySpec` explicitly |
-| `save_knowledge_spec()` | Save a `KnowledgeSpec` explicitly |
-| `load_knowledge_spec()` | Load a `KnowledgeSpec` explicitly |
-| `save_knowledge_graph_spec()` | Save an `agentr_knowledge_graph_spec` explicitly |
-| `load_knowledge_graph_spec()` | Load an `agentr_knowledge_graph_spec` explicitly |
+| `save_memory_spec()` | Save a `MemorySpec` explicitly as RDS or JSON |
+| `save_memory_spec_json()` | Save a `MemorySpec` explicitly as JSON |
+| `load_memory_spec()` | Load a `MemorySpec` explicitly from RDS or JSON |
+| `load_memory_spec_json()` | Load a `MemorySpec` explicitly from JSON |
+| `save_knowledge_spec()` | Save a `KnowledgeSpec` explicitly as RDS or JSON |
+| `save_knowledge_spec_json()` | Save a `KnowledgeSpec` explicitly as JSON |
+| `load_knowledge_spec()` | Load a `KnowledgeSpec` explicitly from RDS or JSON |
+| `load_knowledge_spec_json()` | Load a `KnowledgeSpec` explicitly from JSON |
+| `save_knowledge_graph_spec()` | Save an `agentr_knowledge_graph_spec` explicitly as RDS or JSON |
+| `save_knowledge_graph_spec_json()` | Save an `agentr_knowledge_graph_spec` explicitly as JSON |
+| `load_knowledge_graph_spec()` | Load an `agentr_knowledge_graph_spec` explicitly from RDS or JSON |
+| `load_knowledge_graph_spec_json()` | Load an `agentr_knowledge_graph_spec` explicitly from JSON |
 | `save_knowledge_proposal()` | Save a `KnowledgeProposal` explicitly |
 | `load_knowledge_proposal()` | Load a `KnowledgeProposal` explicitly |
 | `load_agent()` | Load a supported `agentr` object |

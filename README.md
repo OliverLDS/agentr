@@ -704,8 +704,8 @@ The returned vertex table includes fields such as `node_label`, `node_shape`, `n
 Workflow specs can be saved and loaded independently of the full agent object:
 
 ```r
-save_workflow_spec(dispatch$workflow_after, "workflow_spec.rds")
-spec <- load_workflow_spec("workflow_spec.rds")
+save_workflow_spec(dispatch$workflow_after, "workflow_spec.json")
+spec <- load_workflow_spec("workflow_spec.json")
 ```
 
 ## Task Families
@@ -724,11 +724,11 @@ family <- new_task_family_workflow(
 
 family <- add_child_task_node(
   family,
-  child_task_node(
-    id = "task_blog_article",
-    label = "Write a Cognaptus blog article",
-    subworkflow_ref = "specs/workflows/cognaptus_new_blog_article.rds"
-  ),
+    child_task_node(
+      id = "task_blog_article",
+      label = "Write a Cognaptus blog article",
+    subworkflow_ref = "docs/workflow_spec.json"
+    ),
   tags = c("publication", "blog")
 )
 ```

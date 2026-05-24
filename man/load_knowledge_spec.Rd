@@ -4,10 +4,12 @@
 \alias{load_knowledge_spec}
 \title{Load a knowledge specification}
 \usage{
-load_knowledge_spec(path)
+load_knowledge_spec(path, format = c("rds", "json"))
 }
 \arguments{
 \item{path}{File path.}
+
+\item{format}{File format, either \code{rds} or \code{json}.}
 }
 \value{
 A \code{\link{KnowledgeSpec}} object.

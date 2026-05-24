@@ -169,26 +169,63 @@ KnowledgeProposalState <- R6::R6Class(
 #'
 #' @param x A [`KnowledgeSpec`] object.
 #' @param path File path.
+#' @param format File format, either `rds` or `json`.
 #'
 #' @return Invisibly returns `TRUE`.
 #' @export
-save_knowledge_spec <- function(x, path) {
+save_knowledge_spec <- function(x, path, format = c("rds", "json")) {
   validate_knowledge_spec(x)
-  .safe_save_rds(x, path)
+  format <- .spec_file_format(path, format)
+  if (identical(format, "json")) {
+    .safe_save_json(x$to_list(), path)
+  } else {
+    .safe_save_rds(x, path)
+  }
   invisible(TRUE)
+}
+
+#' Save a knowledge specification as JSON
+#'
+#' @param x A [`KnowledgeSpec`] object.
+#' @param path File path.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_knowledge_spec_json <- function(x, path) {
+  save_knowledge_spec(x, path, format = "json")
 }
 
 #' Load a knowledge specification
 #'
 #' @param path File path.
+#' @param format File format, either `rds` or `json`.
 #'
 #' @return A [`KnowledgeSpec`] object.
 #' @export
-load_knowledge_spec <- function(path) {
+load_knowledge_spec <- function(path, format = c("rds", "json")) {
   if (!file.exists(path)) {
     stop("File does not exist: ", path, call. = FALSE)
   }
+  format <- .spec_file_format(path, format)
+  if (identical(format, "json")) {
+    return(load_knowledge_spec_json(path))
+  }
   x <- .safe_read_rds(path)
+  validate_knowledge_spec(x)
+  x
+}
+
+#' Load a knowledge specification from JSON
+#'
+#' @param path File path.
+#'
+#' @return A [`KnowledgeSpec`] object.
+#' @export
+load_knowledge_spec_json <- function(path) {
+  if (!file.exists(path)) {
+    stop("File does not exist: ", path, call. = FALSE)
+  }
+  x <- .knowledge_spec_from_list(load_json_file(path, simplifyVector = FALSE))
   validate_knowledge_spec(x)
   x
 }
@@ -222,4 +259,3 @@ load_knowledge_proposal <- function(path) {
   x$validate()
   x
 }
-

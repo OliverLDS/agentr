@@ -15,7 +15,7 @@
     return(x)
   }
   if (is.list(x) && all(c("nodes", "edges", "metadata") %in% names(x))) {
-    return(new_knowledge_graph_spec(nodes = x$nodes, edges = x$edges, metadata = x$metadata))
+    return(.knowledge_graph_spec_from_list(x))
   }
   stop("Expected an `agentr_knowledge_graph_spec` object or list payload.", call. = FALSE)
 }

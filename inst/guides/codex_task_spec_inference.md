@@ -17,9 +17,9 @@ tasks/<task_id>/
 ├── run_<task_id>.sh
 ├── docs/
 │   ├── README.md
-│   ├── workflow_spec.rds
-│   ├── memory_spec.rds
-│   ├── knowledge_spec.rds
+│   ├── workflow_spec.json
+│   ├── memory_spec.json
+│   ├── knowledge_spec.json
 │   ├── review.html
 │   └── inference_notes.md
 ├── nodes/
@@ -28,7 +28,7 @@ tasks/<task_id>/
 │   └── subworkflow_node/
 │       ├── run_subworkflow_node.sh
 │       ├── docs/
-│       │   ├── workflow_spec.rds
+│       │   ├── workflow_spec.json
 │       │   └── review.html
 │       └── resources/
 ├── config/
@@ -37,6 +37,9 @@ tasks/<task_id>/
 ├── cache/
 └── ...
 ```
+
+If a binary cache is useful, `.rds` files can live under `cache/`, but the
+editable source of truth should be the JSON specs under `docs/`.
 
 Common variants:
 
@@ -74,7 +77,7 @@ For parent tasks with subworkflow nodes, set `subworkflow_ref` to the child
 workflow spec path:
 
 ```text
-nodes/<subworkflow_node_id>/docs/workflow_spec.rds
+nodes/<subworkflow_node_id>/docs/workflow_spec.json
 ```
 
 Use `nested_workflow` only when Codex has loaded the child spec and is preparing
@@ -221,21 +224,21 @@ Recommended task-local layout:
 
 ```text
 tasks/<task_id>/docs/
-├── workflow_spec.rds
-├── memory_spec.rds
-├── knowledge_spec.rds
+├── workflow_spec.json
+├── memory_spec.json
+├── knowledge_spec.json
 ├── review.html
 └── inference_notes.md
 ```
 
 Use these names unless the workspace already has a stronger convention:
 
-- `tasks/<task_id>/docs/workflow_spec.rds`
-- `tasks/<task_id>/docs/memory_spec.rds`
-- `tasks/<task_id>/docs/knowledge_spec.rds`
+- `tasks/<task_id>/docs/workflow_spec.json`
+- `tasks/<task_id>/docs/memory_spec.json`
+- `tasks/<task_id>/docs/knowledge_spec.json`
 - `tasks/<task_id>/docs/review.html`
 - `tasks/<task_id>/docs/inference_notes.md`
-- `tasks/<task_id>/nodes/<subworkflow_node_id>/docs/workflow_spec.rds`
+- `tasks/<task_id>/nodes/<subworkflow_node_id>/docs/workflow_spec.json`
 - `tasks/<task_id>/nodes/<subworkflow_node_id>/docs/review.html`
 
 Use stable ids in snake case. Avoid dates in canonical spec filenames unless the
@@ -264,7 +267,7 @@ library(agentr)
 
 task_dir <- "tasks/write_new_blog_article"
 docs_dir <- file.path(task_dir, "docs")
-workflow <- load_workflow_spec(file.path(docs_dir, "workflow_spec.rds"))
+workflow <- load_workflow_spec_json(file.path(docs_dir, "workflow_spec.json"))
 
 export_design_review_html(
   workflow,
@@ -282,7 +285,7 @@ library(agentr)
 
 task_dir <- "tasks/literature_maintenance"
 docs_dir <- file.path(task_dir, "docs")
-workflow <- load_workflow_spec(file.path(docs_dir, "workflow_spec.rds"))
+workflow <- load_workflow_spec_json(file.path(docs_dir, "workflow_spec.json"))
 
 export_design_review_html(
   workflow,
@@ -295,7 +298,9 @@ export_design_review_html(
 
 For task/subworkflow previews, parent nodes should use `subworkflow_ref` and
 may include `nested_workflow`. The review page can then show task labels as
-selectable previews while keeping node details in the side panel.
+selectable previews while keeping node details in the side panel. In practice,
+render `review.html` from the editable JSON spec and load that JSON into R
+objects only for rendering.
 
 ## Task-Family Preview
 

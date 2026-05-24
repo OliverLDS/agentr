@@ -138,6 +138,69 @@ workflow_edge <- function(
   )
 }
 
+#' @keywords internal
+.workflow_nested_workflow_to_list <- function(x) {
+  if (is.null(x) || (is.list(x) && !length(x))) {
+    return(NULL)
+  }
+  if (inherits(x, "agentr_workflow_spec")) {
+    return(.workflow_spec_to_list(x))
+  }
+  if (is.list(x) && all(c("task", "nodes", "edges", "metadata") %in% names(x))) {
+    return(x)
+  }
+  x
+}
+
+#' @keywords internal
+.workflow_node_to_list <- function(nodes, i) {
+  list(
+    id = nodes$id[[i]],
+    label = nodes$label[[i]],
+    confidence = nodes$confidence[[i]],
+    human_required = nodes$human_required[[i]],
+    rule_spec = nodes$rule_spec[[i]],
+    implementation_hint = nodes$implementation_hint[[i]],
+    complete = nodes$complete[[i]],
+    review_status = nodes$review_status[[i]],
+    review_notes = nodes$review_notes[[i]],
+    review_confidence = nodes$review_confidence[[i]],
+    owner = nodes$owner[[i]],
+    automation_status = nodes$automation_status[[i]],
+    human_owned_reason = nodes$human_owned_reason[[i]],
+    target_automation_status = nodes$target_automation_status[[i]],
+    trace_required = nodes$trace_required[[i]],
+    knowledge_refs = nodes$knowledge_refs[[i]],
+    subworkflow_ref = nodes$subworkflow_ref[[i]],
+    input_schema = nodes$input_schema[[i]],
+    output_schema = nodes$output_schema[[i]],
+    nested_workflow = .workflow_nested_workflow_to_list(nodes$nested_workflow[[i]])
+  )
+}
+
+#' @keywords internal
+.workflow_spec_to_list <- function(workflow) {
+  validate_workflow_spec(workflow)
+  nodes <- lapply(seq_len(nrow(workflow$nodes)), function(i) {
+    .workflow_node_to_list(workflow$nodes, i)
+  })
+  edges <- lapply(seq_len(nrow(workflow$edges)), function(i) {
+    list(
+      from = workflow$edges$from[[i]],
+      to = workflow$edges$to[[i]],
+      relation = workflow$edges$relation[[i]],
+      confidence = workflow$edges$confidence[[i]],
+      notes = workflow$edges$notes[[i]]
+    )
+  })
+  list(
+    task = workflow$task,
+    nodes = nodes,
+    edges = edges,
+    metadata = workflow$metadata
+  )
+}
+
 #' Create a workflow specification
 #'
 #' Workflow specifications are outputs of reasoning and scaffolding rather than
@@ -421,33 +484,6 @@ validate_workflow_spec <- function(x, knowledge_spec = NULL, warn_missing_knowle
   invisible(x)
 }
 
-#' Save a workflow specification
-#'
-#' @param workflow Workflow specification.
-#' @param file_path File path where the workflow should be saved.
-#'
-#' @return Invisibly returns `TRUE`.
-#' @export
-save_workflow_spec <- function(workflow, file_path) {
-  validate_workflow_spec(workflow)
-  .safe_save_rds(workflow, file_path)
-  invisible(TRUE)
-}
-
-#' Load a workflow specification
-#'
-#' @param file_path File path from which to load the workflow.
-#'
-#' @return Workflow specification.
-#' @export
-load_workflow_spec <- function(file_path) {
-  if (!file.exists(file_path)) {
-    stop("File does not exist: ", file_path, call. = FALSE)
-  }
-  workflow <- .safe_read_rds(file_path)
-  validate_workflow_spec(workflow)
-}
-
 #' Format a workflow specification
 #'
 #' @param x Workflow specification.
@@ -553,6 +589,69 @@ print.agentr_workflow_spec <- function(x, ...) {
 #' @export
 workflow_spec_from_json <- function(x) {
   .workflow_spec_from_list(.parse_workflow_json_input(x, label = "Workflow JSON"))
+}
+
+#' Save a workflow specification
+#'
+#' @param workflow Workflow specification.
+#' @param file_path File path where the workflow should be saved.
+#' @param format File format, either `rds` or `json`.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_workflow_spec <- function(workflow, file_path, format = c("rds", "json")) {
+  validate_workflow_spec(workflow)
+  format <- .spec_file_format(file_path, format)
+  if (identical(format, "json")) {
+    .safe_save_json(.workflow_spec_to_list(workflow), file_path)
+  } else {
+    .safe_save_rds(workflow, file_path)
+  }
+  invisible(TRUE)
+}
+
+#' Save a workflow specification as JSON
+#'
+#' @param workflow Workflow specification.
+#' @param file_path File path where the JSON should be saved.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_workflow_spec_json <- function(workflow, file_path) {
+  save_workflow_spec(workflow, file_path, format = "json")
+}
+
+#' Load a workflow specification
+#'
+#' @param file_path File path from which to load the workflow.
+#' @param format File format, either `rds` or `json`.
+#'
+#' @return Workflow specification.
+#' @export
+load_workflow_spec <- function(file_path, format = c("rds", "json")) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  format <- .spec_file_format(file_path, format)
+  if (identical(format, "json")) {
+    return(load_workflow_spec_json(file_path))
+  }
+  workflow <- .safe_read_rds(file_path)
+  validate_workflow_spec(workflow)
+  workflow
+}
+
+#' Load a workflow specification from JSON
+#'
+#' @param file_path File path from which to load the workflow JSON.
+#'
+#' @return Workflow specification.
+#' @export
+load_workflow_spec_json <- function(file_path) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  .workflow_spec_from_list(load_json_file(file_path, simplifyVector = FALSE))
 }
 
 #' Build workflow specifications from article extraction JSON

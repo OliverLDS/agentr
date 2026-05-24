@@ -196,30 +196,43 @@ load_subsystem_spec <- function(file_path) {
 
 #' Save a knowledge graph specification to a file
 #'
-#' Saves an `agentr_knowledge_graph_spec` object to a specified `.rds` file.
+#' Saves an `agentr_knowledge_graph_spec` object to a specified `.rds` or
+#' `.json` file.
 #'
 #' @param spec An `agentr_knowledge_graph_spec` object.
 #' @param file_path File path where the object should be saved.
+#' @param format File format, either `rds` or `json`.
 #'
 #' @return Invisibly returns `TRUE`.
 #' @export
-save_knowledge_graph_spec <- function(spec, file_path) {
+save_knowledge_graph_spec <- function(spec, file_path, format = c("rds", "json")) {
   validate_knowledge_graph_spec(spec)
-  .safe_save_rds(spec, file_path)
+  format <- .spec_file_format(file_path, format)
+  if (identical(format, "json")) {
+    .safe_save_json(.knowledge_graph_spec_to_list(spec), file_path)
+  } else {
+    .safe_save_rds(spec, file_path)
+  }
   invisible(TRUE)
 }
 
 #' Load a knowledge graph specification from a file
 #'
-#' Loads a saved `agentr_knowledge_graph_spec` object from an `.rds` file.
+#' Loads a saved `agentr_knowledge_graph_spec` object from an `.rds` or
+#' `.json` file.
 #'
 #' @param file_path File path from which to load the object.
+#' @param format File format, either `rds` or `json`.
 #'
 #' @return An `agentr_knowledge_graph_spec` object.
 #' @export
-load_knowledge_graph_spec <- function(file_path) {
+load_knowledge_graph_spec <- function(file_path, format = c("rds", "json")) {
   if (!file.exists(file_path)) {
     stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  format <- .spec_file_format(file_path, format)
+  if (identical(format, "json")) {
+    return(load_knowledge_graph_spec_json(file_path))
   }
   spec <- .safe_read_rds(file_path)
   if (!inherits(spec, "agentr_knowledge_graph_spec")) {
@@ -229,35 +242,83 @@ load_knowledge_graph_spec <- function(file_path) {
   spec
 }
 
-#' Save a `MemorySpec` to a file
+#' Save a knowledge graph specification as JSON
 #'
-#' Saves a [`MemorySpec`] object to a specified `.rds` file.
-#'
-#' @param spec A [`MemorySpec`] object.
-#' @param file_path File path where the object should be saved.
+#' @param spec An `agentr_knowledge_graph_spec` object.
+#' @param file_path File path where the JSON should be saved.
 #'
 #' @return Invisibly returns `TRUE`.
 #' @export
-save_memory_spec <- function(spec, file_path) {
+save_knowledge_graph_spec_json <- function(spec, file_path) {
+  save_knowledge_graph_spec(spec, file_path, format = "json")
+}
+
+#' Load a knowledge graph specification from JSON
+#'
+#' @param file_path File path from which to load the JSON.
+#'
+#' @return An `agentr_knowledge_graph_spec` object.
+#' @export
+load_knowledge_graph_spec_json <- function(file_path) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  spec <- .knowledge_graph_spec_from_list(load_json_file(file_path, simplifyVector = FALSE))
+  validate_knowledge_graph_spec(spec)
+  spec
+}
+
+#' Save a `MemorySpec` to a file
+#'
+#' Saves a [`MemorySpec`] object to a specified `.rds` or `.json` file.
+#'
+#' @param spec A [`MemorySpec`] object.
+#' @param file_path File path where the object should be saved.
+#' @param format File format, either `rds` or `json`.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_memory_spec <- function(spec, file_path, format = c("rds", "json")) {
   if (!inherits(spec, "MemorySpec")) {
     stop("`spec` must be a `MemorySpec`.", call. = FALSE)
   }
   spec$validate()
-  .safe_save_rds(spec, file_path)
+  format <- .spec_file_format(file_path, format)
+  if (identical(format, "json")) {
+    .safe_save_json(spec$to_list(), file_path)
+  } else {
+    .safe_save_rds(spec, file_path)
+  }
   invisible(TRUE)
+}
+
+#' Save a `MemorySpec` as JSON
+#'
+#' @param spec A [`MemorySpec`] object.
+#' @param file_path File path where the JSON should be saved.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_memory_spec_json <- function(spec, file_path) {
+  save_memory_spec(spec, file_path, format = "json")
 }
 
 #' Load a `MemorySpec` from a file
 #'
-#' Loads a saved [`MemorySpec`] object from an `.rds` file.
+#' Loads a saved [`MemorySpec`] object from an `.rds` or `.json` file.
 #'
 #' @param file_path File path from which to load the object.
+#' @param format File format, either `rds` or `json`.
 #'
 #' @return A [`MemorySpec`] object.
 #' @export
-load_memory_spec <- function(file_path) {
+load_memory_spec <- function(file_path, format = c("rds", "json")) {
   if (!file.exists(file_path)) {
     stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  format <- .spec_file_format(file_path, format)
+  if (identical(format, "json")) {
+    return(load_memory_spec_json(file_path))
   }
   spec <- .safe_read_rds(file_path)
   if (!inherits(spec, "MemorySpec")) {
@@ -265,6 +326,19 @@ load_memory_spec <- function(file_path) {
   }
   spec$validate()
   spec
+}
+
+#' Load a `MemorySpec` from JSON
+#'
+#' @param file_path File path from which to load the JSON.
+#'
+#' @return A [`MemorySpec`] object.
+#' @export
+load_memory_spec_json <- function(file_path) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  .memory_spec_from_list(load_json_file(file_path, simplifyVector = FALSE))
 }
 
 #' Load an `agentr` object from a file

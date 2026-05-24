@@ -4,16 +4,18 @@
 \alias{save_memory_spec}
 \title{Save a \code{MemorySpec} to a file}
 \usage{
-save_memory_spec(spec, file_path)
+save_memory_spec(spec, file_path, format = c("rds", "json"))
 }
 \arguments{
 \item{spec}{A \code{\link{MemorySpec}} object.}
 
 \item{file_path}{File path where the object should be saved.}
+
+\item{format}{File format, either \code{rds} or \code{json}.}
 }
 \value{
 Invisibly returns \code{TRUE}.
 }
 \description{
-Saves a \code{\link{MemorySpec}} object to a specified \code{.rds} file.
+Saves a \code{\link{MemorySpec}} object to a specified \code{.rds} or \code{.json} file.
 }

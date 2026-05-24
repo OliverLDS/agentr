@@ -4,14 +4,17 @@
 \alias{load_knowledge_graph_spec}
 \title{Load a knowledge graph specification from a file}
 \usage{
-load_knowledge_graph_spec(file_path)
+load_knowledge_graph_spec(file_path, format = c("rds", "json"))
 }
 \arguments{
 \item{file_path}{File path from which to load the object.}
+
+\item{format}{File format, either \code{rds} or \code{json}.}
 }
 \value{
 An \code{agentr_knowledge_graph_spec} object.
 }
 \description{
-Loads a saved \code{agentr_knowledge_graph_spec} object from an \code{.rds} file.
+Loads a saved \code{agentr_knowledge_graph_spec} object from an \code{.rds} or
+\code{.json} file.
 }

@@ -294,3 +294,14 @@ validate_memory_spec <- function(x) {
   }
   x$validate()
 }
+
+#' @keywords internal
+.memory_spec_from_list <- function(x) {
+  if (!is.list(x) || !all(c("fields", "metadata") %in% names(x))) {
+    stop("Memory spec JSON must contain top-level `fields` and `metadata` fields.", call. = FALSE)
+  }
+  MemorySpec$new(
+    fields = x$fields,
+    metadata = x$metadata
+  )
+}
