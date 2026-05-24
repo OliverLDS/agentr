@@ -1,6 +1,8 @@
 # agentr news
 
-## agentr development
+## agentr 0.2.6.6
+
+Released: 2026-05-24
 
 - Added YAML save/load helpers for workflow, memory, knowledge, and knowledge-graph specs while preserving JSON and RDS compatibility.
 - Made task-local YAML specs the preferred editable source of truth in Codex-facing task-spec guidance.
