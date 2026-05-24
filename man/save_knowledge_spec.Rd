@@ -4,14 +4,14 @@
 \alias{save_knowledge_spec}
 \title{Save a knowledge specification}
 \usage{
-save_knowledge_spec(x, path, format = c("rds", "json"))
+save_knowledge_spec(x, path, format = c("rds", "json", "yaml"))
 }
 \arguments{
 \item{x}{A \code{\link{KnowledgeSpec}} object.}
 
 \item{path}{File path.}
 
-\item{format}{File format, either \code{rds} or \code{json}.}
+\item{format}{File format, either \code{rds}, \code{json}, or \code{yaml}.}
 }
 \value{
 Invisibly returns \code{TRUE}.

@@ -169,15 +169,18 @@ KnowledgeProposalState <- R6::R6Class(
 #'
 #' @param x A [`KnowledgeSpec`] object.
 #' @param path File path.
-#' @param format File format, either `rds` or `json`.
+#' @param format File format, either `rds`, `json`, or `yaml`.
 #'
 #' @return Invisibly returns `TRUE`.
 #' @export
-save_knowledge_spec <- function(x, path, format = c("rds", "json")) {
+save_knowledge_spec <- function(x, path, format = c("rds", "json", "yaml")) {
   validate_knowledge_spec(x)
   format <- .spec_file_format(path, format)
+  spec_list <- x$to_list()
   if (identical(format, "json")) {
-    .safe_save_json(x$to_list(), path)
+    .safe_save_json(.preserve_spec_arrays(spec_list), path)
+  } else if (identical(format, "yaml")) {
+    .safe_save_yaml(spec_list, path)
   } else {
     .safe_save_rds(x, path)
   }
@@ -195,20 +198,34 @@ save_knowledge_spec_json <- function(x, path) {
   save_knowledge_spec(x, path, format = "json")
 }
 
+#' Save a knowledge specification as YAML
+#'
+#' @param x A [`KnowledgeSpec`] object.
+#' @param path File path.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_knowledge_spec_yaml <- function(x, path) {
+  save_knowledge_spec(x, path, format = "yaml")
+}
+
 #' Load a knowledge specification
 #'
 #' @param path File path.
-#' @param format File format, either `rds` or `json`.
+#' @param format File format, either `rds`, `json`, or `yaml`.
 #'
 #' @return A [`KnowledgeSpec`] object.
 #' @export
-load_knowledge_spec <- function(path, format = c("rds", "json")) {
+load_knowledge_spec <- function(path, format = c("rds", "json", "yaml")) {
   if (!file.exists(path)) {
     stop("File does not exist: ", path, call. = FALSE)
   }
   format <- .spec_file_format(path, format)
   if (identical(format, "json")) {
     return(load_knowledge_spec_json(path))
+  }
+  if (identical(format, "yaml")) {
+    return(load_knowledge_spec_yaml(path))
   }
   x <- .safe_read_rds(path)
   validate_knowledge_spec(x)
@@ -226,6 +243,21 @@ load_knowledge_spec_json <- function(path) {
     stop("File does not exist: ", path, call. = FALSE)
   }
   x <- .knowledge_spec_from_list(load_json_file(path, simplifyVector = FALSE))
+  validate_knowledge_spec(x)
+  x
+}
+
+#' Load a knowledge specification from YAML
+#'
+#' @param path File path.
+#'
+#' @return A [`KnowledgeSpec`] object.
+#' @export
+load_knowledge_spec_yaml <- function(path) {
+  if (!file.exists(path)) {
+    stop("File does not exist: ", path, call. = FALSE)
+  }
+  x <- .knowledge_spec_from_list(load_yaml_file(path))
   validate_knowledge_spec(x)
   x
 }

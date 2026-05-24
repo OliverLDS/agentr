@@ -4,14 +4,14 @@
 \alias{save_workflow_spec}
 \title{Save a workflow specification}
 \usage{
-save_workflow_spec(workflow, file_path, format = c("rds", "json"))
+save_workflow_spec(workflow, file_path, format = c("rds", "json", "yaml"))
 }
 \arguments{
 \item{workflow}{Workflow specification.}
 
 \item{file_path}{File path where the workflow should be saved.}
 
-\item{format}{File format, either \code{rds} or \code{json}.}
+\item{format}{File format, either \code{rds}, \code{json}, or \code{yaml}.}
 }
 \value{
 Invisibly returns \code{TRUE}.

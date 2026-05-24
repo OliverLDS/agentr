@@ -4,19 +4,19 @@
 \alias{save_knowledge_graph_spec}
 \title{Save a knowledge graph specification to a file}
 \usage{
-save_knowledge_graph_spec(spec, file_path, format = c("rds", "json"))
+save_knowledge_graph_spec(spec, file_path, format = c("rds", "json", "yaml"))
 }
 \arguments{
 \item{spec}{An \code{agentr_knowledge_graph_spec} object.}
 
 \item{file_path}{File path where the object should be saved.}
 
-\item{format}{File format, either \code{rds} or \code{json}.}
+\item{format}{File format, either \code{rds}, \code{json}, or \code{yaml}.}
 }
 \value{
 Invisibly returns \code{TRUE}.
 }
 \description{
-Saves an \code{agentr_knowledge_graph_spec} object to a specified \code{.rds} or
-\code{.json} file.
+Saves an \code{agentr_knowledge_graph_spec} object to a specified \code{.rds},
+\code{.json}, or \code{.yaml} file.
 }

@@ -517,6 +517,7 @@ print.agentr_workflow_spec <- function(x, ...) {
 }
 
 .workflow_spec_from_list <- function(x, metadata = NULL) {
+  x <- .normalize_spec_arrays(x)
   if (!is.list(x) || !all(c("task", "nodes", "edges", "metadata") %in% names(x))) {
     stop(
       "Workflow JSON must contain top-level `task`, `nodes`, `edges`, and `metadata` fields.",
@@ -591,19 +592,35 @@ workflow_spec_from_json <- function(x) {
   .workflow_spec_from_list(.parse_workflow_json_input(x, label = "Workflow JSON"))
 }
 
+#' Build a workflow specification from YAML
+#'
+#' @param file_path Path to a `.yaml` or `.yml` workflow specification file.
+#'
+#' @return A validated workflow specification.
+#' @export
+workflow_spec_from_yaml <- function(file_path) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  .workflow_spec_from_list(load_yaml_file(file_path))
+}
+
 #' Save a workflow specification
 #'
 #' @param workflow Workflow specification.
 #' @param file_path File path where the workflow should be saved.
-#' @param format File format, either `rds` or `json`.
+#' @param format File format, either `rds`, `json`, or `yaml`.
 #'
 #' @return Invisibly returns `TRUE`.
 #' @export
-save_workflow_spec <- function(workflow, file_path, format = c("rds", "json")) {
+save_workflow_spec <- function(workflow, file_path, format = c("rds", "json", "yaml")) {
   validate_workflow_spec(workflow)
   format <- .spec_file_format(file_path, format)
+  spec <- .workflow_spec_to_list(workflow)
   if (identical(format, "json")) {
-    .safe_save_json(.workflow_spec_to_list(workflow), file_path)
+    .safe_save_json(.preserve_spec_arrays(spec), file_path)
+  } else if (identical(format, "yaml")) {
+    .safe_save_yaml(spec, file_path)
   } else {
     .safe_save_rds(workflow, file_path)
   }
@@ -621,20 +638,34 @@ save_workflow_spec_json <- function(workflow, file_path) {
   save_workflow_spec(workflow, file_path, format = "json")
 }
 
+#' Save a workflow specification as YAML
+#'
+#' @param workflow Workflow specification.
+#' @param file_path File path where the YAML should be saved.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+save_workflow_spec_yaml <- function(workflow, file_path) {
+  save_workflow_spec(workflow, file_path, format = "yaml")
+}
+
 #' Load a workflow specification
 #'
 #' @param file_path File path from which to load the workflow.
-#' @param format File format, either `rds` or `json`.
+#' @param format File format, either `rds`, `json`, or `yaml`.
 #'
 #' @return Workflow specification.
 #' @export
-load_workflow_spec <- function(file_path, format = c("rds", "json")) {
+load_workflow_spec <- function(file_path, format = c("rds", "json", "yaml")) {
   if (!file.exists(file_path)) {
     stop("File does not exist: ", file_path, call. = FALSE)
   }
   format <- .spec_file_format(file_path, format)
   if (identical(format, "json")) {
     return(load_workflow_spec_json(file_path))
+  }
+  if (identical(format, "yaml")) {
+    return(load_workflow_spec_yaml(file_path))
   }
   workflow <- .safe_read_rds(file_path)
   validate_workflow_spec(workflow)
@@ -652,6 +683,19 @@ load_workflow_spec_json <- function(file_path) {
     stop("File does not exist: ", file_path, call. = FALSE)
   }
   .workflow_spec_from_list(load_json_file(file_path, simplifyVector = FALSE))
+}
+
+#' Load a workflow specification from YAML
+#'
+#' @param file_path File path from which to load the workflow YAML.
+#'
+#' @return Workflow specification.
+#' @export
+load_workflow_spec_yaml <- function(file_path) {
+  if (!file.exists(file_path)) {
+    stop("File does not exist: ", file_path, call. = FALSE)
+  }
+  .workflow_spec_from_list(load_yaml_file(file_path))
 }
 
 #' Build workflow specifications from article extraction JSON

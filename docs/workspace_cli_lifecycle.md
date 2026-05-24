@@ -22,7 +22,7 @@ This is still scaffolding. The CLI does not execute the approved agent, call too
 
 | Directory | Purpose |
 | --- | --- |
-| `specs/` | Approved design specs such as `workflow_spec.json`, `memory_spec.json`, and `knowledge_spec.json` (with `.rds` cache copies optional) |
+| `specs/` | Approved design specs such as `workflow_spec.yaml`, `memory_spec.yaml`, and `knowledge_spec.yaml` (with JSON or `.rds` cache copies optional) |
 | `proposal_states/` | Workflow, memory, knowledge, graph, and scaffolder proposal states |
 | `prompts/initial/` | Initial prompt files for manual LLM calls |
 | `prompts/revision/` | Revision prompt files from current state plus human feedback |

@@ -17,9 +17,9 @@ tasks/<task_id>/
 ├── run_<task_id>.sh
 ├── docs/
 │   ├── README.md
-│   ├── workflow_spec.json
-│   ├── memory_spec.json
-│   ├── knowledge_spec.json
+│   ├── workflow_spec.yaml
+│   ├── memory_spec.yaml
+│   ├── knowledge_spec.yaml
 │   ├── review.html
 │   └── inference_notes.md
 ├── nodes/
@@ -28,7 +28,7 @@ tasks/<task_id>/
 │   └── subworkflow_node/
 │       ├── run_subworkflow_node.sh
 │       ├── docs/
-│       │   ├── workflow_spec.json
+│       │   ├── workflow_spec.yaml
 │       │   └── review.html
 │       └── resources/
 ├── config/
@@ -38,8 +38,9 @@ tasks/<task_id>/
 └── ...
 ```
 
-If a binary cache is useful, `.rds` files can live under `cache/`, but the
-editable source of truth should be the JSON specs under `docs/`.
+The editable source of truth should be YAML specs under `docs/`. JSON can be
+used for machine interchange or caches, and `.rds` can be used as a binary R
+object cache under `cache/`, but do not keep multiple canonical spec formats.
 
 Common variants:
 
@@ -77,12 +78,12 @@ For parent tasks with subworkflow nodes, set `subworkflow_ref` to the child
 workflow spec path:
 
 ```text
-nodes/<subworkflow_node_id>/docs/workflow_spec.json
+nodes/<subworkflow_node_id>/docs/workflow_spec.yaml
 ```
 
-Use `nested_workflow` only when Codex has loaded the child spec and is preparing
-a combined parent preview HTML. The file reference remains the durable link; the
-embedded workflow is a convenience for review rendering.
+Use `nested_workflow` only when Codex has loaded the child spec and is
+preparing a combined parent preview HTML. The file reference remains the
+durable link; the embedded workflow is a convenience for review rendering.
 
 ## Inference Order
 
@@ -224,25 +225,31 @@ Recommended task-local layout:
 
 ```text
 tasks/<task_id>/docs/
-├── workflow_spec.json
-├── memory_spec.json
-├── knowledge_spec.json
+├── workflow_spec.yaml
+├── memory_spec.yaml
+├── knowledge_spec.yaml
 ├── review.html
 └── inference_notes.md
 ```
 
 Use these names unless the workspace already has a stronger convention:
 
-- `tasks/<task_id>/docs/workflow_spec.json`
-- `tasks/<task_id>/docs/memory_spec.json`
-- `tasks/<task_id>/docs/knowledge_spec.json`
+- `tasks/<task_id>/docs/workflow_spec.yaml`
+- `tasks/<task_id>/docs/memory_spec.yaml`
+- `tasks/<task_id>/docs/knowledge_spec.yaml`
 - `tasks/<task_id>/docs/review.html`
 - `tasks/<task_id>/docs/inference_notes.md`
-- `tasks/<task_id>/nodes/<subworkflow_node_id>/docs/workflow_spec.json`
+- `tasks/<task_id>/nodes/<subworkflow_node_id>/docs/workflow_spec.yaml`
 - `tasks/<task_id>/nodes/<subworkflow_node_id>/docs/review.html`
 
 Use stable ids in snake case. Avoid dates in canonical spec filenames unless the
 file is an explicit snapshot.
+
+Do not keep `.rds` as the canonical task spec format. If a task workspace still
+contains older `.rds` or `.json` artifacts, convert them to YAML when the spec
+is intended for manual review and treat the YAML files as the source of truth.
+Use a strict YAML subset: no anchors, no custom tags, and explicit arrays for
+schema-array fields such as `knowledge_refs` and JSON-schema `required`.
 
 Preserve existing task specs and docs unless the user explicitly asks for
 regeneration. When behavior is uncertain, write the uncertainty to
@@ -267,7 +274,7 @@ library(agentr)
 
 task_dir <- "tasks/write_new_blog_article"
 docs_dir <- file.path(task_dir, "docs")
-workflow <- load_workflow_spec_json(file.path(docs_dir, "workflow_spec.json"))
+workflow <- load_workflow_spec_yaml(file.path(docs_dir, "workflow_spec.yaml"))
 
 export_design_review_html(
   workflow,
@@ -285,7 +292,7 @@ library(agentr)
 
 task_dir <- "tasks/literature_maintenance"
 docs_dir <- file.path(task_dir, "docs")
-workflow <- load_workflow_spec_json(file.path(docs_dir, "workflow_spec.json"))
+workflow <- load_workflow_spec_yaml(file.path(docs_dir, "workflow_spec.yaml"))
 
 export_design_review_html(
   workflow,
@@ -299,7 +306,7 @@ export_design_review_html(
 For task/subworkflow previews, parent nodes should use `subworkflow_ref` and
 may include `nested_workflow`. The review page can then show task labels as
 selectable previews while keeping node details in the side panel. In practice,
-render `review.html` from the editable JSON spec and load that JSON into R
+render `review.html` from the editable YAML spec and load that YAML into R
 objects only for rendering.
 
 ## Task-Family Preview
@@ -344,9 +351,10 @@ Not allowed:
 ## Preview Caveat
 
 If generated `review.html` has clickable nodes but node details do not appear,
-check whether `knowledge_refs` serialized as a scalar string instead of an
-array. Prefer array-normalizing logic in the preview JS, or fix serialization so
-`knowledge_refs` remains a list-like value.
+check whether an installed `agentr` version predates scalar-or-array
+normalization for `knowledge_refs`. Current `agentr` renders preview HTML with
+array-normalizing JavaScript and normalizes scalar YAML/JSON values during spec
+loading.
 
 ## Approval Boundary
 

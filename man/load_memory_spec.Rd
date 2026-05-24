@@ -4,16 +4,17 @@
 \alias{load_memory_spec}
 \title{Load a \code{MemorySpec} from a file}
 \usage{
-load_memory_spec(file_path, format = c("rds", "json"))
+load_memory_spec(file_path, format = c("rds", "json", "yaml"))
 }
 \arguments{
 \item{file_path}{File path from which to load the object.}
 
-\item{format}{File format, either \code{rds} or \code{json}.}
+\item{format}{File format, either \code{rds}, \code{json}, or \code{yaml}.}
 }
 \value{
 A \code{\link{MemorySpec}} object.
 }
 \description{
-Loads a saved \code{\link{MemorySpec}} object from an \code{.rds} or \code{.json} file.
+Loads a saved \code{\link{MemorySpec}} object from an \code{.rds}, \code{.json}, or \code{.yaml}
+file.
 }

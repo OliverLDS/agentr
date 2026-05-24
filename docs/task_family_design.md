@@ -39,7 +39,7 @@ family <- add_child_task_node(
   child_task_node(
     id = "task_blog_article",
     label = "Write a Cognaptus blog article",
-    subworkflow_ref = "docs/workflow_spec.json"
+    subworkflow_ref = "docs/workflow_spec.yaml"
   ),
   tags = c("publication", "blog")
 )

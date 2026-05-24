@@ -363,6 +363,7 @@ validate_knowledge_graph_spec <- function(x) {
 
 #' @keywords internal
 .knowledge_graph_spec_from_list <- function(x) {
+  x <- .normalize_spec_arrays(x)
   if (!is.list(x) || !all(c("nodes", "edges", "metadata") %in% names(x))) {
     stop("Knowledge graph JSON must contain top-level `nodes`, `edges`, and `metadata` fields.", call. = FALSE)
   }

@@ -256,6 +256,7 @@ validate_knowledge_spec <- function(x) {
 
 #' @keywords internal
 .knowledge_spec_from_list <- function(x) {
+  x <- .normalize_spec_arrays(x)
   if (!is.list(x) || !all(c("items", "graph", "vector_refs", "metadata") %in% names(x))) {
     stop("Knowledge spec JSON must contain top-level `items`, `graph`, `vector_refs`, and `metadata` fields.", call. = FALSE)
   }

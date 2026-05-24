@@ -1,5 +1,12 @@
 # agentr news
 
+## agentr development
+
+- Added YAML save/load helpers for workflow, memory, knowledge, and knowledge-graph specs while preserving JSON and RDS compatibility.
+- Made task-local YAML specs the preferred editable source of truth in Codex-facing task-spec guidance.
+- Hardened design-review HTML against scalar-or-array `knowledge_refs` payloads and preserved schema-array fields such as `knowledge_refs` and JSON-schema `required` during editable spec serialization.
+- Added `inst/guides/codex_task_code_construction.md` for converting approved `agentr` specs into task-local executable code without expanding `agentr` into a runtime executor.
+
 ## agentr 0.2.6.5
 
 Released: 2026-05-22

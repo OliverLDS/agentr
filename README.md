@@ -2,7 +2,7 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.6.5` adds a Codex task-spec inference guide aligned with task-local `docs/` artifacts and node-folder subworkflow conventions, while preserving `agentr` as a descriptive scaffolding and review layer rather than an execution runtime. `agentr` can package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one offline review page while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
+The current development version adds YAML-first editable specs for task-local review, keeps JSON/RDS persistence available, and includes Codex-facing guides for inferring specs from existing task code and constructing executable task code from approved specs. `agentr` can package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one offline review page while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
 
 ## Scope
 
@@ -704,8 +704,8 @@ The returned vertex table includes fields such as `node_label`, `node_shape`, `n
 Workflow specs can be saved and loaded independently of the full agent object:
 
 ```r
-save_workflow_spec(dispatch$workflow_after, "workflow_spec.json")
-spec <- load_workflow_spec("workflow_spec.json")
+save_workflow_spec(dispatch$workflow_after, "workflow_spec.yaml")
+spec <- load_workflow_spec("workflow_spec.yaml")
 ```
 
 ## Task Families
@@ -727,7 +727,7 @@ family <- add_child_task_node(
     child_task_node(
       id = "task_blog_article",
       label = "Write a Cognaptus blog article",
-    subworkflow_ref = "docs/workflow_spec.json"
+    subworkflow_ref = "docs/workflow_spec.yaml"
     ),
   tags = c("publication", "blog")
 )
