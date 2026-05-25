@@ -1,7 +1,7 @@
-# Codex Task Code Construction Guide
+# Coding Assistant Task Code Construction Guide
 
-This guide describes how Codex should implement task code from an approved
-`agentr` spec. It is separate from `codex_task_spec_inference.md`, which covers
+This guide describes how a coding assistant should implement task code from an approved
+`agentr` spec. It is separate from the spec-inference guide, which covers
 how to infer specs from existing code and render preview artifacts.
 
 Use this guide when the user already has a task-level or node-level
@@ -93,6 +93,24 @@ The root task orchestrator should:
 
 The root orchestrator should not contain unrelated business logic that belongs in
 a node script.
+
+When generating a root orchestrator or any subworkflow orchestrator from a
+spec, add a comment containing the `node_id` at the start of each contiguous
+block that calls node code. The comment should appear before the first command
+in the block so humans can scan workflow structure quickly.
+
+Example:
+
+```bash
+# node_id: extract_source_material
+python nodes/extract_source_material.py --input "$INPUT" --output "$CACHE_DIR/source.json"
+
+# node_id: build_prompt
+Rscript nodes/build_prompt.R --source "$CACHE_DIR/source.json" --output "$CACHE_DIR/prompt.json"
+```
+
+Do not hide node calls in unlabeled shell blocks. The `node_id` comment is part
+of the review contract.
 
 ### 2. Keep node scripts single-purpose
 

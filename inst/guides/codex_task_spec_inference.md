@@ -1,9 +1,9 @@
-# Codex Task Spec Inference Guide
+# Coding Assistant Task Spec Inference Guide
 
-This guide describes how Codex should infer `agentr` design specs from an
-existing task folder. The goal is to create descriptive, reviewable design
-artifacts. Do not convert the task into a new runtime, executor, or orchestration
-system.
+This guide describes how a coding assistant should infer `agentr` design specs
+from an existing task folder. The goal is to create descriptive, reviewable
+design artifacts. Do not convert the task into a new runtime, executor, or
+orchestration system.
 
 ## Expected Task Folder Shape
 
@@ -81,7 +81,7 @@ workflow spec path:
 nodes/<subworkflow_node_id>/docs/workflow_spec.yaml
 ```
 
-Use `nested_workflow` only when Codex has loaded the child spec and is
+Use `nested_workflow` only when the coding assistant has loaded the child spec and is
 preparing a combined parent preview HTML. The file reference remains the
 durable link; the embedded workflow is a convenience for review rendering.
 
@@ -321,6 +321,18 @@ depend on one another.
 
 ## Validation Guidance
 
+When inspecting existing task code, print a terminal warning for each violation
+of the code-construction guidance below. Warn when a node script or
+subworkflow orchestrator:
+
+- outputs a plain string where the task contract says the node should emit JSON
+- does not accept `-h` or `--help`
+- omits a `node_id` comment at the start of each block that calls node code
+
+Warnings should name the file or script, identify the violated rule, and make it
+clear that the issue affects reviewability or machine-readable downstream use.
+Do not silently downgrade these issues.
+
 If a task has side effects such as git push, email sending, UI automation, paid
 API calls, file deletion, or external publication, do not run the full workflow
 for validation unless explicitly approved. Prefer syntax checks, parse checks,
@@ -329,7 +341,7 @@ available.
 
 ## Runtime Boundary
 
-Codex must not invent runtime behavior beyond the task code.
+The coding assistant must not invent runtime behavior beyond the task code.
 
 Allowed:
 
