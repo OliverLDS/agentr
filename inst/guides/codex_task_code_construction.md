@@ -119,6 +119,7 @@ Each node script should do one conceptual step described by the spec.
 Examples:
 
 - build a prompt
+- submit a prompt to an external LLM node such as ChatGPT
 - send a prompt through UI automation
 - wait for output readiness
 - copy output to a local file
@@ -128,6 +129,15 @@ Examples:
 
 Do not merge unrelated responsibilities into one script unless they are
 inseparable from a review standpoint.
+
+External LLM steps are first-class workflow nodes even when they are executed
+through browser automation or another external surface. In the current
+AutoGUI-oriented pattern, the node label may be `ChatGPT` when that is the
+reviewed external step. Other chat UIs or API-backed LLM nodes are also valid;
+the implementation surface changes, but the workflow concept does not.
+
+Do not model those external LLM nodes as human review gates unless a real human
+decision or approval step happens there.
 
 ### 3. Use JSON for machine-visible outputs
 

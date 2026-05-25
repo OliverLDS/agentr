@@ -12,8 +12,26 @@ test_that("design_review_html returns standalone review page", {
   expect_true(grepl("splitter", html, fixed = TRUE))
   expect_true(grepl("feedback-section-gap", html, fixed = TRUE))
   expect_true(grepl("initSplit", html, fixed = TRUE))
+  expect_true(grepl("workflow-theme-select", html, fixed = TRUE))
+  expect_true(grepl("subsystemPalette", html, fixed = TRUE))
+  expect_true(grepl("Graph nodes represent the reviewed task workflow, including external scripts and external LLM steps.", html, fixed = TRUE))
   expect_false(grepl("https://", html, fixed = TRUE))
   expect_false(grepl("http://", html, fixed = TRUE))
+})
+
+test_that("design_review_html supports subsystem-based node color theme", {
+  spec <- .test_complete_agent_spec()
+  html <- design_review_html(spec, node_color_theme = "subsystems")
+
+  expect_true(grepl('"node_color_theme":"subsystems"', html, fixed = TRUE))
+  expect_true(grepl("nodeColorTheme", html, fixed = TRUE))
+  expect_true(grepl("nodeSubsystem", html, fixed = TRUE))
+  expect_true(grepl("renderWorkflowLegend", html, fixed = TRUE))
+  expect_true(grepl("applyWorkflowTheme", html, fixed = TRUE))
+  expect_true(grepl("'RWM'", html, fixed = TRUE) || grepl("label:'RWM'", html, fixed = TRUE))
+  expect_true(grepl("node_subsystems", html, fixed = TRUE))
+  expect_true(grepl('"node_refresh"', html, fixed = TRUE))
+  expect_true(grepl('"node_interpret"', html, fixed = TRUE))
 })
 
 test_that("design_review_html shows node detail schemas and nested workflow drilldown", {

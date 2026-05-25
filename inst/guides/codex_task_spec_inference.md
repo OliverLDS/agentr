@@ -115,8 +115,9 @@ Map task code to workflow fields as follows:
 | JSON output from a node | `output_schema` |
 | CLI args, files, or environment variables | `input_schema` |
 | Human judgment or manual review | `human_required = TRUE`, `owner = "human"` |
-| Local script/tool action | `owner = "script"` or `owner = "external_system"` |
-| UI automation, API calls, file writes | `automation_status = "rule_assisted"` unless the code shows stronger autonomy |
+| Local script/tool action | `human_required = FALSE`, `owner = "script"` or `owner = "external_system"` |
+| External LLM or chat-UI step such as ChatGPT | `human_required = FALSE`, `owner = "external_system"`, `automation_status = "llm_assisted"` |
+| UI automation, API calls, file writes | `human_required = FALSE`, `automation_status = "rule_assisted"` unless the code shows stronger autonomy |
 
 These richer node fields are expected in current `agentr`:
 
@@ -145,6 +146,17 @@ workflow_node(
 
 Use one workflow node per conceptual step. Do not create a node for every shell
 line unless each line is a distinct reviewable unit.
+
+Reserve `human_required = TRUE` for real human decision or review gates only.
+Do not mark a node as human just because it is outside the local runtime,
+implemented by an external script, driven through AutoGUI, or routed through an
+external LLM or chat UI.
+
+External LLM steps are first-class workflow nodes. They belong in the task
+workflow even when the concrete implementation is GUI-driven or API-driven. In
+the current AutoGUI-oriented pattern, the node label may be `ChatGPT` when that
+is the reviewed external step. Other chat UIs or API-backed LLM nodes are also
+valid conceptually; only the GUI/API implementation details differ.
 
 ## Inferring MemorySpec
 
@@ -328,6 +340,9 @@ subworkflow orchestrator:
 - outputs a plain string where the task contract says the node should emit JSON
 - does not accept `-h` or `--help`
 - omits a `node_id` comment at the start of each block that calls node code
+- is being treated as human only because of a default `human_required = TRUE`
+  when the observed code path is actually an external script, AutoGUI step, or
+  external LLM interaction
 
 Warnings should name the file or script, identify the violated rule, and make it
 clear that the issue affects reviewability or machine-readable downstream use.
@@ -349,13 +364,18 @@ Allowed:
 - Infer reviewable schemas from code and documented JSON outputs.
 - Mark unclear fields as pending, approximate, or human-review required.
 - Add `implementation_hint` pointing to the source file or orchestrator logic.
-- Use `human_required = TRUE` when human judgment is visible or uncertainty is
-  material.
+- Use `human_required = TRUE` only when a real human decision or review gate is
+  visible.
+- Model external scripts, AutoGUI nodes, and external LLM steps as workflow
+  nodes with `human_required = FALSE`, then describe the execution surface with
+  `owner`, `automation_status`, and `implementation_hint`.
 
 Not allowed:
 
 - Invent new automation not present in the code.
 - Claim a task is autonomous when it relies on manual judgment or UI state.
+- Mark external runtime steps as human gates when no real human decision is
+  taking place.
 - Turn a review spec into an execution engine.
 - Add side effects, tool calls, or service integrations to the spec.
 - Treat generated specs as approved without an explicit approval step.
