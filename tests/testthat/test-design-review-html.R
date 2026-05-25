@@ -15,6 +15,8 @@ test_that("design_review_html returns standalone review page", {
   expect_true(grepl("workflow-theme-select", html, fixed = TRUE))
   expect_true(grepl("subsystemPalette", html, fixed = TRUE))
   expect_true(grepl("Graph nodes represent the reviewed task workflow, including external scripts and external LLM steps.", html, fixed = TRUE))
+  expect_true(grepl("Deterministic automation", html, fixed = TRUE))
+  expect_true(grepl("External stochastic LLM", html, fixed = TRUE))
   expect_false(grepl("https://", html, fixed = TRUE))
   expect_false(grepl("http://", html, fixed = TRUE))
 })

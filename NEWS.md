@@ -5,15 +5,15 @@
 Released: 2026-05-24
 
 - Added YAML save/load helpers for workflow, memory, knowledge, and knowledge-graph specs while preserving JSON and RDS compatibility.
-- Made task-local YAML specs the preferred editable source of truth in Codex-facing task-spec guidance.
+- Made task-local YAML specs the preferred editable source of truth in coding-assistant task-spec guidance.
 - Hardened design-review HTML against scalar-or-array `knowledge_refs` payloads and preserved schema-array fields such as `knowledge_refs` and JSON-schema `required` during editable spec serialization.
-- Added `inst/guides/codex_task_code_construction.md` for converting approved `agentr` specs into task-local executable code without expanding `agentr` into a runtime executor.
+- Added `inst/guides/coding_assistant_task_code_construction.md` for converting approved `agentr` specs into task-local executable code without expanding `agentr` into a runtime executor.
 
 ## agentr 0.2.6.5
 
 Released: 2026-05-22
 
-- Added `inst/guides/codex_task_spec_inference.md` as a Codex-facing inference contract for task codebases.
+- Added `inst/guides/coding_assistant_task_spec_inference.md` as a coding-assistant inference contract for task codebases.
 - Aligned the guide with node-folder subworkflow conventions under `tasks/<task_id>/nodes/<subworkflow_node_id>/`.
 - Added guidance for task-local `docs/` artifacts, `memory/agent_paths.json` path-memory loading, side-effect-safe validation practices, and supported `KnowledgeSpec` item types.
 - Clarified that generated specs are descriptive/reviewable artifacts and should not introduce runtime behavior beyond observed task code.

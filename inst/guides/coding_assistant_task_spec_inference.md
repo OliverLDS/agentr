@@ -74,6 +74,15 @@ Do not create deeper task nesting unless the user explicitly requests it. If the
 code appears deeper than one node-folder subworkflow level, summarize the deeper
 behavior inside the nearest subworkflow spec and add a review note.
 
+When inferring specs from existing code, print a terminal warning for every
+node or subworkflow orchestrator that violates the current code-construction
+rules, especially when:
+
+- a node script outputs a plain string instead of JSON
+- a node script does not accept `-h/--help`
+- a root orchestrator or subworkflow orchestrator does not include a `node_id`
+  comment at the start of each contiguous block that calls node code
+
 For parent tasks with subworkflow nodes, set `subworkflow_ref` to the child
 workflow spec path:
 
@@ -153,10 +162,23 @@ implemented by an external script, driven through AutoGUI, or routed through an
 external LLM or chat UI.
 
 External LLM steps are first-class workflow nodes. They belong in the task
-workflow even when the concrete implementation is GUI-driven or API-driven. In
-the current AutoGUI-oriented pattern, the node label may be `ChatGPT` when that
-is the reviewed external step. Other chat UIs or API-backed LLM nodes are also
-valid conceptually; only the GUI/API implementation details differ.
+workflow even when the concrete implementation is GUI-driven or API-driven, and
+even when no local script directly implements the response-generation step. When
+a workflow sends a prompt to an external LLM and later retrieves a response, the
+inferred workflow must include an explicit external LLM node between prompt
+delivery and response retrieval.
+
+Model the semantic response-generation step, not just the local transport
+mechanics. For example, prefer `send_prompt_to_chatgpt_ui ->
+chatgpt_generate_structure_plan -> copy_structure_plan_from_ui` over a graph
+that contains only send/wait/copy UI mechanics.
+
+In the current AutoGUI-oriented pattern, the node label may be `ChatGPT` or a
+more task-specific label such as `ChatGPT generates structure-plan JSON` when
+that is the reviewed external step. Other chat UIs or API-backed LLM nodes are
+also valid conceptually; only the GUI/API implementation details differ. The
+node output schema may be JSON, markdown, plain text, YAML, image prompt text,
+or unknown, depending on the actual task contract.
 
 ## Inferring MemorySpec
 

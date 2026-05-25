@@ -8,6 +8,11 @@ Use this guide when the user already has a task-level or node-level
 `agentr` spec and wants the corresponding executable task code created or
 refactored.
 
+For the general contract for writing one standardized executable node script,
+see [coding_assistant_node_script_construction.md](coding_assistant_node_script_construction.md).
+This task guide focuses on orchestration, task layout, and how node scripts are
+assembled into a workflow implementation.
+
 ## Core Goal
 
 Generate code that is:
@@ -32,15 +37,9 @@ This applies to:
 - node scripts such as `*.R`, `*.sh`, `*.py`, or other executable entrypoints
 - orchestrating scripts for node-folder subworkflows
 
-The help output should include:
-
-- a short usage line
-- required positional arguments
-- supported flags
-- a brief description of the script’s role
-
-If a script is meant to be called only by another script, it still needs help
-output. Hidden entrypoints are harder to maintain and review.
+For the detailed single-node script contract, help-text requirements, JSON
+output expectations, side-effect visibility, and external node-call rules, use
+the shared node-script guide referenced above.
 
 ## Task Code Shape
 
@@ -112,65 +111,14 @@ Rscript nodes/build_prompt.R --source "$CACHE_DIR/source.json" --output "$CACHE_
 Do not hide node calls in unlabeled shell blocks. The `node_id` comment is part
 of the review contract.
 
-### 2. Keep node scripts single-purpose
+If a workflow node is implemented through an external LLM surface, keep that
+step as a first-class workflow node and make the implementation details explicit
+in the surrounding orchestrator comments. When the current implementation uses
+AutoGUI against ChatGPT, the workflow may label the external LLM node as
+`ChatGPT`; if the UI or API surface changes later, the node concept should stay
+in the graph even if the implementation code changes.
 
-Each node script should do one conceptual step described by the spec.
-
-Examples:
-
-- build a prompt
-- submit a prompt to an external LLM node such as ChatGPT
-- send a prompt through UI automation
-- wait for output readiness
-- copy output to a local file
-- normalize or validate output
-- append to a log
-- create a local artifact
-
-Do not merge unrelated responsibilities into one script unless they are
-inseparable from a review standpoint.
-
-External LLM steps are first-class workflow nodes even when they are executed
-through browser automation or another external surface. In the current
-AutoGUI-oriented pattern, the node label may be `ChatGPT` when that is the
-reviewed external step. Other chat UIs or API-backed LLM nodes are also valid;
-the implementation surface changes, but the workflow concept does not.
-
-Do not model those external LLM nodes as human review gates unless a real human
-decision or approval step happens there.
-
-### 3. Use JSON for machine-visible outputs
-
-Node outputs that are consumed by later steps should be JSON when practical.
-Prefer JSON for:
-
-- success or failure status
-- file paths
-- generated prompt text
-- extracted metadata
-- validation results
-- externally produced structured data
-
-Design the JSON response so later steps can inspect fields without parsing
-free-form text.
-
-Recommended pattern:
-
-```json
-{
-  "success": true,
-  "output_file": "cache/article.md",
-  "error": null
-}
-```
-
-### 4. Keep output schemas stable
-
-If a node promises JSON fields, keep those field names stable across runs.
-Changing node output keys should be treated as a spec change, not a casual
-implementation detail.
-
-### 5. Prefer local paths and local memory
+### 2. Prefer local paths and local memory
 
 Use task-local paths, task-local `state/`, and task-local `cache/` unless the
 spec explicitly says otherwise.
@@ -181,7 +129,7 @@ scripts.
 
 Do not create a shared path-helper package just to solve path loading.
 
-### 6. Make side effects visible
+### 3. Make side effects visible
 
 If a node writes files, commits git changes, pushes to a remote, sends email,
 drives browser UI, uses the clipboard, downloads files, or launches a server,
@@ -192,7 +140,7 @@ the script should make that side effect obvious in:
 - its task docs
 - its `implementation_hint` in the spec
 
-### 7. Separate local code from external node calls
+### 4. Separate local code from external node calls
 
 When a spec node belongs to another package, the task code should call that
 package’s executable node script instead of reimplementing the step locally.

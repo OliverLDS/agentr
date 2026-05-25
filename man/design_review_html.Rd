@@ -14,6 +14,7 @@ design_review_html(
   title = NULL,
   graph_layout = c("grid", "layered", "swimlane", "process"),
   edge_style = c("curved", "straight", "orthogonal"),
+  node_color_theme = c("default", "subsystems"),
   ...
 )
 }
@@ -42,6 +43,11 @@ workflows as a vertical process spine with side branches.}
 
 \item{edge_style}{Workflow edge routing style: \code{"straight"}, \code{"curved"}, or
 \code{"orthogonal"}.}
+
+\item{node_color_theme}{Initial node-color theme: \code{"default"} uses
+human-gate, deterministic-automation, and external-LLM categories, while
+\code{"subsystems"} uses subsystem tags such as \code{rwm}, \code{pg}, \code{ae},
+\code{la}, and \code{iac} when available.}
 
 \item{...}{Additional arguments passed to \code{\link[=build_design_review_data]{build_design_review_data()}} when
 \code{x} is not already a \code{\link{DesignReviewSpec}}.}
