@@ -36,6 +36,39 @@ test_that("design_review_html supports subsystem-based node color theme", {
   expect_true(grepl('"node_interpret"', html, fixed = TRUE))
 })
 
+test_that("design_review_html inherits default categories from nested descendants", {
+  nested <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node("nested_human", "Human approval step", human_required = TRUE),
+      workflow_node("nested_llm", "External LLM step", automation_status = "llm_assisted"),
+      workflow_node("nested_auto", "Deterministic helper", automation_status = "agent_owned")
+    ),
+    edges = rbind(
+      workflow_edge("nested_human", "nested_llm"),
+      workflow_edge("nested_llm", "nested_auto")
+    ),
+    task = "Nested category review"
+  )
+  workflow <- new_workflow_spec(
+    nodes = workflow_node(
+      "parent_node",
+      "Parent node with nested workflow",
+      human_required = FALSE,
+      automation_status = "agent_owned",
+      nested_workflow = nested
+    ),
+    edges = .empty_workflow_edges(),
+    task = "Parent category review"
+  )
+  html <- design_review_html(workflow, title = "Parent category review")
+
+  expect_true(grepl("baseWorkflowCategory", html, fixed = TRUE))
+  expect_true(grepl("categoryPriority", html, fixed = TRUE))
+  expect_true(grepl("effectiveWorkflowCategory", html, fixed = TRUE))
+  expect_true(grepl("Category", html, fixed = TRUE))
+  expect_true(grepl("Parent nodes with nested workflows inherit the most restrictive descendant category in the default theme.", html, fixed = TRUE))
+})
+
 test_that("design_review_html shows node detail schemas and nested workflow drilldown", {
   nested <- new_workflow_spec(
     nodes = rbind(
