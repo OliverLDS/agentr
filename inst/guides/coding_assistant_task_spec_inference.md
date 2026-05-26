@@ -156,6 +156,24 @@ workflow_node(
 Use one workflow node per conceptual step. Do not create a node for every shell
 line unless each line is a distinct reviewable unit.
 
+When a task uses a node-folder subworkflow, keep the abstraction level
+consistent across parent and child specs. A parent node should represent the
+reviewable conceptual step, and the child spec should represent the internal
+mechanics of that step. Do not duplicate the same semantic step in both places
+unless the parent and child are intentionally different abstractions with
+distinct review value.
+
+In practice:
+
+- if the parent node is `Retrieve article markdown from ChatGPT UI`, do not
+  also keep a separate top-level `ChatGPT generates article markdown` node for
+  the same handoff
+- if the child workflow already exposes the external LLM response-generation
+  node, the parent should usually stay at the composite retrieval level
+- if the parent workflow needs to show a semantic browser/page reload or other
+  loop-control step, keep that step visible as its own node rather than folding
+  it into an unrelated nearby node
+
 Reserve `human_required = TRUE` for real human decision or review gates only.
 Do not mark a node as human just because it is outside the local runtime,
 implemented by an external script, driven through AutoGUI, or routed through an
@@ -339,9 +357,12 @@ export_design_review_html(
 
 For task/subworkflow previews, parent nodes should use `subworkflow_ref` and
 may include `nested_workflow`. The review page can then show task labels as
-selectable previews while keeping node details in the side panel. In practice,
-render `review.html` from the editable YAML spec and load that YAML into R
-objects only for rendering.
+selectable previews while keeping node details in the side panel. Do not mirror
+the same semantic child node at the parent level just to make the graph look
+denser; keep the parent node as the wrapper and the child workflow as the
+mechanics when that is the actual code shape. In practice, render `review.html`
+from the editable YAML spec and load that YAML into R objects only for
+rendering.
 
 ## Task-Family Preview
 
@@ -365,6 +386,8 @@ subworkflow orchestrator:
 - is being treated as human only because of a default `human_required = TRUE`
   when the observed code path is actually an external script, AutoGUI step, or
   external LLM interaction
+- repeats the same semantic external-LLM step in both a parent node and a child
+  node when the task code only implements one actual handoff path
 
 Warnings should name the file or script, identify the violated rule, and make it
 clear that the issue affects reviewability or machine-readable downstream use.

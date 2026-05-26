@@ -118,6 +118,14 @@ AutoGUI against ChatGPT, the workflow may label the external LLM node as
 `ChatGPT`; if the UI or API surface changes later, the node concept should stay
 in the graph even if the implementation code changes.
 
+When a node is expected to fail as part of normal control flow, do not let
+`set -e` terminate the orchestrator before the JSON result is inspected. Capture
+that command with an explicit `if ! var="$(... || true)"; then ... fi` pattern,
+or otherwise neutralize the exit status long enough to read the node output and
+decide the next branch. This is especially important for duplicate checks,
+missing-artifact checks, and other gate nodes that intentionally return
+non-zero on an expected branch.
+
 ### 2. Prefer local paths and local memory
 
 Use task-local paths, task-local `state/`, and task-local `cache/` unless the
@@ -128,6 +136,11 @@ the root orchestrator and export the needed environment variables to node
 scripts.
 
 Do not create a shared path-helper package just to solve path loading.
+
+When a node writes a task-local trace or state artifact, make that output path
+optional when practical and default it under the task's `state/` or `cache/`
+tree. Treat missing workspace paths as a configuration error, not as a reason
+to hardcode a fallback package root inside the node.
 
 ### 3. Make side effects visible
 
@@ -140,7 +153,16 @@ the script should make that side effect obvious in:
 - its task docs
 - its `implementation_hint` in the spec
 
-### 4. Separate local code from external node calls
+### 4. Use debug logs for traceability
+
+Emit concise debug logs for major workflow transitions when they help with
+reruns and diagnosis. Keep them short, stable, and node-oriented. Prefer logs
+that identify the current `node_id` or a nearby step label so humans can follow
+control flow without reading the whole script. Debug logs are useful for review
+and troubleshooting, but they do not replace the required `node_id` comments in
+orchestrators.
+
+### 5. Separate local code from external node calls
 
 When a spec node belongs to another package, the task code should call that
 package’s executable node script instead of reimplementing the step locally.
@@ -165,6 +187,16 @@ This means each spec node should resolve to one of two implementation paths:
 Do not define the implementation boundary in terms of “UI-driven” versus
 “deterministic” alone. The deciding factor is whether the node already exists as
 an executable target in another package.
+
+Prefer passing semantic inputs directly between nodes, such as `--ref-ids`,
+`--litxr-root`, `--json-path`, or `--prompt-file`, and keep path resolution in
+the shell orchestrator. Avoid hardcoding external package roots inside R/Python
+nodes.
+
+Avoid thin wrapper scripts that only forward to an external package command
+unless the wrapper adds a concrete task-local contract, such as writing a task
+artifact, adapting a parameter shape, or validating output before the next
+workflow step.
 
 ## Node-Folder Subworkflow Pattern
 
