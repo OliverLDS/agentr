@@ -45,10 +45,10 @@ workflows as a vertical process spine with side branches.}
 \code{"orthogonal"}.}
 
 \item{node_color_theme}{Initial node-color theme: \code{"default"} uses
-human-gate, deterministic-automation, and external stochastic LLM categories.
-Parent nodes with nested workflows inherit the most restrictive descendant
-category in the default theme. \code{"subsystems"} uses subsystem tags such as
-\code{rwm}, \code{pg}, \code{ae}, \code{la}, and \code{iac} when available.}
+human-gate, deterministic-automation, and external stochastic LLM
+categories. Parent nodes with nested workflows inherit the most
+restrictive descendant category in the default theme. \code{"subsystems"} uses
+subsystem tags such as \code{rwm}, \code{pg}, \code{ae}, \code{la}, and \code{iac} when available.}
 
 \item{...}{Additional arguments passed to \code{\link[=build_design_review_data]{build_design_review_data()}} when
 \code{x} is not already a \code{\link{DesignReviewSpec}}.}

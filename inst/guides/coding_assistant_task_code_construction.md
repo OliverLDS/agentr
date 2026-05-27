@@ -126,6 +126,11 @@ decide the next branch. This is especially important for duplicate checks,
 missing-artifact checks, and other gate nodes that intentionally return
 non-zero on an expected branch.
 
+Prefer direct data handoff over wrapper envelopes. If a node's real output is
+already the JSON document needed by the next step, return that document
+directly instead of wrapping it again inside a second JSON object unless there
+is a real multi-field contract that justifies the extra layer.
+
 ### 2. Prefer local paths and local memory
 
 Use task-local paths, task-local `state/`, and task-local `cache/` unless the
@@ -135,12 +140,31 @@ If workspace-level path memory exists in `memory/agent_paths.json`, load it in
 the root orchestrator and export the needed environment variables to node
 scripts.
 
+When a task depends on path memory, make the required keys explicit in the task
+docs and memory spec. Typical examples are:
+
+- agent/workspace roots such as `zelina_agent_dir`
+- task roots such as `<task_id>_task_dir`
+- external package roots such as `autogui_root` or `litxr_root`
+- project URLs or similar runtime endpoints when the workflow depends on a
+  specific external thread, project page, or target surface
+
+Treat `memory/agent_paths.json` as configuration that the root orchestrator
+resolves once at startup. Node scripts should receive resolved values through
+arguments or exported environment variables rather than reopening path memory
+themselves.
+
 Do not create a shared path-helper package just to solve path loading.
 
 When a node writes a task-local trace or state artifact, make that output path
 optional when practical and default it under the task's `state/` or `cache/`
 tree. Treat missing workspace paths as a configuration error, not as a reason
 to hardcode a fallback package root inside the node.
+
+Prefer shell-native parsing for simple orchestrator control flow. In shell
+orchestrators, use direct `jq` or equivalent shell-native extraction for simple
+field reads instead of introducing `Rscript -e` or another inline scripting
+layer when the shell can express the control clearly.
 
 ### 3. Make side effects visible
 
@@ -161,6 +185,19 @@ that identify the current `node_id` or a nearby step label so humans can follow
 control flow without reading the whole script. Debug logs are useful for review
 and troubleshooting, but they do not replace the required `node_id` comments in
 orchestrators.
+
+Guard the real failure boundary, not an imagined one. Add retries, polling, and
+timeout logic around the asynchronous step that actually fails in practice,
+rather than adding unrelated validation layers elsewhere in the workflow.
+
+For clipboard- or UI-copy-based flows, treat copy completion as asynchronous.
+After triggering the copy action, poll until the clipboard content is present
+and passes the semantic checks required by the task, or fail on timeout.
+
+Semantic validation should match the task contract. For copied or returned
+JSON, validate not only that the payload parses, but also that it is the
+expected object for that step, such as matching the expected `ref_id` or other
+task-defining identifier.
 
 ### 5. Separate local code from external node calls
 
@@ -198,6 +235,12 @@ unless the wrapper adds a concrete task-local contract, such as writing a task
 artifact, adapting a parameter shape, or validating output before the next
 workflow step.
 
+Let the system of record own validation when possible. If the downstream
+external package or canonical ingest/write script already validates the payload
+as part of its contract, do not add a redundant local pre-validation wrapper
+unless it catches a distinct class of error that the downstream system does not
+cover.
+
 ## Node-Folder Subworkflow Pattern
 
 Use a node folder when a step has multiple low-level actions but one reviewable
@@ -223,6 +266,16 @@ Example:
 
 This keeps the parent workflow readable while preserving the implementation
 details in the child workflow.
+
+Treat the `nodes/` directory with this convention:
+
+- a file under `nodes/` is one executable node
+- a directory under `nodes/` is one subworkflow node
+- a subworkflow node directory should contain its own orchestrator, and should
+  keep its own `docs/` when the lower-level workflow is reviewable on its own
+
+Do not mix both meanings in one path. If a step is a subworkflow, make it a
+folder and put the executable orchestrator inside that folder.
 
 ## Task Code Generation Order
 
@@ -256,6 +309,29 @@ or external publication, do not run the full workflow unless that side effect is
 intended for validation.
 
 Prefer dry runs, no-op dates, or isolated helper checks when available.
+
+## Loop and Control Flow
+
+When a root orchestrator implements repeated task execution, prefer explicit,
+inspectable loop control.
+
+Use this pattern when practical:
+
+- one node determines whether the workflow should continue and which item should
+  be processed next
+- loop-only setup or transition steps such as page reloads should stay visible
+  in code and specs
+- the root orchestrator should avoid hiding normal control flow in large shell
+  blocks with scattered `break` conditions
+
+When the workflow has a special first-iteration behavior, such as opening a
+project page once and reloading it only on later iterations, keep that decision
+in the root orchestrator and make it readable through nearby `node_id`
+comments.
+
+Prefer condition-driven loops over unconstrained `while true` loops when the
+task already has explicit pending-list state, index state, or a bounded run
+limit.
 
 ## Review Boundary
 

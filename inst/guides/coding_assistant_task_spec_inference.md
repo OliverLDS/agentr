@@ -174,6 +174,15 @@ In practice:
   loop-control step, keep that step visible as its own node rather than folding
   it into an unrelated nearby node
 
+When code expresses an optional single-step continuation such as `if condition:
+A -> B -> C; else: A -> C`, prefer to model the condition inside node `B` when
+`B` is already the reviewed conceptual step. In that case, infer the simpler
+workflow shape `A -> B -> C` and describe the guard in `B`'s `rule_spec`,
+`implementation_hint`, or edge notes rather than adding a separate skip edge
+that bypasses `B`. Use this pattern when it keeps the graph aligned with the
+human-readable node structure of the orchestrator and avoids unnecessary branch
+fan-out.
+
 Reserve `human_required = TRUE` for real human decision or review gates only.
 Do not mark a node as human just because it is outside the local runtime,
 implemented by an external script, driven through AutoGUI, or routed through an
