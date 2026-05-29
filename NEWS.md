@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.6.9
+
+Released: 2026-05-29
+
+- Refined the design-review `process` layout so mutually exclusive branch groups render as centered decision blocks.
+- Placed branch alternatives horizontally around the decision node and centered common join nodes below converging branches.
+- Kept loop and back-edge routing separate from branch decision-block routing.
+
 ## agentr 0.2.6.8
 
 Released: 2026-05-29

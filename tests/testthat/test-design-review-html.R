@@ -279,7 +279,7 @@ test_that("design_review_html supports process layout for loop workflows", {
   expect_true(grepl('"graph_layout":"process"', html, fixed = TRUE))
 })
 
-test_that("design_review_html process layout places branch targets in branch lanes", {
+test_that("design_review_html process layout places branch targets in decision blocks", {
   workflow <- new_workflow_spec(
     nodes = rbind(
       workflow_node("start", "Start"),
@@ -316,6 +316,10 @@ test_that("design_review_html process layout places branch targets in branch lan
   expect_true(grepl("branchBySource", html, fixed = TRUE))
   expect_true(grepl("isBranchEdge(e)", html, fixed = TRUE))
   expect_true(grepl("branchIds.add(e.to)", html, fixed = TRUE))
+  expect_true(grepl("decisionJoinIds", html, fixed = TRUE))
+  expect_true(grepl("_decisionJoin", html, fixed = TRUE))
+  expect_true(grepl("_processBranchLane", html, fixed = TRUE))
+  expect_true(grepl("startX=a._x-((count-1)*opt.colGap)/2", html, fixed = TRUE))
   expect_true(grepl("_processBranchSource", html, fixed = TRUE))
   expect_true(grepl("_branchRejoin", html, fixed = TRUE))
   expect_true(grepl("e._branchRejoin", html, fixed = TRUE))
