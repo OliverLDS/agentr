@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.6.8
+
+Released: 2026-05-29
+
+- Made the design-review `process` layout branch-aware so multiple conditional branch targets from the same source are placed into right-side branch lanes even when they later rejoin the main workflow.
+- Added orthogonal rejoin routing for branch-lane nodes returning to the process spine.
+- Added regression coverage for conditional branch placement in the process layout.
+
 ## agentr 0.2.6.7
 
 Released: 2026-05-29

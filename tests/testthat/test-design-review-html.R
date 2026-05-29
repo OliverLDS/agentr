@@ -279,6 +279,51 @@ test_that("design_review_html supports process layout for loop workflows", {
   expect_true(grepl('"graph_layout":"process"', html, fixed = TRUE))
 })
 
+test_that("design_review_html process layout places branch targets in branch lanes", {
+  workflow <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node("start", "Start"),
+      workflow_node("route", "Route by source count"),
+      workflow_node("single", "Single-source path"),
+      workflow_node("multi", "Multi-source path"),
+      workflow_node("join", "Continue after branch")
+    ),
+    edges = rbind(
+      workflow_edge("start", "route"),
+      workflow_edge(
+        "route",
+        "single",
+        relation = "exclusive_branch",
+        condition = "source_count == 1",
+        branch_group = "source_count_route",
+        mutually_exclusive = TRUE
+      ),
+      workflow_edge(
+        "route",
+        "multi",
+        relation = "exclusive_branch",
+        condition = "source_count > 1",
+        branch_group = "source_count_route",
+        mutually_exclusive = TRUE
+      ),
+      workflow_edge("single", "join"),
+      workflow_edge("multi", "join")
+    ),
+    task = "Branch process review"
+  )
+  html <- design_review_html(workflow, graph_layout = "process", edge_style = "orthogonal")
+
+  expect_true(grepl("branchBySource", html, fixed = TRUE))
+  expect_true(grepl("isBranchEdge(e)", html, fixed = TRUE))
+  expect_true(grepl("branchIds.add(e.to)", html, fixed = TRUE))
+  expect_true(grepl("_processBranchSource", html, fixed = TRUE))
+  expect_true(grepl("_branchRejoin", html, fixed = TRUE))
+  expect_true(grepl("e._branchRejoin", html, fixed = TRUE))
+  expect_true(grepl("edgePath(a,b,opt.nodeW,config.edge_style,i,e)", html, fixed = TRUE))
+  expect_true(grepl('"condition":"source_count == 1"', html, fixed = TRUE))
+  expect_true(grepl('"condition":"source_count > 1"', html, fixed = TRUE))
+})
+
 test_that("design_review_html supports swimlane layout", {
   workflow <- new_workflow_spec(
     nodes = rbind(
