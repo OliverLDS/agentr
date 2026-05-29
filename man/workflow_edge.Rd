@@ -9,7 +9,10 @@ workflow_edge(
   to,
   relation = "depends_on",
   confidence = NA_real_,
-  notes = NA_character_
+  notes = NA_character_,
+  condition = NA_character_,
+  branch_group = NA_character_,
+  mutually_exclusive = NA
 )
 }
 \arguments{
@@ -22,6 +25,13 @@ workflow_edge(
 \item{confidence}{Optional edge confidence score between 0 and 1.}
 
 \item{notes}{Optional edge notes.}
+
+\item{condition}{Optional branch or transition condition.}
+
+\item{branch_group}{Optional identifier for related branch alternatives.}
+
+\item{mutually_exclusive}{Whether the edge is mutually exclusive with other
+edges in the same branch group.}
 }
 \value{
 One-row data frame.

@@ -69,6 +69,47 @@ test_that("design_review_html inherits default categories from nested descendant
   expect_true(grepl("Parent nodes with nested workflows inherit the most restrictive descendant category in the default theme.", html, fixed = TRUE))
 })
 
+test_that("design_review_html renders branch edge metadata visibly", {
+  workflow <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node("route", "Route by source count"),
+      workflow_node("single", "Single-source prompt"),
+      workflow_node("multi", "Multi-source prompt")
+    ),
+    edges = rbind(
+      workflow_edge(
+        "route",
+        "single",
+        relation = "exclusive_branch",
+        condition = "source_count == 1",
+        branch_group = "source_count_route",
+        mutually_exclusive = TRUE
+      ),
+      workflow_edge(
+        "route",
+        "multi",
+        relation = "exclusive_branch",
+        condition = "source_count > 1",
+        branch_group = "source_count_route",
+        mutually_exclusive = TRUE
+      )
+    ),
+    task = "Branch review"
+  )
+  html <- design_review_html(workflow, title = "Branch review")
+
+  expect_true(grepl('"condition":"source_count == 1"', html, fixed = TRUE))
+  expect_true(grepl('"branch_group":"source_count_route"', html, fixed = TRUE))
+  expect_true(grepl('"mutually_exclusive":true', html, fixed = TRUE))
+  expect_true(grepl("function isBranchEdge", html, fixed = TRUE))
+  expect_true(grepl("function edgeLabel", html, fixed = TRUE))
+  expect_true(grepl("arrow-branch", html, fixed = TRUE))
+  expect_true(grepl("stroke-dasharray='${visual.dash}'", html, fixed = TRUE))
+  expect_true(grepl("<b>Condition</b>", html, fixed = TRUE))
+  expect_true(grepl("<b>Branch group</b>", html, fixed = TRUE))
+  expect_true(grepl("<b>Mutually exclusive</b>", html, fixed = TRUE))
+})
+
 test_that("design_review_html shows node detail schemas and nested workflow drilldown", {
   nested <- new_workflow_spec(
     nodes = rbind(

@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.6.7
+
+Released: 2026-05-29
+
+- Added first-class workflow edge branch metadata: `condition`, `branch_group`, and `mutually_exclusive`.
+- Preserved branch edge metadata through workflow JSON/YAML load/save and design-review payload export.
+- Rendered conditional branch edges visibly in design-review HTML with branch styling, condition labels, and edge-inspector fields.
+- Updated workflow extraction prompts and coding-assistant guidance to represent conditional routes through explicit edge fields.
+
 ## agentr 0.2.6.6
 
 Released: 2026-05-24

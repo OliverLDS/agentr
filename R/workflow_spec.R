@@ -79,6 +79,10 @@ workflow_node <- function(
 #' @param relation Edge relation label.
 #' @param confidence Optional edge confidence score between 0 and 1.
 #' @param notes Optional edge notes.
+#' @param condition Optional branch or transition condition.
+#' @param branch_group Optional identifier for related branch alternatives.
+#' @param mutually_exclusive Whether the edge is mutually exclusive with other
+#'   edges in the same branch group.
 #'
 #' @return One-row data frame.
 #' @export
@@ -87,14 +91,25 @@ workflow_edge <- function(
   to,
   relation = "depends_on",
   confidence = NA_real_,
-  notes = NA_character_
+  notes = NA_character_,
+  condition = NA_character_,
+  branch_group = NA_character_,
+  mutually_exclusive = NA
 ) {
+  if (!length(from) && !length(to)) {
+    condition <- character()
+    branch_group <- character()
+    mutually_exclusive <- logical()
+  }
   data.frame(
     from = as.character(from),
     to = as.character(to),
     relation = as.character(relation),
     confidence = as.numeric(confidence),
     notes = as.character(notes),
+    condition = as.character(condition),
+    branch_group = as.character(branch_group),
+    mutually_exclusive = as.logical(mutually_exclusive),
     stringsAsFactors = FALSE
   )
 }
@@ -190,7 +205,10 @@ workflow_edge <- function(
       to = workflow$edges$to[[i]],
       relation = workflow$edges$relation[[i]],
       confidence = workflow$edges$confidence[[i]],
-      notes = workflow$edges$notes[[i]]
+      notes = workflow$edges$notes[[i]],
+      condition = workflow$edges$condition[[i]],
+      branch_group = workflow$edges$branch_group[[i]],
+      mutually_exclusive = workflow$edges$mutually_exclusive[[i]]
     )
   })
   list(
@@ -343,6 +361,18 @@ new_workflow_spec <- function(
   if (!is.data.frame(edges)) {
     stop("Workflow spec `edges` must be a data frame.", call. = FALSE)
   }
+  if (!"condition" %in% names(edges)) {
+    edges$condition <- NA_character_
+  }
+  if (!"branch_group" %in% names(edges)) {
+    edges$branch_group <- NA_character_
+  }
+  if (!"mutually_exclusive" %in% names(edges)) {
+    edges$mutually_exclusive <- NA
+  }
+  edges$condition <- as.character(edges$condition)
+  edges$branch_group <- as.character(edges$branch_group)
+  edges$mutually_exclusive <- as.logical(edges$mutually_exclusive)
   edges
 }
 
@@ -563,7 +593,10 @@ print.agentr_workflow_spec <- function(x, ...) {
         to = item$to,
         relation = item$relation %||% "depends_on",
         confidence = item$confidence %||% NA_real_,
-        notes = item$notes %||% NA_character_
+        notes = item$notes %||% NA_character_,
+        condition = item$condition %||% NA_character_,
+        branch_group = item$branch_group %||% NA_character_,
+        mutually_exclusive = item$mutually_exclusive %||% NA
       )
     }))
   } else {

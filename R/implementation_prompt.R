@@ -350,7 +350,10 @@ build_workflow_extraction_prompt <- function(
         to = "node_2",
         relation = "depends_on",
         confidence = 0.8,
-        notes = "Optional edge note"
+        notes = "Optional edge note",
+        condition = "Optional branch condition",
+        branch_group = "Optional branch group id",
+        mutually_exclusive = FALSE
       )
     ),
     metadata = list(
@@ -364,6 +367,7 @@ build_workflow_extraction_prompt <- function(
     "Infer the workflow already implemented by the provided code context.",
     "Return a workflow specification whose shape is consistent with agentr workflow specs.",
     "Use stable node ids such as `node_1`, `node_2`, and express dependencies through `edges`.",
+    "For conditional routes, use edge fields `condition`, `branch_group`, and `mutually_exclusive` instead of hiding branch semantics only in prose.",
     "Capture human-required checkpoints, governing rules, and implementation hints when supported by the code context.",
     "Do not invent major workflow steps that are not grounded in the provided code or extra context.",
     "When the code is ambiguous, use lower confidence values and explain assumptions in `metadata`."
@@ -562,7 +566,10 @@ build_article_workflow_extraction_prompt <- function(
             to = "node_2",
             relation = "depends_on",
             confidence = 0.80,
-            notes = "Optional edge note"
+            notes = "Optional edge note",
+            condition = "Optional branch condition",
+            branch_group = "Optional branch group id",
+            mutually_exclusive = FALSE
           )
         ),
         metadata = list(
@@ -598,7 +605,10 @@ build_article_workflow_extraction_prompt <- function(
             to = "node_2",
             relation = "depends_on",
             confidence = 0.70,
-            notes = "Optional note"
+            notes = "Optional note",
+            condition = "Optional branch condition",
+            branch_group = "Optional branch group id",
+            mutually_exclusive = FALSE
           )
         )
       )
@@ -618,6 +628,7 @@ build_article_workflow_extraction_prompt <- function(
     "If the article contains multiple cases, extract one workflow per case whenever the cases are substantively distinct.",
     "If the article mainly presents one overarching pattern, also extract a reusable generalized workflow when supported by the text.",
     "Use stable node ids such as `node_1`, `node_2`, and express dependencies through `edges`.",
+    "For conditional routes, use edge fields `condition`, `branch_group`, and `mutually_exclusive` instead of hiding branch semantics only in prose.",
     "Capture human-required checkpoints, governing rules, review loops, and implementation hints when supported by the article.",
     "Distinguish clearly between explicit article evidence and reasonable inference.",
     "Ground each workflow in article evidence using short spans, section names, or concise paraphrases.",

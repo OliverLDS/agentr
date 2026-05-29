@@ -119,7 +119,7 @@ Map task code to workflow fields as follows:
 | --- | --- |
 | Script invocation or named stage | `workflow_node(id, label, implementation_hint)` |
 | Sequential script calls | `workflow_edge(from, to)` |
-| Conditional branch | `rule_spec` and edge `notes` |
+| Conditional branch | Edge `condition`, `branch_group`, and `mutually_exclusive`; use `rule_spec` for node-level routing rules |
 | Loop over inputs | Node label/rule describing iteration, not duplicated nodes per item |
 | JSON output from a node | `output_schema` |
 | CLI args, files, or environment variables | `input_schema` |

@@ -17,7 +17,14 @@ test_that("workflow specs round-trip through JSON", {
         subworkflow_ref = "subtasks/node_2/docs/workflow_spec.json"
       )
     ),
-    edges = workflow_edge("node_1", "node_2", relation = "depends_on"),
+    edges = workflow_edge(
+      "node_1",
+      "node_2",
+      relation = "exclusive_branch",
+      condition = "source_count == 1",
+      branch_group = "source_count_route",
+      mutually_exclusive = TRUE
+    ),
     task = "JSON round-trip"
   )
 
@@ -31,9 +38,15 @@ test_that("workflow specs round-trip through JSON", {
   expect_equal(loaded$nodes$input_schema[[1]]$type, "object")
   expect_equal(loaded$nodes$input_schema[[1]]$required, "source")
   expect_equal(loaded$nodes$output_schema[[1]]$type, "object")
+  expect_equal(loaded$edges$condition[[1]], "source_count == 1")
+  expect_equal(loaded$edges$branch_group[[1]], "source_count_route")
+  expect_true(loaded$edges$mutually_exclusive[[1]])
   saved_json <- paste(readLines(path, warn = FALSE), collapse = "")
   expect_true(grepl('"knowledge_refs":\\s*\\["ki_1"\\]', saved_json))
   expect_true(grepl('"required":\\s*\\["source"\\]', saved_json))
+  expect_true(grepl('"condition":\\s*"source_count == 1"', saved_json))
+  expect_true(grepl('"branch_group":\\s*"source_count_route"', saved_json))
+  expect_true(grepl('"mutually_exclusive":\\s*true', saved_json))
 
   scalar_path <- tempfile(fileext = ".json")
   on.exit(unlink(scalar_path), add = TRUE)
@@ -171,7 +184,14 @@ test_that("workflow specs round-trip through YAML and normalize scalar arrays", 
       knowledge_refs = c("ki_1"),
       input_schema = list(type = "object", required = c("source"))
     ),
-    edges = .empty_workflow_edges(),
+    edges = workflow_edge(
+      "node_1",
+      "node_1",
+      relation = "exclusive_branch",
+      condition = "retry_needed",
+      branch_group = "retry_route",
+      mutually_exclusive = TRUE
+    ),
     task = "YAML round-trip"
   )
 
@@ -181,6 +201,9 @@ test_that("workflow specs round-trip through YAML and normalize scalar arrays", 
   expect_s3_class(loaded, "agentr_workflow_spec")
   expect_equal(loaded$nodes$knowledge_refs[[1]], "ki_1")
   expect_equal(loaded$nodes$input_schema[[1]]$required, "source")
+  expect_equal(loaded$edges$condition[[1]], "retry_needed")
+  expect_equal(loaded$edges$branch_group[[1]], "retry_route")
+  expect_true(loaded$edges$mutually_exclusive[[1]])
 
   scalar_path <- tempfile(fileext = ".yaml")
   on.exit(unlink(scalar_path), add = TRUE)
