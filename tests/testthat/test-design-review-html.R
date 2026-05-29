@@ -152,6 +152,8 @@ test_that("design_review_html shows node detail schemas and nested workflow dril
   expect_true(grepl("Input schema", html, fixed = TRUE))
   expect_true(grepl("Output schema", html, fixed = TRUE))
   expect_true(grepl("Nested workflow", html, fixed = TRUE))
+  expect_true(grepl("- nested workflow", html, fixed = TRUE))
+  expect_true(grepl("aria-hidden='true'", html, fixed = TRUE))
   expect_true(grepl("workflows/node_detail.json", html, fixed = TRUE))
   expect_true(grepl("function knowledgeRefs", html, fixed = TRUE))
   expect_true(grepl("function arrayValue", html, fixed = TRUE))

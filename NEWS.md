@@ -1,5 +1,12 @@
 # agentr news
 
+## agentr 0.2.6.12
+
+Released: 2026-05-29
+
+- Added a lightweight nested-workflow badge to review-diagram nodes that contain child workflows.
+- Kept the badge visually minimal so nested nodes remain distinguishable without changing the graph layout.
+
 ## agentr 0.2.6.11
 
 Released: 2026-05-29
