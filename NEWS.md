@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.6.11
+
+Released: 2026-05-29
+
+- Fixed process-layout branch edge anchoring for orthogonal review diagrams.
+- Routed conditional branch edges from the left or right midpoint of the decision node into the top midpoint of the branch target.
+- Preserved dashed branch styling while restoring correct arrow direction and endpoint placement.
+
 ## agentr 0.2.6.10
 
 Released: 2026-05-29
