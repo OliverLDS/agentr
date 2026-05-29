@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.6.10
+
+Released: 2026-05-29
+
+- Hardened the design-review `process` layout for conditional branch blocks in dense workflow diagrams.
+- Widened process branch lanes so sibling condition labels have more room and are less likely to overlap.
+- Routed branch rejoin edges on the side of their originating branch lane and pushed long feedback-loop rails farther left of branch nodes.
+
 ## agentr 0.2.6.9
 
 Released: 2026-05-29
