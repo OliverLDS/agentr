@@ -1,5 +1,12 @@
 # agentr news
 
+## agentr 0.2.6.14
+
+Released: 2026-05-30
+
+- Fixed remaining wide review-diagram truncation by accounting for right-extending edge rails in the workflow SVG width budget.
+- Preserved the horizontal scroll wrapper so oversize workflow charts can expose both left and right edge routing.
+
 ## agentr 0.2.6.13
 
 Released: 2026-05-30

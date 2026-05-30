@@ -17,6 +17,8 @@ test_that("design_review_html returns standalone review page", {
   expect_true(grepl("graph-scroll", html, fixed = TRUE))
   expect_true(grepl("overflow:auto;overscroll-behavior-x:contain", html, fixed = TRUE))
   expect_true(grepl("svg{display:block;max-width:none}", html, fixed = TRUE))
+  expect_true(grepl("const maxEdgeX=edges.length?", html, fixed = TRUE))
+  expect_true(grepl("const viewRight=Math.max", html, fixed = TRUE))
   expect_true(grepl("Graph nodes represent the reviewed task workflow, including external scripts and external LLM steps.", html, fixed = TRUE))
   expect_true(grepl("Deterministic automation", html, fixed = TRUE))
   expect_true(grepl("External stochastic LLM", html, fixed = TRUE))
