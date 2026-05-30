@@ -1,5 +1,12 @@
 # agentr news
 
+## agentr 0.2.6.13
+
+Released: 2026-05-30
+
+- Fixed wide review-diagram clipping by wrapping workflow SVG output in an explicit horizontal scroll container.
+- Kept full chart width available inside the review panel so right-side nodes and edges remain reachable by scrolling.
+
 ## agentr 0.2.6.12
 
 Released: 2026-05-29
