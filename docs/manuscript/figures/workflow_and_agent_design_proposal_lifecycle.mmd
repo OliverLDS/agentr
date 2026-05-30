@@ -24,8 +24,19 @@ stateDiagram-v2
         AAPP --> ASUP : superseded by newer approval
     }
 
+    state "Memory, narrative knowledge,\nand graph-knowledge proposals" as SFLOW {
+        [*] --> SPEND : pending
+        SPEND --> SDISC : discuss or revise
+        SPEND --> SAPP : approve
+        SPEND --> SREJ : reject
+        SDISC --> SAPP : approve
+        SDISC --> SREJ : reject
+        SAPP --> SSUP : superseded by newer approval
+    }
+
     E --> WPREV : create workflow proposal
     E --> ADRAFT : create agent-spec proposal
+    E --> SPEND : propose supporting spec
     LIVE --> E : evaluate / decompose / recommend
 
     WPREV --> ADRAFT : linked workflow_proposal_id
@@ -37,6 +48,9 @@ stateDiagram-v2
     AAPP --> LIVE : approved agent design can accompany approved workflow
     AREJ --> LIVE : keep current approved design
     ASUP --> LIVE : newer approved design remains live
+    SAPP --> LIVE : promote approved supporting spec
+    SREJ --> LIVE : keep current approved supporting spec
+    SSUP --> LIVE : newer approved supporting spec remains live
 
     note right of LIVE
         The live workflow and live approved design

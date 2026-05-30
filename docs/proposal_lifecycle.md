@@ -1,6 +1,6 @@
 # Proposal Lifecycle
 
-For proposal and artifact diagrams, see [conceptual_figures.md](conceptual_figures.md) and [figures/index.md](figures/index.md).
+For proposal and artifact diagrams, see [conceptual_figures.md](conceptual_figures.md) and [manuscript figures](manuscript/figures/index.md).
 
 `agentr` separates scaffolding work into three stages:
 
@@ -22,7 +22,13 @@ During elicitation, `Scaffolder` is used to:
 
 At this stage, the active workflow is still the approved working state inside the `Scaffolder`. The higher-level design target is an approved `AgentSpec`, with workflow kept as one nested planning component.
 
-## 2. Workflow And Agent-Design Proposal Review And Approval
+## 2. Proposal Review And Approval
+
+All proposal paths preserve one boundary: applying or previewing a model
+response does not silently replace the approved spec. Promotion requires an
+explicit approval operation.
+
+### Workflow proposals
 
 When a model or human suggests a new workflow shape, use `preview_scaffolder_message()`, `Scaffolder$propose_workflow()`, or `WorkflowProposal$new()` to create a proposal without mutating the live workflow.
 
@@ -59,6 +65,52 @@ Key behavior:
 - approval promotes the proposal agent spec into the live approved agent design
 - approval can also approve the linked workflow proposal first when the two are meant to advance together
 - approved agent-spec proposals are not reopened by direct discussion
+
+### Memory proposals
+
+`MemoryProposal` and `MemoryProposalState` manage candidate memory schemas.
+Use `build_memory_schema_prompt()` for an initial draft and
+`build_memory_revision_prompt()` for human-comment-driven revisions. Apply
+constrained messages with `preview_memory_message()` or
+`apply_memory_message()`.
+
+Memory proposals use:
+
+- `pending`
+- `under_discussion`
+- `approved`
+- `superseded`
+- `rejected`
+
+### Narrative knowledge proposals
+
+`KnowledgeProposal` and `KnowledgeProposalState` manage curated narrative
+knowledge items. Each item retains its raw statement, normalized statement,
+scope, conditions, exceptions, provenance, review metadata, and conflict
+reports when relevant.
+
+Use:
+
+- `build_knowledge_elicitation_prompt()`
+- `build_knowledge_normalization_prompt()`
+- `build_knowledge_conflict_check_prompt()`
+- `build_knowledge_design_prompt()`
+- `preview_knowledge_message()`
+- `apply_knowledge_message()`
+
+### Graph-knowledge proposals
+
+`KnowledgeGraphProposal` and `KnowledgeGraphProposalState` manage candidate
+graph nodes and typed relationships as first-class knowledge. Use:
+
+- `build_knowledge_graph_extraction_prompt()`
+- `build_knowledge_graph_revision_prompt()`
+- `preview_knowledge_graph_message()`
+- `apply_knowledge_graph_message()`
+
+Memory, narrative-knowledge, and graph-knowledge proposals use the same core
+statuses as workflow proposals: `pending`, `under_discussion`, `approved`,
+`superseded`, and `rejected`.
 
 ## 3. Implementation And Extraction Handoff
 
@@ -134,3 +186,8 @@ scaffolder$discuss_agent_spec_proposal(
 
 approved_spec <- scaffolder$approve_agent_spec_proposal(design_proposal$id)
 ```
+
+For a workspace-scoped manual LLM loop, use the helpers described in
+[Workspace CLI Lifecycle](workspace_cli_lifecycle.md). The workspace stores
+proposal-state artifacts and updates approved specs only through
+`approve_workspace_proposal()`.

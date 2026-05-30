@@ -6,16 +6,19 @@ flowchart LR
     classDef artifact fill:#fbf4df,stroke:#a78622,stroke-width:2px;
     classDef guard fill:#f8e8e8,stroke:#b25b5b,stroke-width:2px;
 
-    H[Human reviewer] --> P[build_scaffolder_prompt]
-    P --> M[Reasoning model]
+    H[Human reviewer] --> P[Build initial or revision prompt]
+    P --> PF[Workspace prompt file]
+    PF --> M[Manual external LLM call]
     M --> J[JSON response<br/>actions only]
     J --> V[Validation<br/>allowed methods<br/>argument checks<br/>reference checks]
-    V --> A[apply_scaffolder_message]
-    A --> U[Updated workflow and proposals]
+    V --> A[Apply constrained message<br/>workflow memory knowledge or graph]
+    A --> U[Updated proposal state<br/>approved spec unchanged]
     U --> N[Next round prompt build]
     N --> P
 
-    A --> HP[Human prompts]
+    U --> R[Export standalone review HTML]
+    R --> H
+    A --> HP[Human prompts and structured feedback]
     HP --> HR1[ask_human_rule]
     HP --> HR2[ask_human_changes]
     HR1 --> HF[apply_human_feedback]
@@ -26,8 +29,8 @@ flowchart LR
     G -. guards .-> A
 
     class H,HR1,HR2,HF human;
-    class P,N prompt;
+    class P,PF,N prompt;
     class M,J model;
     class V,A control;
-    class U,HP artifact;
+    class U,R,HP artifact;
     class G guard;

@@ -1,6 +1,7 @@
 # Manuscript Assets
 
-This directory now contains a manuscript-oriented asset set alongside the main package documentation.
+The `docs/manuscript/` directory contains a manuscript-oriented asset set
+alongside the main package documentation.
 
 ## Purpose
 
@@ -12,8 +13,8 @@ These assets are intended to support:
 
 ## Structure
 
-- [figures/index.md](figures/index.md): figure inventory with source, render, and caption links
-- [tables/index.md](tables/index.md): table inventory with Markdown and LaTeX links
+- [manuscript/figures/index.md](manuscript/figures/index.md): figure inventory with source, render, and caption links
+- [manuscript/tables/index.md](manuscript/tables/index.md): table inventory with Markdown and LaTeX links
 - [conceptual_figures.md](conceptual_figures.md): narrative hub for the main conceptual figures
 
 ## Design intent

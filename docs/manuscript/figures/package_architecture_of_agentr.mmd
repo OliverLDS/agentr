@@ -20,22 +20,34 @@ flowchart TB
         IA[IntelligentAgent]
     end
 
-    subgraph L3[Workflow proposal layer]
+    subgraph L3[Reviewable specification layer]
+        direction LR
+        MS[MemorySpec]
+        KS[KnowledgeSpec]
+        KG[Graph knowledge]
+        DR[DesignReviewSpec]
+    end
+
+    subgraph L4[Proposal layer]
         direction LR
         WP[WorkflowProposal]
         WPS[WorkflowProposalState]
+        MP[Memory proposals]
+        KP[Knowledge proposals]
+        GP[Graph proposals]
     end
 
-    subgraph L4[Constrained model bridge]
+    subgraph L5[Constrained model bridge]
         direction LR
-        BR[LLM bridge<br/>build_scaffolder_prompt<br/>build_agent_design_prompt<br/>apply_scaffolder_message]
+        BR[Prompt builders<br/>validated JSON actions<br/>manual LLM calls]
     end
 
-    subgraph L5[Persistent design artifacts]
+    subgraph L6[Persistent design artifacts]
         direction LR
-        WF[workflow specs]
+        WF[workflow specs<br/>YAML editable source]
         PA[proposal artifacts]
-        AD[approved design artifacts]
+        AD[approved design artifacts<br/>portable handoff]
+        RH[standalone review HTML]
     end
 
     CS --> AC
@@ -44,12 +56,23 @@ flowchart TB
     SC --> AGS
     AGS --> SS
     AGS --> IA
+    AGS --> MS
+    AGS --> KS
+    KS --> KG
+    AGS --> DR
 
     SC --> WP
     WPS --> WP
     SC --> WPS
+    MS --> MP
+    KS --> KP
+    KG --> GP
+    DR --> RH
 
     BR --> SC
+    BR --> MP
+    BR --> KP
+    BR --> GP
 
     SC --> WF
     WP --> PA
@@ -71,6 +94,6 @@ flowchart TB
 
     class CS,AS,AC state;
     class SC,AGS,SS,IA scaffold;
-    class WP,WPS,WF,PA,AD artifact;
+    class MS,KS,KG,DR,WP,WPS,MP,KP,GP,WF,PA,AD,RH artifact;
     class BR bridge;
     class E1,E2,E3,E4 runtime;

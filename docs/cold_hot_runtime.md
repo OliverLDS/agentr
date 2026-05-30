@@ -52,12 +52,13 @@ So the package keeps R6 for design quality and future extensibility, not because
 
 ## What Directly Shapes Behavior
 
-Operational specs:
+Operational artifacts:
 
 - `WorkflowSpec`
 - `KnowledgeSpec`
-- `StateSpec`
-- `InterfaceSpec`
+- `MemorySpec`
+- `state_spec`
+- `interface_spec`
 
 Diagnostic or design specs:
 
@@ -70,6 +71,6 @@ That separation keeps the package honest about what is actually behavior-shaping
 
 ## Review Artifacts Are Not Runtime
 
-The `0.2.6` standalone design review page fits both runtime patterns because it is not a runtime. A cold-start script can export a review HTML file from saved design artifacts, and a hot session can export the current in-memory design.
+The standalone design review page fits both runtime patterns because it is not a runtime. A cold-start script can export a review HTML file from saved design artifacts, and a hot session can export the current in-memory design.
 
-In both cases, browser feedback returns to R as JSON and is validated before it changes scaffolder or proposal state. The browser page does not execute workflow nodes, call providers, or mutate saved RDS files directly.
+In both cases, browser feedback returns to R as JSON and is validated before it changes scaffolder or proposal state. The browser page does not execute workflow nodes, call providers, or mutate saved YAML, JSON, or RDS files directly.

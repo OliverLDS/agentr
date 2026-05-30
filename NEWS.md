@@ -1,5 +1,16 @@
 # agentr news
 
+## agentr 0.2.6.15
+
+Released: 2026-05-31
+
+- Reorganized public documentation around a new `docs/index.md` landing page, YAML-first editable specs, and current review-layer behavior.
+- Archived completed implementation plans under `docs/archive/plans/` and moved manuscript figures and tables under `docs/manuscript/`.
+- Added dedicated workflow-spec, knowledge-graph-spec, spec-format, memory-message, and knowledge-message guides.
+- Expanded proposal-lifecycle documentation across workflow, agent-spec, memory, narrative-knowledge, and graph-knowledge paths.
+- Refreshed manuscript figures and tables for the current object model, manual-LLM review loop, and corrected `IAC` semantics.
+- Added regression coverage requiring every exported package object to remain represented in the documentation function index.
+
 ## agentr 0.2.6.14
 
 Released: 2026-05-30
@@ -228,7 +239,7 @@ Released: 2026-04-06
 - Reorganized documentation assets by adding dedicated figure and table indexes plus a manuscript-assets overview page.
 - Expanded the manuscript-oriented figure set with standalone source, render, and caption artifacts for the main conceptual diagrams.
 - Expanded the manuscript-oriented table set with paired Markdown and LaTeX outputs for core framework, subsystem, workflow, lifecycle, and case-comparison summaries.
-- Moved historical release planning notes into `docs/plans/` so top-level documentation stays focused on current package and manuscript materials.
+- Moved historical release planning notes into `docs/archive/plans/` so top-level documentation stays focused on current package and manuscript materials.
 - Updated package-level documentation links and version references to align with the expanded documentation structure.
 
 ## agentr 0.2.3

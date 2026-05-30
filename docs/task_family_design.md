@@ -20,9 +20,15 @@ tasks; the detailed procedural logic stays inside each child workflow.
 - Add root-level edges only when one child task truly depends on another.
 - Store task-family metadata under `workflow$metadata$task_family`.
 - Use `task_tags` to support review filtering and grouping.
-- Use `subworkflow_ref` for stable file references to child workflows.
+- Use `subworkflow_ref` for stable task-local file references such as
+  `tasks/<task_id>/nodes/<subworkflow_node_id>/docs/workflow_spec.yaml`.
 - Use `nested_workflow` when a standalone HTML review should include the child
   workflow chart on the same page.
+- Keep generated editable specs and previews under each task or subworkflow
+  node's `docs/` folder.
+- Prefer at most two task levels: root task and node-folder subworkflow. If
+  deeper structure exists, summarize it in the nearest subworkflow spec and
+  add a review note.
 
 ## Helpers
 
@@ -39,7 +45,7 @@ family <- add_child_task_node(
   child_task_node(
     id = "task_blog_article",
     label = "Write a Cognaptus blog article",
-    subworkflow_ref = "docs/workflow_spec.yaml"
+    subworkflow_ref = "tasks/write_blog/nodes/draft_article/docs/workflow_spec.yaml"
   ),
   tags = c("publication", "blog")
 )
@@ -54,3 +60,8 @@ with `export_design_review_html()`.
 The task-family workflow is a design artifact. It describes task membership,
 shared objective, review concerns, schemas, and child workflow references. It
 does not execute those child workflows.
+
+The standalone review HTML uses task-preview tabs for family members and a
+lightweight badge for nodes that contain nested workflows. Clicking a node
+opens its inspector detail and, when embedded detail exists, its local nested
+workflow chart.

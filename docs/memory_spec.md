@@ -86,7 +86,9 @@ memory_spec <- MemorySpec$new(fields = list(
 
 `state_spec` remains supported for backward compatibility and lightweight designs.
 
-Use `MemorySpec` when the memory schema should be inspected, reviewed, persisted, or shown in a future design-review layer. Use `state_spec` for simple loose state notes or legacy code that already stores state as plain lists.
+Use `MemorySpec` when the memory schema should be inspected, reviewed, persisted, or shown in the design-review layer. Use `state_spec` for simple loose state notes or legacy code that already stores state as plain lists.
+
+For task-local editable artifacts, prefer `docs/memory_spec.yaml`. Use JSON for interchange and RDS for R-native persistence or cache artifacts. See [Spec Formats](spec_formats.md).
 
 ## Proposal Lifecycle
 
@@ -117,4 +119,8 @@ For example:
 
 - a `KnowledgeSpec` item may say `ACT-R is a cognitive architecture`;
 - a `MemorySpec` semantic field may say approved concept definitions are stored under `agent_concepts`;
-- a future knowledge graph can represent `ACT-R --is_a--> cognitive architecture`.
+- graph knowledge can represent `ACT-R --is_a--> cognitive architecture`.
+
+## Review HTML
+
+`export_design_review_html()` renders memory fields alongside workflow, knowledge, and proposal-state sections. The review page collects structured feedback but does not mutate the saved YAML source directly.

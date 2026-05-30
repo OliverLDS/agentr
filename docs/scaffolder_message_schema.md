@@ -1,6 +1,12 @@
 # Scaffolder Message Schema
 
-This document defines the machine-readable contract used by the `agentr` LLM scaffolding bridge.
+This document defines the machine-readable workflow and agent-design contract
+used by the `agentr` LLM scaffolding bridge. It is intentionally
+workflow-specific. Memory-schema and knowledge curation use separate
+constrained contracts:
+
+- [Memory Message Schema](memory_message_schema.md)
+- [Knowledge Message Schemas](knowledge_message_schema.md)
 
 ## Top-Level Shape
 

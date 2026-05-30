@@ -12,7 +12,14 @@ Agent designs combine several artifact types:
 - graph knowledge as nodes and typed relationships;
 - proposal states that show what is approved, pending, rejected, or superseded.
 
-Reviewing those artifacts only as R lists is possible but awkward. `DesignReviewSpec` and the HTML export helpers package the same objects into a portable inspection artifact.
+Reviewing those artifacts only as R lists is possible but awkward. `DesignReviewSpec` packages the same objects into a portable inspection artifact with these sections:
+
+- `workflow_graph`
+- `memory_schema`
+- `narrative_knowledge`
+- `graph_knowledge`
+- `proposal_states`
+- `feedback_schema`
 
 ## Standalone HTML
 
@@ -27,11 +34,19 @@ The generated file is self-contained and does not require Shiny, Quarto, a web s
 
 The page shows:
 
-- workflow graph information;
-- workflow nodes and edges;
+- an interactive workflow graph with wrapped node labels;
+- a detail inspector populated by node and edge clicks;
+- nested-workflow badges and local nested-workflow previews;
+- a draggable boundary between the graph and supporting panels;
+- horizontal scrolling when the workflow graph is wider than its panel;
+- selectable default and subsystem-color themes;
 - narrative and graph knowledge;
 - memory, state, interface, and autonomy schema;
 - a structured feedback panel.
+
+Node ids remain internal graph keys and are shown in the detail inspector, not as visible graph labels. The default theme distinguishes human gates, deterministic automation, and external stochastic LLM steps. The subsystem theme colors nodes by `RWM`, `PG`, `AE`, `LA`, and `IAC` tags.
+
+Supported graph layouts are `grid`, `layered`, `swimlane`, and `process`. Use `process` for workflows with branches or backward edges. Branch metadata such as `condition`, `branch_group`, and `mutually_exclusive` is preserved for inspection and visible routing.
 
 ## Structured Feedback
 
@@ -67,4 +82,4 @@ apply_design_feedback(scaffolder, feedback)
 
 ## Boundary
 
-The review layer may render artifacts and collect structured feedback. It must not call LLM providers, run R workflow steps, call external APIs, place orders, send messages, or directly mutate saved RDS files from JavaScript. All feedback returns to R as data and passes R-side validation before it affects approved design artifacts.
+The review layer may render artifacts and collect structured feedback. It must not call LLM providers, run R workflow steps, call external APIs, place orders, send messages, or directly mutate saved spec files from JavaScript. All feedback returns to R as data and passes R-side validation before it affects approved design artifacts.

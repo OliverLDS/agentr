@@ -21,3 +21,13 @@ Caption: Proposal states and transition rules.
 | `approved` | An agent-spec proposal accepted as the live approved agent design. | Entered from `draft` or `under_discussion` by approval. | May later become `superseded` if a newer proposal is approved. |
 | `superseded` | A previously approved or still-active agent-spec proposal displaced by a newer approved proposal. | Entered when a newer agent-spec proposal is approved. | Typically terminal. |
 | `rejected` | An agent-spec proposal not accepted for promotion. | Entered from `draft` or `under_discussion` by rejection. | Typically terminal. |
+
+## Memory, narrative-knowledge, and graph-knowledge proposals
+
+| State | Meaning | Typical transition in | Typical transition out |
+|---|---|---|---|
+| `pending` | A newly created supporting-spec proposal awaiting review. | Created by an initial or revision message. | Moves to `under_discussion`, `approved`, or `rejected`. |
+| `under_discussion` | A supporting-spec proposal under active review or revision. | Entered from `pending` after discussion begins. | Moves to `approved` or `rejected`. |
+| `approved` | A supporting-spec proposal accepted into active memory or knowledge. | Entered from `pending` or `under_discussion` by approval. | May later become `superseded`. |
+| `superseded` | A previously approved proposal displaced by a newer approved proposal. | Entered when a newer proposal is approved. | Typically terminal. |
+| `rejected` | A supporting-spec proposal not accepted for promotion. | Entered from `pending` or `under_discussion` by rejection. | Typically terminal. |

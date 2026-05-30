@@ -32,6 +32,11 @@ This is still scaffolding. The CLI does not execute the approved agent, call too
 | `traces/` | Optional decision and reflection traces |
 | `handoffs/` | Additional handoff artifacts |
 
+This generic workspace layout is separate from downstream task-local layouts.
+When a coding assistant infers specs beside executable task code, prefer
+`tasks/<task_id>/docs/workflow_spec.yaml`, `memory_spec.yaml`, and
+`knowledge_spec.yaml` as editable sources of truth.
+
 ## R Functions
 
 ```r
@@ -148,4 +153,14 @@ Approval is an explicit boundary:
 
 ## Renderer Note
 
-The design-review workflow graph now wraps long SVG node labels with `<tspan>` lines and increases node height by wrapped line count. Node IDs remain visible above labels, and edge anchors target the vertical center of each node.
+The design-review workflow graph wraps long SVG node labels with `<tspan>`
+lines and increases node height by wrapped line count. Node ids remain internal
+keys and appear in the detail inspector, not as visible graph labels. Clicking
+a node or edge populates the inspector. Nested workflows are marked with a
+small badge and can render a local chart below the detail panel.
+
+Wide graphs retain their intrinsic SVG width and scroll horizontally inside
+the workflow panel. Use `--graph-layout process` for workflows with branches
+or backward edges. Use the default category theme to distinguish human gates,
+deterministic automation, and external stochastic LLM steps, or switch to the
+subsystem theme for `RWM`, `PG`, `AE`, `LA`, and `IAC` coloring.

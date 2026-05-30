@@ -23,5 +23,15 @@
 \texttt{superseded} & A previously approved or still-active agent-spec proposal displaced by a newer approved proposal. & Entered when a newer agent-spec proposal is approved. & Typically terminal. \\
 \texttt{rejected} & An agent-spec proposal not accepted for promotion. & Entered from \texttt{draft} or \texttt{under\_discussion} by rejection. & Typically terminal. \\
 \hline
+\multicolumn{4}{l}{\textbf{Memory, narrative-knowledge, and graph-knowledge proposals}} \\
+\hline
+\textbf{State} & \textbf{Meaning} & \textbf{Typical transition in} & \textbf{Typical transition out} \\
+\hline
+\texttt{pending} & A newly created supporting-spec proposal awaiting review. & Created by an initial or revision message. & Moves to \texttt{under\_discussion}, \texttt{approved}, or \texttt{rejected}. \\
+\texttt{under\_discussion} & A supporting-spec proposal under active review or revision. & Entered from \texttt{pending} after discussion begins. & Moves to \texttt{approved} or \texttt{rejected}. \\
+\texttt{approved} & A supporting-spec proposal accepted into active memory or knowledge. & Entered from \texttt{pending} or \texttt{under\_discussion} by approval. & May later become \texttt{superseded}. \\
+\texttt{superseded} & A previously approved proposal displaced by a newer approved proposal. & Entered when a newer proposal is approved. & Typically terminal. \\
+\texttt{rejected} & A supporting-spec proposal not accepted for promotion. & Entered from \texttt{pending} or \texttt{under\_discussion} by rejection. & Typically terminal. \\
+\hline
 \end{tabular}
 \end{table}

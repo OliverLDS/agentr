@@ -2,7 +2,10 @@
 
 `agentr` is the agent core, not the execution layer.
 
-For diagram-oriented summaries of the architecture and lifecycle, see [conceptual_figures.md](conceptual_figures.md), [figures/index.md](figures/index.md), and [manuscript_assets.md](manuscript_assets.md).
+For diagram-oriented summaries of the architecture and lifecycle, see
+[conceptual_figures.md](conceptual_figures.md) and
+[manuscript_assets.md](manuscript_assets.md). Start from the
+[documentation index](index.md) for the public guides.
 
 ## Layers
 
@@ -17,7 +20,7 @@ Implemented as `CognitiveState`, a structured and evolving state container for:
 - confidence
 - update history
 
-The `bayes_update()` method is intentionally a placeholder API in `0.1.3`.
+The cognitive layer exposes update hooks without prescribing one domain-specific inference algorithm.
 
 ### Affective layer
 
@@ -45,7 +48,7 @@ Implemented as `Scaffolder`, which supports:
 - draft agent-spec proposal creation, discussion, and approval
 - iterative workflow refinement
 
-Internally, `0.2.6` keeps `Scaffolder` as the facade while separating:
+Internally, `Scaffolder` remains the facade while separating:
 
 - workflow mutation helpers
 - proposal lifecycle helpers
@@ -170,9 +173,11 @@ Workflow specs can also be:
 - saved and loaded independently
 - rendered as Graphviz DOT, DiagrammeR graphs, or SVG for workflow inspection
 
-Within `0.2.6`, workflow ownership labels live in workflow metadata so workflow-first compatibility remains intact while agent designs can still mark which subsystem owns each node. Those ownership labels can now be edited incrementally rather than only replaced wholesale.
+Workflow ownership labels live in workflow metadata so workflow-first compatibility remains intact while agent designs can still mark which subsystem owns each node. Those ownership labels can be edited incrementally rather than only replaced wholesale.
 
-Within `0.2.6`, `DesignReviewSpec` and the standalone HTML helpers add a review boundary for human inspection. The browser artifact renders workflow graph data, memory schema, narrative knowledge, graph knowledge, proposal states, and structured feedback schema without turning `agentr` into a runtime execution layer.
+`DesignReviewSpec` and the standalone HTML helpers add a review boundary for human inspection. The browser artifact renders workflow graph data, memory schema, narrative knowledge, graph knowledge, proposal states, and structured feedback schema without turning `agentr` into a runtime execution layer.
+
+For human-maintained task specifications, YAML is the preferred editable source. JSON remains useful for machine interchange and RDS remains useful for R-native persistence or cache artifacts. See [Spec Formats](spec_formats.md).
 
 ## Package Boundaries
 

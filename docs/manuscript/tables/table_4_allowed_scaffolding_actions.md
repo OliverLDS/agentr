@@ -10,6 +10,8 @@ Caption: Allowed scaffolding actions in the constrained LLM bridge.
 | `review_workflow` | Captures workflow-level review judgments and concerns. | Used when assessing the adequacy, realism, or completeness of the workflow as a whole. |
 | `review_node` | Captures review judgments for an individual workflow node. | Used when a specific node needs targeted critique, clarification, or approval. |
 | `edit_workflow` | Applies explicit structural edits to nodes or edges. | Used when refinement requires concrete modifications rather than discussion alone. |
+| `set_node_schema` | Attaches input or output schema detail to one node. | Used when node contracts need refinement without restructuring the top-level workflow. |
+| `set_node_nested_workflow` | Attaches a child workflow reference or embedded nested workflow to one node. | Used when a high-level node needs inspectable lower-level procedural detail. |
 | `ask_human_complete` | Requests human confirmation that a node or workflow is sufficiently complete. | Used at approval checkpoints when model confidence is not enough to close review. |
 | `ask_human_changes` | Requests human guidance about needed revisions. | Used when workflow or node structure appears inadequate but the required fix is not fully specified. |
 | `ask_human_rule` | Requests human articulation of a governing rule or constraint. | Used when tacit procedural knowledge must be made explicit for a node or transition. |

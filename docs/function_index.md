@@ -65,12 +65,27 @@
 | `save_workflow_proposal()` | Save a workflow proposal |
 | `load_workflow_proposal()` | Load a workflow proposal |
 | `workflow_proposal_graph_data()` | Export graph-ready node and edge tables from a workflow proposal |
+
+## Memory Helpers
+
+| Function | Purpose |
+| --- | --- |
 | `memory_field()` | Create one memory-field record |
 | `MemorySpec$new()` | Create a memory specification |
 | `validate_memory_field()` | Validate one memory-field record |
 | `validate_memory_spec()` | Validate a memory specification |
+| `validate_memory_proposal()` | Validate a memory-schema proposal |
 | `memory_types()` | List supported memory types |
 | `memory_persistence_policies()` | List supported memory persistence policies |
+| `memory_action_methods()` | List constrained memory-schema message actions |
+
+## Knowledge And Graph Helpers
+
+| Function | Purpose |
+| --- | --- |
+| `validate_knowledge_item()` | Validate one narrative knowledge item |
+| `validate_knowledge_spec()` | Validate a curated knowledge specification |
+| `validate_knowledge_proposal()` | Validate a narrative-knowledge proposal |
 | `knowledge_graph_node()` | Create a knowledge-graph node record |
 | `knowledge_graph_edge()` | Create a knowledge-graph edge record |
 | `new_knowledge_graph_spec()` | Build a knowledge-graph specification object |
@@ -81,6 +96,8 @@
 | `knowledge_graph_data()` | Export graph-ready node and edge tables for a knowledge graph |
 | `render_knowledge_graphviz()` | Render a knowledge graph as Graphviz DOT, DiagrammeR, or SVG |
 | `plot_knowledge_graph()` | Plot a knowledge graph with DiagrammeR |
+| `validate_knowledge_graph_proposal()` | Validate a graph-knowledge proposal |
+| `knowledge_graph_action_methods()` | List constrained graph-knowledge message actions |
 
 ## LLM Scaffolding Bridge
 
@@ -92,6 +109,16 @@
 | `build_implementation_prompt()` | Build an implementation-planning prompt for a coding agent |
 | `build_workflow_extraction_prompt()` | Build a prompt to reverse-engineer existing code into an agentr workflow spec |
 | `build_article_workflow_extraction_prompt()` | Build a prompt to infer workflow specs from article-described cases |
+| `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
+| `validate_scaffolder_message()` | Validate requested scaffolding actions |
+| `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |
+| `preview_scaffolder_message()` | Preview and optionally store a workflow proposal without mutating the live workflow |
+| `collect_scaffolder_questions()` | Collect human-facing prompts from dispatch results or interaction logs |
+
+## Knowledge And Memory Bridge
+
+| Function | Purpose |
+| --- | --- |
 | `knowledge_action_methods()` | List the knowledge actions an LLM may request |
 | `build_knowledge_elicitation_prompt()` | Build a prompt to elicit raw domain knowledge |
 | `build_knowledge_normalization_prompt()` | Build a prompt to normalize raw knowledge |
@@ -110,14 +137,26 @@
 | `parse_knowledge_graph_message()` | Parse constrained graph-knowledge action JSON |
 | `preview_knowledge_graph_message()` | Preview graph-knowledge actions without mutating state |
 | `apply_knowledge_graph_message()` | Apply constrained graph-knowledge actions to a graph-proposal state |
+
+## Design Review
+
+| Function | Purpose |
+| --- | --- |
 | `build_design_review_data()` | Package the current design into a JS/HTML-ready review data bundle |
 | `new_design_review_spec()` | Create a design-review data bundle directly |
+| `validate_design_review_spec()` | Validate a design-review data bundle |
+| `save_design_review_spec()` / `load_design_review_spec()` | Persist a design-review data bundle |
 | `design_review_html()` / `export_design_review_html()` | Build or write a standalone offline review page |
 | `design_feedback_item()` | Create a structured design-review feedback item |
 | `validate_design_feedback()` | Validate one or more structured design-feedback items |
 | `parse_design_feedback_json()` | Parse structured design feedback from JSON |
 | `save_design_feedback()` / `load_design_feedback()` | Persist structured design feedback |
 | `preview_design_feedback()` / `apply_design_feedback()` | Preview or route design feedback through scaffolder mechanisms |
+
+## Workspace CLI
+
+| Function | Purpose |
+| --- | --- |
 | `agentr_workspace_paths()` | Return standard workspace paths for lifecycle artifacts |
 | `init_agentr_workspace()` | Create generic workspace directories for specs, states, prompts, reviews, traces, and responses |
 | `init_agentr_proposal_states()` | Initialize workflow, memory, knowledge, and scaffolder proposal-state artifacts |
@@ -132,11 +171,6 @@
 | `reject_workspace_proposal()` | Reject a workspace proposal without mutating approved specs |
 | `export_workspace_design_review()` | Export review HTML from workspace artifacts |
 | `build_workspace_implementation_prompt()` | Write an implementation handoff prompt from approved workspace specs |
-| `parse_scaffolder_message()` | Parse machine-readable JSON from an LLM |
-| `validate_scaffolder_message()` | Validate requested scaffolding actions |
-| `apply_scaffolder_message()` | Translate validated actions into `Scaffolder` method calls |
-| `preview_scaffolder_message()` | Preview and optionally store a workflow proposal without mutating the live workflow |
-| `collect_scaffolder_questions()` | Collect human-facing prompts from dispatch results or interaction logs |
 
 ## Affective Utilities
 
@@ -169,6 +203,7 @@
 | `load_agent_spec()` | Load an `AgentSpec` explicitly |
 | `save_subsystem_spec()` | Save a `SubsystemSpec` explicitly |
 | `load_subsystem_spec()` | Load a `SubsystemSpec` explicitly |
+| `normalize_subsystem_key()` | Normalize legacy or mixed subsystem keys to canonical values |
 | `save_memory_spec()` | Save a `MemorySpec` explicitly as RDS, JSON, or YAML |
 | `save_memory_spec_json()` | Save a `MemorySpec` explicitly as JSON |
 | `save_memory_spec_yaml()` | Save a `MemorySpec` explicitly as YAML |

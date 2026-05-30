@@ -2,7 +2,12 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.6.14` fixes remaining wide-chart clipping by including right-extending edge rails in the workflow SVG width budget, so horizontal scrolling can expose the full diagram. `agentr` can package workflow graphs, memory schemas, narrative knowledge, graph knowledge, proposal states, and structured feedback schema into one offline review page while remaining the core reasoning and scaffolding layer, not the transport or execution layer.
+Version `0.2.6.15` reorganizes the public documentation around YAML-first
+editable specs, explicit proposal lifecycles, and the standalone review layer.
+`agentr` can package workflow graphs, memory schemas, narrative knowledge,
+graph knowledge, proposal states, and structured feedback schema into one
+offline review page while remaining the core reasoning and scaffolding layer,
+not the transport or execution layer.
 
 ## Scope
 
@@ -87,7 +92,11 @@ The current public surface includes:
 2. workflow proposal review and approval
 3. implementation and extraction handoff
 
-For conceptual diagrams of the transition from human workflow to approved agent design, see [docs/conceptual_figures.md](docs/conceptual_figures.md), [docs/figures/index.md](docs/figures/index.md), and [docs/tables/index.md](docs/tables/index.md).
+For the documentation hub, start with [docs/index.md](docs/index.md). For
+conceptual diagrams of the transition from human workflow to approved agent
+design, see [docs/conceptual_figures.md](docs/conceptual_figures.md),
+[docs/manuscript/figures/index.md](docs/manuscript/figures/index.md), and
+[docs/manuscript/tables/index.md](docs/manuscript/tables/index.md).
 
 ## WorkflowSpec, KnowledgeSpec, And MemorySpec
 
