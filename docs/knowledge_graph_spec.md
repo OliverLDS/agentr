@@ -41,6 +41,44 @@ save_knowledge_graph_spec_yaml(graph, "docs/knowledge_graph_spec.yaml")
 render_knowledge_graphviz(graph, as = "svg")
 ```
 
+Minimal end-to-end example:
+
+```r
+kg <- new_knowledge_graph_spec(metadata = list(graph_mode = "curated"))
+
+kg <- add_knowledge_graph_node(
+  kg,
+  id = "act_r",
+  label = "ACT-R",
+  node_type = "concept",
+  memory_type = "semantic",
+  review = list(status = "approved")
+)
+
+kg <- add_knowledge_graph_node(
+  kg,
+  id = "cognitive_architecture",
+  label = "cognitive architecture",
+  node_type = "concept",
+  memory_type = "semantic",
+  review = list(status = "approved")
+)
+
+kg <- add_knowledge_graph_edge(
+  kg,
+  from = "act_r",
+  to = "cognitive_architecture",
+  relation = "is_a",
+  relation_type = "is_a",
+  memory_type = "semantic",
+  confidence = 0.95,
+  review = list(status = "approved")
+)
+
+svg <- render_knowledge_graphviz(kg, as = "svg")
+writeLines(svg, "knowledge_graph.svg")
+```
+
 Prefer YAML for human editing, JSON for interchange, and RDS for R-native
 persistence or cache artifacts. See [Spec Formats](spec_formats.md).
 

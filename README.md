@@ -332,11 +332,8 @@ kg <- add_knowledge_graph_edge(
   review = list(status = "approved")
 )
 
-knowledge_spec <- KnowledgeSpec$new(
-  items = knowledge_spec$items,
-  graph = kg,
-  vector_refs = list()
-)
+svg <- render_knowledge_graphviz(kg, as = "svg")
+writeLines(svg, "knowledge_graph.svg")
 ```
 
 For memory and graph knowledge review loops, use the proposal states and constrained message handlers:
