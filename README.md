@@ -2,8 +2,8 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.6.15` reorganizes the public documentation around YAML-first
-editable specs, explicit proposal lifecycles, and the standalone review layer.
+Version `0.2.7` adds a coding-assistant scaffolding path for repository
+inspection, task-local YAML specs, review HTML, and Git-backed spec evolution.
 `agentr` can package workflow graphs, memory schemas, narrative knowledge,
 graph knowledge, proposal states, and structured feedback schema into one
 offline review page while remaining the core reasoning and scaffolding layer,
@@ -97,6 +97,11 @@ conceptual diagrams of the transition from human workflow to approved agent
 design, see [docs/conceptual_figures.md](docs/conceptual_figures.md),
 [docs/manuscript/figures/index.md](docs/manuscript/figures/index.md), and
 [docs/manuscript/tables/index.md](docs/manuscript/tables/index.md).
+
+For repository-based scaffolding with coding assistants, see
+[docs/coding_assistant_scaffolding.md](docs/coding_assistant_scaffolding.md).
+This path treats task-local YAML specs and Git history as the main review
+record when executable code and specs evolve together.
 
 ## WorkflowSpec, KnowledgeSpec, And MemorySpec
 

@@ -2,7 +2,13 @@
 
 For proposal and artifact diagrams, see [conceptual_figures.md](conceptual_figures.md) and [manuscript figures](manuscript/figures/index.md).
 
-`agentr` separates scaffolding work into three stages:
+`agentr` supports proposal-state scaffolding and coding-assistant
+scaffolding. This page describes proposal-state scaffolding: candidate specs
+are represented as explicit proposal objects before approval. In a repository
+workflow, Git history may instead be the primary version record for task-local
+YAML specs and code. See [Coding Assistant Scaffolding](coding_assistant_scaffolding.md).
+
+For proposal-state scaffolding, `agentr` separates work into three stages:
 
 1. agent design and workflow elicitation
 2. workflow and agent-design proposal review and approval

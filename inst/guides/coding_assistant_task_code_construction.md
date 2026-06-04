@@ -4,6 +4,9 @@ This guide describes how a coding assistant should implement task code from an a
 `agentr` spec. It is separate from the spec-inference guide, which covers
 how to infer specs from existing code and render preview artifacts.
 
+For the package-level framing of coding-assistant scaffolding, see
+`../../docs/coding_assistant_scaffolding.md`.
+
 Use this guide when the user already has a task-level or node-level
 `agentr` spec and wants the corresponding executable task code created or
 refactored.

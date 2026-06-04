@@ -5,6 +5,9 @@ from an existing task folder. The goal is to create descriptive, reviewable
 design artifacts. Do not convert the task into a new runtime, executor, or
 orchestration system.
 
+For the package-level framing of this workflow, see
+`../../docs/coding_assistant_scaffolding.md`.
+
 ## Expected Task Folder Shape
 
 A task folder may be sparse. Use the files that exist instead of assuming a

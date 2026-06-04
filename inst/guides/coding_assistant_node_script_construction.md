@@ -4,6 +4,9 @@ This guide describes how a coding assistant should write one standardized
 executable node script. It is intended to be reusable across packages, not only
 for task folders managed with `agentr`.
 
+For the package-level framing of coding-assistant scaffolding, see
+`../../docs/coding_assistant_scaffolding.md`.
+
 Use this guide when a package needs a node-style CLI script that can be called
 by a task orchestrator, another package, or a human operator.
 

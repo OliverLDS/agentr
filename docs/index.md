@@ -21,6 +21,7 @@ design artifacts. It is not a runtime execution engine.
 - [Memory Message Schema](memory_message_schema.md)
 - [Knowledge Message Schemas](knowledge_message_schema.md)
 - [Workspace CLI Lifecycle](workspace_cli_lifecycle.md)
+- [Coding Assistant Scaffolding](coding_assistant_scaffolding.md)
 
 ## Advanced Concepts
 
@@ -35,7 +36,6 @@ design artifacts. It is not a runtime execution engine.
 - [Conceptual Figures](conceptual_figures.md)
 - [Historical Implementation Plans](archive/plans/index.md)
 
-Package-shipped coding-assistant guides live under `inst/guides/`. They explain
-how a coding assistant should infer descriptive task specs from existing code
-and how approved specs can guide downstream code construction without turning
-`agentr` into an executor.
+Package-shipped coding-assistant guides live under `inst/guides/`; see
+[Coding Assistant Scaffolding](coding_assistant_scaffolding.md) for how those
+guides fit with proposal-state scaffolding and Git-backed spec evolution.

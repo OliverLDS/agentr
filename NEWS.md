@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.7
+
+Released: 2026-06-04
+
+- Added a coding-assistant scaffolding guide that explains repository inspection, task-local YAML specs, review HTML, and Git-backed spec evolution as a complementary path to proposal-state scaffolding.
+- Added task-local spec helpers: `task_spec_paths()`, `discover_task_specs()`, `load_task_specs()`, and `validate_task_specs()`.
+- Linked the coding-assistant scaffolding path from the README, documentation index, proposal lifecycle guide, and package-shipped coding-assistant guides.
+- Clarified that proposal objects and Git history are separate versioning mechanisms for different scaffolding contexts.
+- Added tests for task-local spec discovery, loading, validation, required-spec reporting, and function-index export coverage.
+
 ## agentr 0.2.6.15
 
 Released: 2026-05-31

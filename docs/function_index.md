@@ -65,6 +65,10 @@
 | `save_workflow_proposal()` | Save a workflow proposal |
 | `load_workflow_proposal()` | Load a workflow proposal |
 | `workflow_proposal_graph_data()` | Export graph-ready node and edge tables from a workflow proposal |
+| `task_spec_paths()` | Return conventional task-local spec paths |
+| `discover_task_specs()` | Discover task-local workflow, memory, knowledge, and graph YAML specs |
+| `load_task_specs()` | Load existing task-local YAML specs |
+| `validate_task_specs()` | Validate existing or required task-local YAML specs |
 
 ## Memory Helpers
 
