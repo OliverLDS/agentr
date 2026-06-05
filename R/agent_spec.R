@@ -853,8 +853,8 @@ LAConfig <- R6::R6Class(
 #' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
-#'   \item{`$initialize(rwm = NULL, pg = NULL, ae = NULL, iac = NULL, la = NULL, metadata = list())`}{Create a sparse subsystem diagnostic inventory.}
-#'   \item{`$validate()`}{Validate the subsystem selection.}
+#'   \item{`$initialize(rwm = NULL, pg = NULL, ae = NULL, iac = NULL, la = NULL, metadata = list())`}{Create an optional subsystem diagnostic inventory.}
+#'   \item{`$validate()`}{Validate the subsystem diagnostic labels.}
 #'   \item{`$selected_subsystems()`}{Return the selected subsystem names.}
 #'   \item{`$persistence_requirements()`}{Return persistence requirements for selected subsystems.}
 #'   \item{`$communication_requirements()`}{Return communication requirements for selected subsystems.}
@@ -873,7 +873,7 @@ SubsystemSpec <- R6::R6Class(
     metadata = NULL,
 
     #' @description
-    #' Create a sparse subsystem inventory.
+    #' Create an optional subsystem diagnostic inventory.
     initialize = function(
       rwm = NULL,
       pg = NULL,
@@ -892,7 +892,7 @@ SubsystemSpec <- R6::R6Class(
     },
 
     #' @description
-    #' Validate the subsystem selection.
+    #' Validate the subsystem diagnostic labels.
     validate = function() {
       .validate_metadata_list(self$metadata)
       self$selected_subsystems()
@@ -985,7 +985,8 @@ SubsystemSpec <- R6::R6Class(
 
 #' AgentSpec
 #'
-#' Public agent-design artifact combining subsystem selection and workflow.
+#' Public agent-design artifact combining workflow, memory, knowledge, state,
+#' interface, and optional subsystem diagnostic labels.
 #'
 #' @field task Source task description.
 #' @field agent_name Human-readable agent name.

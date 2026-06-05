@@ -855,13 +855,13 @@ build_scaffolder_prompt <- function(scaffolder, task = NULL, format = "json") {
     edit_workflow = "Apply first-class node and edge edits, including insertions.",
     set_node_schema = "Set structured input and output schema metadata for one workflow node.",
     set_node_nested_workflow = "Attach a lower-level workflow reference or embedded nested workflow to one node.",
-    recommend_subsystems = "Recommend a sparse subsystem set for the current task and workflow.",
-    select_subsystems = "Store the selected subsystem configuration.",
-    label_workflow_subsystems = "Assign subsystem owners to workflow nodes.",
-    edit_workflow_subsystems = "Edit subsystem ownership on workflow nodes incrementally.",
+    recommend_subsystems = "Recommend optional subsystem/capability labels for the current task and workflow.",
+    select_subsystems = "Store optional subsystem/capability label configuration.",
+    label_workflow_subsystems = "Assign subsystem/capability labels to workflow nodes.",
+    edit_workflow_subsystems = "Edit subsystem/capability labels on workflow nodes incrementally.",
     propose_agent_spec = "Store a draft agent-spec proposal from the current or proposed workflow state.",
     approve_agent_spec_proposal = "Approve a stored agent-spec proposal and optionally approve its linked workflow proposal.",
-    approve_agent_spec = "Approve an agent spec from the current task, workflow, and subsystem state.",
+    approve_agent_spec = "Approve an agent spec from the current task, workflow, and optional label state.",
     ask_human_complete = "Ask whether a node is complete.",
     ask_human_changes = "Ask what workflow or edge changes should happen next.",
     ask_human_rule = "Ask for a node-specific rule.",
@@ -1179,15 +1179,15 @@ build_agent_design_prompt <- function(scaffolder, format = "json") {
   )
 
   instructions <- c(
-      "Treat subsystem selection as a separate design axis from workflow structure.",
-      "Default to sparse agents and avoid enabling subsystems without justification.",
+      "Treat subsystem/capability labels as optional diagnostic annotations on workflow structure.",
+      "Do not require subsystem labels for runtime execution.",
       "Use RWM for reasoning, planning, inference, and world-model structure.",
       "Use PG for perception, grounding, source interpretation, and artifact understanding.",
       "Use IAC only for genuine inter-agent communication rather than generic human review.",
       "Model cognitive and affective layers inside RWM only when they are truly needed.",
       "Keep workflow-first compatibility by using the current workflow as a nested artifact inside the agent design.",
       "Use draft agent-spec proposals to preserve design iterations before final approval.",
-      "Approve the agent spec only after subsystem selection and workflow ownership labels are coherent."
+      "Approve the agent spec only after workflow structure, ownership labels, and any optional capability labels are coherent."
     )
 
   payload <- .prompt_contract_payload(contract, list(
@@ -1208,7 +1208,7 @@ build_agent_design_prompt <- function(scaffolder, format = "json") {
         "Return machine-readable JSON only.",
         "The top-level object must contain `actions` and may contain `notes`.",
         "Use only the provided method names.",
-        "Prefer subsystem selection before approving the agent spec."
+        "Do not block approval only because optional subsystem/capability labels are absent."
       ),
       schema = action_schema
     )

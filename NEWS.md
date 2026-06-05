@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.7.4
+
+Released: 2026-06-05
+
+- Condensed the README into a concise package overview with links to subject-specific documentation.
+- Added `docs/r_function_examples.md` for R helper snippets used by humans for inspection and by coding assistants for package-conformant scaffolding.
+- Clarified coding-assistant-first scaffolding while preserving R functions as the standardized spec, validation, rendering, and prompt-helper surface.
+- Reframed subsystem/capability labels in docs and prompt contracts as optional diagnostic annotations rather than primary runtime specs.
+
 ## agentr 0.2.7.3
 
 Released: 2026-06-05

@@ -1,8 +1,11 @@
 # agentr Documentation
 
-`agentr` is a scaffolding, specification, and human-review package for
-progressively turning human-owned workflow judgment into inspectable agent
-design artifacts. It is not a runtime execution engine.
+`agentr` is a scaffolding, specification, and review package for agentic AI
+systems. The recommended end-to-end path is coding-assistant scaffolding:
+the assistant inspects existing code, infers task-local specs, renders review
+artifacts, and implements code against approved designs. `agentr` supplies the
+standardized spec shapes, validators, renderers, and guidance for that loop. It
+is not a runtime execution engine.
 
 ## Start Here
 
@@ -12,6 +15,7 @@ design artifacts. It is not a runtime execution engine.
 - [KnowledgeSpec Lifecycle](knowledge_spec_lifecycle.md)
 - [Knowledge Graph Spec](knowledge_graph_spec.md)
 - [Spec Formats](spec_formats.md)
+- [R Function Examples](r_function_examples.md)
 
 ## Review And Lifecycle
 

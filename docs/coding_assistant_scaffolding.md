@@ -6,6 +6,13 @@ messages, but a coding assistant can also inspect a full repository, infer
 editable specs from existing code, render review artifacts, revise specs and
 code, and let Git record the evolution.
 
+Because coding-assistant models are improving quickly, the recommended
+end-to-end use case is not for a human to hand-write the implementation code.
+Instead, the human provides goals, reviews specs and outputs, and asks the
+assistant to infer or revise code. The R functions and standardized spec shapes
+remain important because the guidance asks the assistant to consume them,
+conform to them, and generate artifacts that humans can inspect.
+
 ## Two Complementary Modes
 
 Proposal-state mode:
@@ -69,6 +76,8 @@ validation <- validate_task_specs(
 
 The helpers do not execute task code. They only discover files, load YAML specs
 through existing `agentr` loaders, and report validation status.
+
+For additional inspection snippets, see [R Function Examples](r_function_examples.md).
 
 ## Shipped Guidance
 

@@ -435,7 +435,7 @@
 #'   \item{`$set_node_schema(node_id, input_schema = NULL, output_schema = NULL)`}{Set input/output schema metadata for one workflow node.}
 #'   \item{`$set_node_nested_workflow(node_id, subworkflow_ref = NULL, nested_workflow = NULL)`}{Attach a nested workflow reference or embedded nested workflow to one node.}
 #'   \item{`$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())`}{Compatibility wrapper for structured human workflow edits.}
-#'   \item{`$recommend_subsystems(task = self$task)`}{Recommend a sparse subsystem set for the current task and workflow.}
+#'   \item{`$recommend_subsystems(task = self$task)`}{Recommend optional subsystem/capability labels for the current task and workflow.}
 #'   \item{`$subsystem_recommendations()`}{Return the current subsystem recommendation records.}
 #'   \item{`$subsystem_recommendation_rationale(subsystem = NULL)`}{Return stored recommendation rationale for one subsystem or all subsystems.}
 #'   \item{`$select_subsystems(subsystems)`}{Store the selected subsystem configuration.}
@@ -447,7 +447,7 @@
 #'   \item{`$get_agent_spec_proposal(proposal_id)`}{Return a stored agent-spec proposal by id.}
 #'   \item{`$discuss_agent_spec_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)`}{Attach discussion feedback to a draft agent-spec proposal.}
 #'   \item{`$approve_agent_spec_proposal(proposal_id, approve_linked_workflow = TRUE)`}{Approve a stored agent-spec proposal and optionally approve its linked workflow proposal.}
-#'   \item{`$approve_agent_spec(agent_name = "agentr-agent", summary = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list())`}{Approve an `AgentSpec` built from the current task, subsystem selection, and workflow.}
+#'   \item{`$approve_agent_spec(agent_name = "agentr-agent", summary = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list())`}{Approve an `AgentSpec` built from the current task, workflow, and optional subsystem labels.}
 #'   \item{`$agent_spec()`}{Return the approved agent spec or a draft spec built from current state.}
 #'   \item{`$propose_workflow(workflow, source = "model", notes = NULL)`}{Store a pending workflow proposal for preview and review.}
 #'   \item{`$list_workflow_proposals(status = NULL)`}{Return a summary table of stored workflow proposals.}
@@ -824,7 +824,7 @@ Scaffolder <- R6::R6Class(
     },
 
     #' @description
-    #' Recommend a sparse subsystem set for the current task and workflow.
+    #' Recommend optional subsystem/capability labels for the current task and workflow.
     recommend_subsystems = function(task = self$task) {
       recommendations <- .scaffolder_recommend_subsystems(self, task = task)
       self$record_interaction(

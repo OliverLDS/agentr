@@ -9,13 +9,13 @@ SubsystemSpec
 SubsystemSpec
 }
 \details{
-Sparse diagnostic inventory of the selected agent subsystems.
+Optional diagnostic inventory of subsystem/capability labels.
 }
 \section{Methods}{
 
 \describe{
-\item{\verb{$initialize(rwm = NULL, pg = NULL, ae = NULL, iac = NULL, la = NULL, metadata = list())}}{Create a sparse subsystem diagnostic inventory.}
-\item{\verb{$validate()}}{Validate the subsystem selection.}
+\item{\verb{$initialize(rwm = NULL, pg = NULL, ae = NULL, iac = NULL, la = NULL, metadata = list())}}{Create an optional subsystem diagnostic inventory.}
+\item{\verb{$validate()}}{Validate the subsystem diagnostic labels.}
 \item{\verb{$selected_subsystems()}}{Return the selected subsystem names.}
 \item{\verb{$persistence_requirements()}}{Return persistence requirements for selected subsystems.}
 \item{\verb{$communication_requirements()}}{Return communication requirements for selected subsystems.}
@@ -59,7 +59,7 @@ Sparse diagnostic inventory of the selected agent subsystems.
 \if{html}{\out{<a id="method-SubsystemSpec-new"></a>}}
 \if{latex}{\out{\hypertarget{method-SubsystemSpec-new}{}}}
 \subsection{Method \code{new()}}{
-Create a sparse subsystem inventory.
+Create an optional subsystem diagnostic inventory.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SubsystemSpec$new(
   rwm = NULL,
@@ -93,7 +93,7 @@ Create a sparse subsystem inventory.
 \if{html}{\out{<a id="method-SubsystemSpec-validate"></a>}}
 \if{latex}{\out{\hypertarget{method-SubsystemSpec-validate}{}}}
 \subsection{Method \code{validate()}}{
-Validate the subsystem selection.
+Validate the subsystem diagnostic labels.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SubsystemSpec$validate()}\if{html}{\out{</div>}}
 }

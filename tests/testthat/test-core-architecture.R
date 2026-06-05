@@ -512,7 +512,7 @@ test_that("build_agent_design_prompt supports json and markdown outputs", {
   expect_true(grepl("\"propose_agent_spec\"", prompt_json, fixed = TRUE))
   expect_true(grepl("\"approve_agent_spec_proposal\"", prompt_json, fixed = TRUE))
   expect_true(grepl("# Agent Design Prompt", prompt_markdown, fixed = TRUE))
-  expect_true(grepl("sparse agents", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("optional diagnostic annotations", prompt_markdown, fixed = TRUE))
 })
 
 test_that("build_implementation_prompt supports scaffolder and workflow inputs", {

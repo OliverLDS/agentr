@@ -32,7 +32,7 @@ explicit lifecycle state.
 \item{\verb{$set_node_schema(node_id, input_schema = NULL, output_schema = NULL)}}{Set input/output schema metadata for one workflow node.}
 \item{\verb{$set_node_nested_workflow(node_id, subworkflow_ref = NULL, nested_workflow = NULL)}}{Attach a nested workflow reference or embedded nested workflow to one node.}
 \item{\verb{$apply_human_feedback(completeness = NULL, add = NULL, remove = NULL, rule_specs = list(), confidence = list())}}{Compatibility wrapper for structured human workflow edits.}
-\item{\verb{$recommend_subsystems(task = self$task)}}{Recommend a sparse subsystem set for the current task and workflow.}
+\item{\verb{$recommend_subsystems(task = self$task)}}{Recommend optional subsystem/capability labels for the current task and workflow.}
 \item{\verb{$subsystem_recommendations()}}{Return the current subsystem recommendation records.}
 \item{\verb{$subsystem_recommendation_rationale(subsystem = NULL)}}{Return stored recommendation rationale for one subsystem or all subsystems.}
 \item{\verb{$select_subsystems(subsystems)}}{Store the selected subsystem configuration.}
@@ -44,7 +44,7 @@ explicit lifecycle state.
 \item{\verb{$get_agent_spec_proposal(proposal_id)}}{Return a stored agent-spec proposal by id.}
 \item{\verb{$discuss_agent_spec_proposal(proposal_id, feedback, source = "human", confidence = NA_real_)}}{Attach discussion feedback to a draft agent-spec proposal.}
 \item{\verb{$approve_agent_spec_proposal(proposal_id, approve_linked_workflow = TRUE)}}{Approve a stored agent-spec proposal and optionally approve its linked workflow proposal.}
-\item{\verb{$approve_agent_spec(agent_name = "agentr-agent", summary = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list())}}{Approve an \code{AgentSpec} built from the current task, subsystem selection, and workflow.}
+\item{\verb{$approve_agent_spec(agent_name = "agentr-agent", summary = NULL, state_requirements = list(), interfaces = list(), implementation_targets = list(), metadata = list())}}{Approve an \code{AgentSpec} built from the current task, workflow, and optional subsystem labels.}
 \item{\verb{$agent_spec()}}{Return the approved agent spec or a draft spec built from current state.}
 \item{\verb{$propose_workflow(workflow, source = "model", notes = NULL)}}{Store a pending workflow proposal for preview and review.}
 \item{\verb{$list_workflow_proposals(status = NULL)}}{Return a summary table of stored workflow proposals.}
@@ -478,7 +478,7 @@ Apply legacy structured human feedback to the workflow.
 \if{html}{\out{<a id="method-Scaffolder-recommend_subsystems"></a>}}
 \if{latex}{\out{\hypertarget{method-Scaffolder-recommend_subsystems}{}}}
 \subsection{Method \code{recommend_subsystems()}}{
-Recommend a sparse subsystem set for the current task and workflow.
+Recommend optional subsystem/capability labels for the current task and workflow.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Scaffolder$recommend_subsystems(task = self$task)}\if{html}{\out{</div>}}
 }

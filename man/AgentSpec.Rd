@@ -9,7 +9,8 @@ AgentSpec
 AgentSpec
 }
 \details{
-Public agent-design artifact combining subsystem selection and workflow.
+Public agent-design artifact combining workflow, memory, knowledge, state,
+interface, and optional subsystem diagnostic labels.
 }
 \section{Methods}{
 

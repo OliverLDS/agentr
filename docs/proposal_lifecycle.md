@@ -19,9 +19,9 @@ For proposal-state scaffolding, `agentr` separates work into three stages:
 During elicitation, `Scaffolder` is used to:
 
 - evaluate the task
-- recommend sparse subsystems
-- select subsystem configs
-- label workflow-node subsystem ownership
+- recommend optional capability labels
+- store optional subsystem or capability configs
+- label workflow nodes for review and visualization
 - discuss open questions
 - decompose the task into workflow nodes and edges
 - collect review and rule information
