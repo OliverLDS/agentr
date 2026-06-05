@@ -625,8 +625,8 @@ export_workspace_design_review <- function(
 
 #' Build an implementation handoff prompt from workspace artifacts
 #'
-#' This creates a prompt for a coding agent or implementation team. It does not
-#' execute the approved design.
+#' This creates a prompt for a coding assistant or implementation team. It does
+#' not execute the approved design.
 #'
 #' @param workspace Workspace root directory.
 #' @param agent_spec_path Optional path to approved [`AgentSpec`] `.rds`.
@@ -647,7 +647,7 @@ build_workspace_implementation_prompt <- function(
   agent_spec_path = NULL,
   out = NULL,
   language = "R",
-  target_agent = "codex",
+  target_agent = "coding_assistant",
   runtime = NULL,
   style = NULL,
   constraints = character(),

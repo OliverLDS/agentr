@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.7.3
+
+Released: 2026-06-05
+
+- Reframed README and package metadata around specification, review, and coding-assistant scaffolding rather than a cognitive/human-interaction core.
+- Clarified that subsystem labels are optional diagnostic node-labeling metadata, not first-class runtime specs.
+- Removed the stale `docs/manuscript/` asset set and `docs/manuscript_assets.md`.
+- Replaced the old conceptual-figure hub with guidance to generate figures from package-native workflow, memory-schema, schema-shape, knowledge-graph, and review-HTML renderers.
+
 ## agentr 0.2.7.2
 
 Released: 2026-06-05

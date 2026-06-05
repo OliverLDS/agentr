@@ -9,7 +9,7 @@ build_workspace_implementation_prompt(
   agent_spec_path = NULL,
   out = NULL,
   language = "R",
-  target_agent = "codex",
+  target_agent = "coding_assistant",
   runtime = NULL,
   style = NULL,
   constraints = character(),
@@ -45,6 +45,6 @@ build_workspace_implementation_prompt(
 Output prompt path.
 }
 \description{
-This creates a prompt for a coding agent or implementation team. It does not
-execute the approved design.
+This creates a prompt for a coding assistant or implementation team. It does
+not execute the approved design.
 }

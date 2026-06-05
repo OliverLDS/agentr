@@ -8,7 +8,7 @@ build_implementation_prompt(
   x,
   language,
   format = "json",
-  target_agent = "codex",
+  target_agent = "coding_assistant",
   runtime = NULL,
   style = NULL,
   constraints = character(),
@@ -29,7 +29,7 @@ inputs are also supported.}
 payloads and \code{"markdown"} for prompts that a human may paste into a coding
 chat interface.}
 
-\item{target_agent}{Target coding agent label.}
+\item{target_agent}{Target coding assistant label.}
 
 \item{runtime}{Optional runtime or framework note.}
 
@@ -50,5 +50,5 @@ Character string prompt.
 }
 \description{
 Creates a second-stage prompt that turns workflow scaffolding output into an
-implementation-oriented handoff for a coding agent such as Codex.
+implementation-oriented handoff for a coding assistant.
 }

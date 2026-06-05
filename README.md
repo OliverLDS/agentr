@@ -1,28 +1,37 @@
 # agentr
 
-`agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
+`agentr` is an R package for specifying, reviewing, and scaffolding agentic AI
+systems. It standardizes workflow, memory, knowledge, interface, and review
+artifacts so a human or coding assistant can inspect an existing project, infer
+design specs, render review HTML, and turn approved specs back into executable
+code.
 
-Version `0.2.7.2` adds the workspace CLI move to `inst/scripts/`, task-local
-preview rendering helpers, and memory/knowledge graph rendering in the review
-page.
+The package emphasizes cognitive design artifacts such as memory and knowledge,
+but it is not limited to a cognitive layer. A `WorkflowSpec` can describe the
+full task system: deterministic scripts, external tools, human decision gates,
+external LLM steps, data interfaces, and implementation hints. `agentr` remains
+a scaffolding/specification/review package, not the runtime execution engine for
+those systems.
+
+Version `0.2.7.3` refreshes the README/package framing around specification,
+review, and coding-assistant scaffolding, and removes stale manuscript assets.
 `agentr` can package workflow graphs, memory schemas, narrative knowledge,
 graph knowledge, proposal states, and structured feedback schema into one
-offline review page while remaining the core reasoning and scaffolding layer,
-not the transport or execution layer.
+offline review page while remaining the design and scaffolding layer, not the
+transport or execution layer.
 
 ## Scope
 
 `agentr` keeps:
 
-- R6 state objects for cognition and affect
-- a minimal `AgentCore` container
-- public agent-design objects such as `AgentSpec`, `SubsystemSpec`, and `IntelligentAgent`
-- a `Scaffolder` interface for human-guided intelligent-agent scaffolding
-- an LLM-facing prompt and action bridge for scaffolding decisions
-- workflow-spec helpers for DAG-like outputs and persistence
-- terminal scaffolding helpers
-- JSON/YAML and object persistence utilities
-- prompt helpers tightly coupled to scaffolding logic
+- task-local spec conventions for workflow, memory, knowledge, state, interface, and review artifacts
+- YAML, JSON, and RDS/R6 serialization helpers for different review and automation boundaries
+- review HTML rendering for workflow graphs, memory schemas, graph knowledge, proposal state, and structured feedback
+- coding-assistant guidance for inferring specs from existing code and constructing code from approved specs
+- proposal-state helpers for workflow, agent, memory, narrative knowledge, and graph knowledge review loops
+- constrained prompt and action bridges for manual LLM workflows
+- R helper classes such as `AgentSpec`, `KnowledgeSpec`, `MemorySpec`, `WorkflowProposalState`, and `DesignReviewSpec`
+- optional node-labeling helpers, including the current RWM/PG/AE/LA/IAC capability ontology
 
 `agentr` does not keep:
 
@@ -31,18 +40,24 @@ not the transport or execution layer.
 - domain-specific trading or data-collection agents
 - a full execution engine
 
-`agentr` is primarily a scaffolding and specification layer. A common deployment pattern is a cold-start orchestrated loop:
+`agentr` is primarily a scaffolding and specification layer. A common
+deployment pattern is a cold-start orchestrated loop:
 
 ```text
 zsh orchestrator
--> Rscript loads AgentSpec / state from .rds
--> refreshes environment data
--> performs one step
--> saves revised state
+-> loads YAML/JSON/RDS specs or state from the project folder
+-> calls node scripts, external tools, or external LLM steps
+-> reads and writes task-local data files
+-> saves revised state or trace artifacts
 -> exits
 ```
 
-R6 remains useful here because it gives validated design objects, clean methods, and persistence boundaries, while still supporting hotter long-lived runtimes when needed.
+R6 remains useful because it gives validated design objects, clean methods, and
+persistence boundaries. It is one supported representation, not the only or
+dominant representation. For most project-level agentic systems, editable YAML
+is the human-facing source of truth, JSON is the interchange format for
+LLM/browser/CLI boundaries, and RDS/R6 is useful for R-native helpers, proposal
+state, or cache artifacts.
 
 ## Installation
 
@@ -51,6 +66,10 @@ remotes::install_github("OliverLDS/agentr")
 ```
 
 ## Core Objects
+
+The package exposes R helpers and R6 classes for users who want validated
+objects inside R. These objects mirror the task-local specs, but they do not
+require the final agentic system to run as one long-lived R process.
 
 ```r
 library(agentr)
@@ -81,23 +100,43 @@ The current public surface includes:
 - `MemorySpec` for context, semantic, episodic, and procedural memory schema
 - `MemoryProposalState` and `KnowledgeGraphProposalState` for reviewable memory and graph-knowledge design loops
 - `DesignReviewSpec` for review-layer data bundles, standalone HTML export, and structured feedback contracts
-- `SubsystemSpec` for sparse subsystem selection
+- `SubsystemSpec` for optional diagnostic node-labeling metadata
 - `AgentScaffoldState` for approved agent-design state
 - `IntelligentAgent` for the runtime-oriented abstraction
 
 ## Lifecycle Stages
 
-`agentr` now treats scaffolding work as three explicit stages:
+`agentr` supports two complementary evolution paths.
 
-1. agent design and subsystem selection
-2. workflow proposal review and approval
-3. implementation and extraction handoff
+The repository-based path is the first-class path when a coding assistant can
+inspect the whole project:
+
+```text
+existing code and docs
+-> coding assistant infers task-local YAML specs
+-> review HTML exposes workflow, memory, knowledge, and schema structure
+-> human or coding assistant edits specs and code
+-> Git records the evolution of both specs and implementation
+```
+
+The proposal-state path remains useful when Git is not the right versioning
+boundary, when a manual LLM workflow is preferred, or when revisions need to be
+reviewed before touching approved specs:
+
+```text
+initial draft
+-> proposal object
+-> discussion or structured feedback
+-> revision
+-> explicit approval
+```
+
+Both paths use the same underlying design idea: keep specs descriptive,
+reviewable, and separate from runtime execution.
 
 For the documentation hub, start with [docs/index.md](docs/index.md). For
-conceptual diagrams of the transition from human workflow to approved agent
-design, see [docs/conceptual_figures.md](docs/conceptual_figures.md),
-[docs/manuscript/figures/index.md](docs/manuscript/figures/index.md), and
-[docs/manuscript/tables/index.md](docs/manuscript/tables/index.md).
+current figure guidance based on package-native renderers, see
+[docs/conceptual_figures.md](docs/conceptual_figures.md).
 
 For repository-based scaffolding with coding assistants, see
 [docs/coding_assistant_scaffolding.md](docs/coding_assistant_scaffolding.md).
@@ -120,13 +159,26 @@ ReAct --implements_part_of--> observe-decide-act
 
 `MemorySpec` captures the agent's memory schema: which fields hold current context, approved concepts, past events, and reusable procedures; how those fields update; and which fields persist across cold-start runs.
 
-`SubsystemSpec` is a diagnostic design layer rather than direct runtime logic. In the corrected five-module schema:
+Subsystem labels are optional diagnostic annotations for workflow nodes, not a
+first-class execution spec. A task can still be described, reviewed, and
+implemented without them. Labels are useful because they help humans inspect
+capability coverage, color workflow graphs, and compare designs under a chosen
+ontology.
+
+The current built-in ontology uses the five-module vocabulary from Lamo
+Castrillo, Gidey, Lenz, and Knoll (2025), "Fundamentals of Building Autonomous
+LLM Agents" (`https://arxiv.org/abs/2510.09244v1`):
 
 - `RWM` means Reasoning & World Model
 - `PG` means Perception & Grounding
 - `AE` means Action Execution
 - `LA` means Learning & Adaptation
 - `IAC` means Inter-Agent Communication
+
+Future ontologies can label the same workflow nodes differently based on other
+research frameworks or application-specific review needs. Workflow, memory,
+knowledge, state, and interface specs are the behavior-shaping artifacts;
+subsystem labels are a review and visualization aid.
 
 Early-stage agents often still have human-owned reasoning nodes. `agentr` supports that transitional state by letting workflow nodes carry ownership, automation status, and trace requirements while tacit knowledge is progressively codified into `KnowledgeSpec`.
 
@@ -191,9 +243,19 @@ apply_node_detail_message(
 
 The CLI wrapper in `inst/scripts/agentr-cli.R` exposes the same lifecycle for shell use while remaining a scaffolding utility, not an execution engine. See [docs/workspace_cli_lifecycle.md](docs/workspace_cli_lifecycle.md).
 
-## Agent Design And Workflow Elicitation
+## Coding Assistant And Interactive Scaffolding
 
-Use `Scaffolder` plus the constrained LLM bridge to evaluate tasks, recommend sparse subsystems, label workflow ownership, and build or edit workflow structure.
+For project-based work, the preferred loop is to give a coding assistant the
+task folder, the `agentr` guidance docs, and the current specs. The assistant
+can infer or revise `workflow_spec.yaml`, `memory_spec.yaml`,
+`knowledge_spec.yaml`, render `review.html`, and then implement or patch code
+against the approved specs. This is more grounded than a pure discussion loop
+because the assistant can inspect actual scripts, traces, docs, and Git
+history.
+
+For manual or proposal-oriented work, use `Scaffolder` plus the constrained LLM
+bridge to evaluate tasks, label workflow ownership, apply optional subsystem
+annotations, and build or edit workflow structure.
 
 ```r
 scaffolder$evaluate_task("Design a sparse release agent for an R package.")
@@ -517,20 +579,22 @@ If you are calling a model through another package such as `inferencer`, use the
 prompt_json <- build_scaffolder_prompt(scaffolder, format = "json")
 ```
 
-Once the workflow is mature enough, you can generate a second-stage implementation-planning prompt for a coding agent:
+Once the workflow is mature enough, you can generate a second-stage
+implementation-planning prompt for a coding assistant:
 
 ```r
 implementation_prompt <- build_implementation_prompt(
   scaffolder,
   language = "R",
   format = "markdown",
-  target_agent = "codex",
+  target_agent = "coding_assistant",
   runtime = "R package",
   constraints = c("Prefer testthat", "Keep changes modular")
 )
 ```
 
-If you want the design prompt to reason about subsystems first and workflow second, use:
+If you want the design prompt to include optional capability labels alongside
+the workflow design, use:
 
 ```r
 agent_design_prompt <- build_agent_design_prompt(

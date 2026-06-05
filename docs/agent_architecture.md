@@ -1,10 +1,10 @@
 # agentr Architecture
 
-`agentr` is the agent core, not the execution layer.
+`agentr` is the specification, scaffolding, and review layer for agentic AI
+systems. It is not the execution layer.
 
-For diagram-oriented summaries of the architecture and lifecycle, see
-[conceptual_figures.md](conceptual_figures.md) and
-[manuscript_assets.md](manuscript_assets.md). Start from the
+For diagram-oriented summaries generated from current package-native renderers,
+see [conceptual_figures.md](conceptual_figures.md). Start from the
 [documentation index](index.md) for the public guides.
 
 ## Layers
@@ -36,8 +36,8 @@ Implemented as `AffectiveState`, which preserves and cleans up the existing emot
 Implemented as `Scaffolder`, which supports:
 
 - persistent task evaluation artifacts
-- subsystem recommendation and sparse subsystem selection
-- workflow node subsystem ownership labels
+- optional capability-label recommendation
+- workflow node ownership and capability labels
 - free-form human/model discussion rounds
 - candidate node decomposition and non-linear graph suggestions
 - workflow-level review
@@ -55,10 +55,10 @@ Internally, `Scaffolder` remains the facade while separating:
 - dispatch helpers
 - prompt-contract helpers
 
-Public agent-design objects now include:
+Public agent-design objects include:
 
 - `AgentSpec`
-- `SubsystemSpec`
+- `SubsystemSpec` as optional diagnostic node-labeling metadata
 - `AgentScaffoldState`
 - `IntelligentAgent`
 
@@ -67,12 +67,12 @@ Public workflow proposal lifecycle objects remain:
 - `WorkflowProposal`
 - `WorkflowProposalState`
 
-The package now keeps two design axes separate:
+The package keeps behavior-shaping specs separate from diagnostic labels:
 
-- subsystem axis: `RWM`, `PG`, `AE`, `IAC`, `LA`
-- workflow axis: DAG nodes and edges
+- workflow, memory, knowledge, state, and interface specs shape the design
+- optional node-labeling ontologies, including `RWM`, `PG`, `AE`, `IAC`, and `LA`, support review and visualization
 
-`RWM` is further refined into:
+Under the current built-in five-module ontology, `RWM` can be refined into:
 
 - `CognitiveConfig`
 - `AffectiveConfig`
@@ -119,7 +119,7 @@ Memory-schema and graph-knowledge proposals now follow the same proposal lifecyc
 
 ## Agent Output
 
-`AgentSpec` is now the top-level design artifact. It contains:
+`AgentSpec` is the top-level design artifact. It contains:
 
 - `task`
 - `agent_name`
@@ -139,7 +139,9 @@ Memory-schema and graph-knowledge proposals now follow the same proposal lifecyc
 
 `KnowledgeSpec` can now contain narrative items, first-class graph knowledge, and future vector-reference metadata. `MemorySpec` is the preferred structured schema for context, semantic, episodic, and procedural memory. `state_spec` remains available for backward-compatible loose-list state descriptions.
 
-`SubsystemSpec` keeps sparse subsystem selection explicit. Subsystem fields may be absent, which preserves the design principle that not all tasks need all subsystems.
+`SubsystemSpec` is not direct runtime logic. It stores optional diagnostic
+labels for capability coverage, graph coloring, and review. A valid agent
+design can omit subsystem labels entirely.
 
 ## Workflow Output
 
@@ -173,7 +175,10 @@ Workflow specs can also be:
 - saved and loaded independently
 - rendered as Graphviz DOT, DiagrammeR graphs, or SVG for workflow inspection
 
-Workflow ownership labels live in workflow metadata so workflow-first compatibility remains intact while agent designs can still mark which subsystem owns each node. Those ownership labels can be edited incrementally rather than only replaced wholesale.
+Workflow ownership and capability labels live in workflow metadata so
+workflow-first compatibility remains intact while agent designs can still mark
+which actor or ontology label applies to each node. Those labels can be edited
+incrementally rather than only replaced wholesale.
 
 `DesignReviewSpec` and the standalone HTML helpers add a review boundary for human inspection. The browser artifact renders workflow graph data, memory schema, narrative knowledge, graph knowledge, proposal states, and structured feedback schema without turning `agentr` into a runtime execution layer.
 

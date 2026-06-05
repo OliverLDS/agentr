@@ -69,7 +69,7 @@
 #' Build an implementation prompt for a coding agent
 #'
 #' Creates a second-stage prompt that turns workflow scaffolding output into an
-#' implementation-oriented handoff for a coding agent such as Codex.
+#' implementation-oriented handoff for a coding assistant.
 #'
 #' @param x A [`Scaffolder`] instance, workflow specification, or
 #'   implementation-spec-like list. `AgentSpec` and `IntelligentAgent`
@@ -79,7 +79,7 @@
 #' @param format Prompt payload format. Use `"json"` for SDK-facing structured
 #'   payloads and `"markdown"` for prompts that a human may paste into a coding
 #'   chat interface.
-#' @param target_agent Target coding agent label.
+#' @param target_agent Target coding assistant label.
 #' @param runtime Optional runtime or framework note.
 #' @param style Optional implementation style note.
 #' @param constraints Optional character vector of implementation constraints.
@@ -95,7 +95,7 @@ build_implementation_prompt <- function(
   x,
   language,
   format = "json",
-  target_agent = "codex",
+  target_agent = "coding_assistant",
   runtime = NULL,
   style = NULL,
   constraints = character(),
@@ -224,7 +224,7 @@ build_implementation_prompt <- function(
     "# Implementation Planning Prompt",
     "",
     "You are preparing an implementation-ready coding plan for a workflow-driven task.",
-    paste0("Target coding agent: `", target_agent, "`."),
+    paste0("Target coding assistant: `", target_agent, "`."),
     paste0("Target language: `", language, "`."),
     if (is.null(runtime)) "Runtime: <unspecified>" else paste0("Runtime: `", runtime, "`."),
     if (is.null(style)) "Style: <unspecified>" else paste0("Style: `", style, "`."),

@@ -1,6 +1,6 @@
 # Proposal Lifecycle
 
-For proposal and artifact diagrams, see [conceptual_figures.md](conceptual_figures.md) and [manuscript figures](manuscript/figures/index.md).
+For current diagram guidance, see [conceptual_figures.md](conceptual_figures.md).
 
 `agentr` supports proposal-state scaffolding and coding-assistant
 scaffolding. This page describes proposal-state scaffolding: candidate specs

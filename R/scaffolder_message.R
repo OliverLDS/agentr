@@ -1249,7 +1249,7 @@ build_agent_design_prompt <- function(scaffolder, format = "json") {
     "## Response Requirements",
     "- Return raw JSON only.",
     "- The JSON must contain an `actions` array.",
-    "- Use sparse subsystem selections unless the task clearly justifies more.",
+    "- Treat subsystem/capability labels as optional diagnostic annotations, not runtime requirements.",
     "",
     "## Expected JSON Shape",
     "```json",

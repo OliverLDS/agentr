@@ -30,9 +30,8 @@ design artifacts. It is not a runtime execution engine.
 - [Capability-Autonomy Landscape](capability_autonomy_landscape.md)
 - [Function Index](function_index.md)
 
-## Manuscript And History
+## Figures And History
 
-- [Manuscript Assets](manuscript_assets.md)
 - [Conceptual Figures](conceptual_figures.md)
 - [Historical Implementation Plans](archive/plans/index.md)
 

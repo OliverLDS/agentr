@@ -543,7 +543,7 @@ test_that("build_implementation_prompt supports scaffolder and workflow inputs",
   expect_true(grepl("\"implementation_plan\"", prompt_json, fixed = TRUE))
   expect_true(grepl("\"Refresh data\"", prompt_json, fixed = TRUE))
   expect_true(grepl("# Implementation Planning Prompt", prompt_markdown, fixed = TRUE))
-  expect_true(grepl("Target coding agent: `codex`.", prompt_markdown, fixed = TRUE))
+  expect_true(grepl("Target coding assistant: `codex`.", prompt_markdown, fixed = TRUE))
   expect_true(grepl("## Workflow Input", prompt_markdown, fixed = TRUE))
   expect_true(grepl("machine-readable JSON only", prompt_markdown, fixed = TRUE))
 })
