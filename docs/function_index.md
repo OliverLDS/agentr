@@ -65,6 +65,8 @@
 | `save_workflow_proposal()` | Save a workflow proposal |
 | `load_workflow_proposal()` | Load a workflow proposal |
 | `workflow_proposal_graph_data()` | Export graph-ready node and edge tables from a workflow proposal |
+| `schema_shape_graph_data()` | Export graph-ready node and edge tables for a workflow-node input/output schema |
+| `render_schema_shape_graphviz()` | Render a workflow-node input/output schema as Graphviz DOT, DiagrammeR, or SVG |
 | `task_spec_paths()` | Return conventional task-local spec paths |
 | `discover_task_specs()` | Discover task-local workflow, memory, knowledge, and graph YAML specs |
 | `load_task_specs()` | Load existing task-local YAML specs |
@@ -81,6 +83,8 @@
 | `validate_memory_proposal()` | Validate a memory-schema proposal |
 | `memory_types()` | List supported memory types |
 | `memory_persistence_policies()` | List supported memory persistence policies |
+| `memory_schema_graph_data()` | Export graph-ready node and edge tables for a memory schema |
+| `render_memory_schema_graphviz()` | Render a memory schema as Graphviz DOT, DiagrammeR, or SVG |
 | `memory_action_methods()` | List constrained memory-schema message actions |
 
 ## Knowledge And Graph Helpers

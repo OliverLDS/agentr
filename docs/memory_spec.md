@@ -124,3 +124,18 @@ For example:
 ## Review HTML
 
 `export_design_review_html()` renders memory fields alongside workflow, knowledge, and proposal-state sections. The review page collects structured feedback but does not mutate the saved YAML source directly.
+
+## Graph Rendering
+
+Use `memory_schema_graph_data()` when another renderer needs graph-ready node
+and edge tables. Use `render_memory_schema_graphviz()` when a standalone DOT,
+DiagrammeR, or SVG artifact is useful for review:
+
+```r
+graph_data <- memory_schema_graph_data(memory_spec)
+dot <- render_memory_schema_graphviz(memory_spec, as = "dot")
+# svg <- render_memory_schema_graphviz(memory_spec, as = "svg")
+```
+
+The memory graph shows memory fields and, by default, each field's nested
+schema shape. It is a structural review artifact, not a runtime memory store.

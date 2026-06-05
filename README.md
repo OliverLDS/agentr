@@ -2,8 +2,8 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.7` adds a coding-assistant scaffolding path for repository
-inspection, task-local YAML specs, review HTML, and Git-backed spec evolution.
+Version `0.2.7.1` adds standalone Graphviz renderers for memory schemas and
+workflow-node input/output schema shapes.
 `agentr` can package workflow graphs, memory schemas, narrative knowledge,
 graph knowledge, proposal states, and structured feedback schema into one
 offline review page while remaining the core reasoning and scaffolding layer,
@@ -297,6 +297,18 @@ agent_spec <- AgentSpec$new(
 ```
 
 `MemorySpec` is the preferred structured schema for agent memory. `state_spec` remains a backward-compatible plain-list field for existing users and simple designs. `interface_spec` is still a plain structured list for files, tools, APIs, and other external surfaces.
+
+Memory and workflow-node schemas can be rendered as standalone Graphviz assets
+for review:
+
+```r
+memory_dot <- render_memory_schema_graphviz(memory_spec, as = "dot")
+schema_dot <- render_schema_shape_graphviz(
+  reloaded_spec$workflow$nodes$output_schema[[1]],
+  root_label = "Node output schema",
+  as = "dot"
+)
+```
 
 If you want a visual knowledge map, build a graph spec from `KnowledgeSpec` and render it through the same Graphviz/DiagrammeR path used for workflows:
 

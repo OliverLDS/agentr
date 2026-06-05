@@ -83,3 +83,22 @@ supports node and edge clicks, marks nested workflows, and scrolls
 horizontally when the graph is wider than its panel. Use `process` layout for
 branches or backward edges. `grid`, `layered`, and `swimlane` remain available
 for simpler views.
+
+## Schema Shape Rendering
+
+Workflow nodes can carry `input_schema` and `output_schema` fields. Use
+`schema_shape_graph_data()` when another renderer needs graph-ready node and
+edge tables. Use `render_schema_shape_graphviz()` for standalone DOT,
+DiagrammeR, or SVG output:
+
+```r
+node <- workflow$nodes[workflow$nodes$id == "node_3", ]
+dot <- render_schema_shape_graphviz(
+  node$output_schema[[1]],
+  root_label = "node_3 output_schema",
+  as = "dot"
+)
+```
+
+This renderer visualizes schema structure for review. It does not validate
+the schema as JSON Schema.

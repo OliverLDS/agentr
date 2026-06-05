@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.7.1
+
+Released: 2026-06-05
+
+- Added memory-schema graph helpers: `memory_schema_graph_data()` and `render_memory_schema_graphviz()`.
+- Added schema-shape graph helpers for workflow-node `input_schema` and `output_schema`: `schema_shape_graph_data()` and `render_schema_shape_graphviz()`.
+- Documented memory/schema rendering in the README, MemorySpec guide, WorkflowSpec guide, and function index.
+- Added regression coverage for memory-schema and schema-shape DOT, DiagrammeR, and SVG rendering paths.
+
 ## agentr 0.2.7
 
 Released: 2026-06-04
