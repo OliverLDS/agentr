@@ -23,6 +23,7 @@ tasks/<task_id>/
 │   ├── workflow_spec.yaml
 │   ├── memory_spec.yaml
 │   ├── knowledge_spec.yaml
+│   ├── knowledge_graph_spec.yaml
 │   ├── review.html
 │   └── inference_notes.md
 ├── nodes/
@@ -280,6 +281,104 @@ list(
 Do not invent domain rules that are not visible in the task code, docs, prompts,
 or user-provided context.
 
+## Inferring KnowledgeGraphSpec
+
+Infer a first-class `KnowledgeGraphSpec` when the task contains explicit
+entity-relation knowledge that is useful to inspect as nodes and edges. This is
+different from `knowledge_graph_from_spec()`, which creates a projection graph
+from narrative `KnowledgeSpec` items.
+
+Good evidence for first-class graph knowledge:
+
+- Ontology-like statements, such as `ACT-R is_a cognitive architecture`.
+- Stable entity relationships in prompts, docs, schemas, or examples.
+- Dependency or compatibility relations among concepts, tools, files, models,
+  data sources, or output types.
+- Reusable relation triples that humans would want to review visually.
+- Knowledge that is naturally queried as connected concepts rather than as one
+  prose rule.
+
+Do not create a `KnowledgeGraphSpec` just because the workflow itself is a DAG.
+Workflow edges describe procedural order. Knowledge-graph edges describe
+semantic or domain relationships.
+
+Recommended graph node fields:
+
+| Field | Guidance |
+| --- | --- |
+| `id` | Stable snake-case identifier, unique inside the graph |
+| `label` | Human-readable concept/entity label |
+| `node_type` | Conceptual node category, such as `concept`, `tool`, `file`, `schema`, `model`, `source`, or `criterion` |
+| `memory_type` | Usually `semantic` or `procedural`; use `context` or `episodic` only when the graph represents current state or past events |
+| `knowledge_form` | Use `graph` for first-class graph knowledge |
+| `provenance` | Source file, prompt, doc, comment, or user note that supports the node |
+| `review` | Start with `status: pending` unless the user has already approved it |
+| `scope` | Domain, task, or condition where the node is valid |
+
+Recommended graph edge fields:
+
+| Field | Guidance |
+| --- | --- |
+| `from` | Source graph node id |
+| `to` | Target graph node id |
+| `relation` | Human-readable relation, such as `is_a`, `has_component`, `requires`, `implements_part_of`, `produces`, or `constrains` |
+| `relation_type` | Normalized relation family; often the same as `relation` |
+| `memory_type` | Usually follows the source relation's memory type |
+| `provenance` | Source evidence for the relation |
+| `review` | Start with `status: pending` unless approved |
+| `scope` | Domain, task, or condition where the relation is valid |
+
+Example first-class graph knowledge:
+
+```yaml
+metadata:
+  graph_mode: curated
+nodes:
+  - id: act_r
+    label: ACT-R
+    node_type: concept
+    memory_type: semantic
+    knowledge_form: graph
+    provenance:
+      source: docs/task_notes.md
+    review:
+      status: pending
+    scope:
+      domain: cognitive_architectures
+  - id: cognitive_architecture
+    label: cognitive architecture
+    node_type: concept
+    memory_type: semantic
+    knowledge_form: graph
+    provenance:
+      source: docs/task_notes.md
+    review:
+      status: pending
+    scope:
+      domain: cognitive_architectures
+edges:
+  - from: act_r
+    to: cognitive_architecture
+    relation: is_a
+    relation_type: is_a
+    memory_type: semantic
+    provenance:
+      source: docs/task_notes.md
+    review:
+      status: pending
+    scope:
+      domain: cognitive_architectures
+```
+
+When both narrative and graph knowledge are useful, save both:
+
+- `knowledge_spec.yaml` for prose rules, heuristics, exceptions, and review
+  criteria.
+- `knowledge_graph_spec.yaml` for explicit entity-relation structures.
+
+Keep graph knowledge descriptive and reviewable. Do not use it as a hidden
+runtime planner or execution engine.
+
 ## File Naming Conventions
 
 Generated specs should live with the concrete task, not inside the `agentr`
@@ -292,6 +391,7 @@ tasks/<task_id>/docs/
 ├── workflow_spec.yaml
 ├── memory_spec.yaml
 ├── knowledge_spec.yaml
+├── knowledge_graph_spec.yaml
 ├── review.html
 └── inference_notes.md
 ```
@@ -301,6 +401,7 @@ Use these names unless the workspace already has a stronger convention:
 - `tasks/<task_id>/docs/workflow_spec.yaml`
 - `tasks/<task_id>/docs/memory_spec.yaml`
 - `tasks/<task_id>/docs/knowledge_spec.yaml`
+- `tasks/<task_id>/docs/knowledge_graph_spec.yaml`
 - `tasks/<task_id>/docs/review.html`
 - `tasks/<task_id>/docs/inference_notes.md`
 - `tasks/<task_id>/nodes/<subworkflow_node_id>/docs/workflow_spec.yaml`
@@ -330,6 +431,41 @@ Path memory guidance:
 - Do not resurrect `shared_scripts` only for path loading.
 
 ## Rendering Preview HTML
+
+Prefer the package helper when rendering task-local specs. It loads
+`workflow_spec.yaml` plus optional `memory_spec.yaml`, `knowledge_spec.yaml`,
+and `knowledge_graph_spec.yaml` when present:
+
+```r
+library(agentr)
+
+render_task_preview(
+  "tasks/write_new_blog_article",
+  graph_layout = "process",
+  edge_style = "orthogonal"
+)
+```
+
+To render all task previews in a workspace:
+
+```r
+render_task_previews(
+  root = ".",
+  tasks_dir = "tasks",
+  graph_layout = "process",
+  edge_style = "orthogonal"
+)
+```
+
+The installed package also ships a thin script wrapper:
+
+```sh
+zsh "$(Rscript -e 'cat(system.file("scripts/render_task_previews.sh", package = "agentr"))')" \
+  --root . \
+  --tasks-dir tasks \
+  --graph-layout process \
+  --edge-style orthogonal
+```
 
 Render one task:
 

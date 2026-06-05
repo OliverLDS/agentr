@@ -95,6 +95,149 @@ load_task_specs <- function(task_dir, docs_dir = "docs", missing = c("null", "er
   structure(out, class = c("agentr_task_specs", "list"))
 }
 
+#' Render one task-local design-review preview
+#'
+#' Loads conventional task-local YAML specs and renders `docs/review.html`.
+#' When present, memory, narrative knowledge, and graph knowledge specs are
+#' included alongside the workflow graph.
+#'
+#' @param task_dir Task root directory.
+#' @param docs_dir Documentation/spec directory relative to `task_dir`, or an
+#'   absolute path.
+#' @param out Optional output HTML path. Defaults to `docs/review.html`.
+#' @param title Optional review title. Defaults to the workflow task title, then
+#'   the task directory name.
+#' @param require_workflow Whether `workflow_spec.yaml` must exist.
+#' @param graph_layout Workflow graph layout passed to
+#'   [export_design_review_html()].
+#' @param edge_style Workflow edge style passed to [export_design_review_html()].
+#' @param node_color_theme Initial node-color theme passed to
+#'   [export_design_review_html()].
+#' @param ... Additional arguments passed to [export_design_review_html()].
+#'
+#' @return Invisibly returns the normalized output HTML path.
+#' @export
+render_task_preview <- function(
+  task_dir,
+  docs_dir = "docs",
+  out = NULL,
+  title = NULL,
+  require_workflow = TRUE,
+  graph_layout = c("grid", "layered", "swimlane", "process"),
+  edge_style = c("curved", "straight", "orthogonal"),
+  node_color_theme = c("default", "subsystems"),
+  ...
+) {
+  graph_layout <- match.arg(graph_layout)
+  edge_style <- match.arg(edge_style)
+  node_color_theme <- match.arg(node_color_theme)
+  task_dir <- path.expand(as.character(task_dir)[1])
+
+  specs <- load_task_specs(task_dir, docs_dir = docs_dir)
+  if (isTRUE(require_workflow) && is.null(specs$workflow)) {
+    stop("Missing task-local workflow spec: ", specs$paths$workflow, call. = FALSE)
+  }
+  if (is.null(specs$workflow)) {
+    return(invisible(NULL))
+  }
+
+  if (is.null(out)) {
+    out <- specs$paths$review
+  }
+  out_dir <- dirname(path.expand(as.character(out)[1]))
+  if (!dir.exists(out_dir)) {
+    dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  }
+  if (is.null(title)) {
+    title <- if (!is.null(specs$workflow$task) && nzchar(specs$workflow$task)) {
+      specs$workflow$task
+    } else {
+      basename(normalizePath(task_dir, mustWork = FALSE))
+    }
+  }
+
+  export_design_review_html(
+    specs$workflow,
+    path = out,
+    title = title,
+    memory_spec = specs$memory,
+    knowledge_spec = specs$knowledge,
+    graph_spec = specs$knowledge_graph,
+    graph_layout = graph_layout,
+    edge_style = edge_style,
+    node_color_theme = node_color_theme,
+    ...
+  )
+}
+
+#' Render task-local design-review previews under a workspace
+#'
+#' Scans a workspace for `workflow_spec.yaml` files under task-local `docs/`
+#' directories and renders one review HTML file per discovered task. This helper
+#' only loads specs and writes review artifacts; it does not execute task code.
+#'
+#' @param root Workspace root directory.
+#' @param tasks_dir Tasks directory relative to `root`, or an absolute path.
+#' @param docs_dir Documentation/spec directory name relative to each task.
+#' @param recursive Whether to scan nested task folders. Defaults to `TRUE` so
+#'   node-folder subworkflow specs are rendered too.
+#' @param require_workflow Whether discovered task previews require a workflow
+#'   spec. Discovered paths always have one; this is forwarded to
+#'   [render_task_preview()].
+#' @param ... Additional arguments passed to [render_task_preview()].
+#'
+#' @return Data frame with rendered task directories and review paths.
+#' @export
+render_task_previews <- function(
+  root,
+  tasks_dir = "tasks",
+  docs_dir = "docs",
+  recursive = TRUE,
+  require_workflow = TRUE,
+  ...
+) {
+  root <- path.expand(as.character(root)[1])
+  tasks_dir <- path.expand(as.character(tasks_dir)[1])
+  if (!.is_absolute_path(tasks_dir)) {
+    tasks_dir <- file.path(root, tasks_dir)
+  }
+  if (!dir.exists(tasks_dir)) {
+    stop("Tasks directory does not exist: ", tasks_dir, call. = FALSE)
+  }
+
+  candidates <- list.files(
+    tasks_dir,
+    recursive = isTRUE(recursive),
+    full.names = TRUE,
+    no.. = TRUE
+  )
+  suffix <- file.path(docs_dir, "workflow_spec.yaml")
+  workflow_paths <- candidates[endsWith(candidates, suffix)]
+  workflow_paths <- sort(workflow_paths)
+  if (!length(workflow_paths)) {
+    stop("No workflow_spec.yaml files found under ", tasks_dir, call. = FALSE)
+  }
+
+  task_dirs <- vapply(workflow_paths, function(path) {
+    dirname(dirname(path))
+  }, character(1))
+
+  review_paths <- vapply(task_dirs, function(task_dir) {
+    as.character(render_task_preview(
+      task_dir = task_dir,
+      docs_dir = docs_dir,
+      require_workflow = require_workflow,
+      ...
+    ))
+  }, character(1))
+
+  data.frame(
+    task_dir = task_dirs,
+    review_path = review_paths,
+    stringsAsFactors = FALSE
+  )
+}
+
 #' Validate task-local specs
 #'
 #' Validates conventional task-local YAML specs when present and reports missing

@@ -71,6 +71,8 @@
 | `discover_task_specs()` | Discover task-local workflow, memory, knowledge, and graph YAML specs |
 | `load_task_specs()` | Load existing task-local YAML specs |
 | `validate_task_specs()` | Validate existing or required task-local YAML specs |
+| `render_task_preview()` | Render one task-local review HTML file from workflow, memory, knowledge, and graph YAML specs |
+| `render_task_previews()` | Render review HTML files for all discovered task-local workflow specs under a workspace |
 
 ## Memory Helpers
 

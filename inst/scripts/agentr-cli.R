@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 suppressPackageStartupMessages(library(agentr))
 
 main <- function(args = commandArgs(trailingOnly = TRUE)) {
@@ -41,7 +42,7 @@ print_help <- function() {
     "agentr CLI\n",
     "\n",
     "Usage:\n",
-    "  Rscript agentr-cli.R <command> --workspace PATH [options]\n",
+    "  Rscript inst/scripts/agentr-cli.R <command> --workspace PATH [options]\n",
     "\n",
     "Commands:\n",
     "  init --workspace PATH [--comment TEXT_OR_FILE]\n",

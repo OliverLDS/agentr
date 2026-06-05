@@ -309,9 +309,9 @@ test_that("workspace review and handoff exporters write artifacts", {
 })
 
 test_that("CLI wrapper exposes help text and supported commands", {
-  cli_path <- system.file("cli", "agentr-cli.R", package = "agentr")
+  cli_path <- system.file("scripts", "agentr-cli.R", package = "agentr")
   if (!nzchar(cli_path)) {
-    cli_path <- normalizePath(file.path("..", "..", "inst", "cli", "agentr-cli.R"), mustWork = TRUE)
+    cli_path <- normalizePath(file.path("..", "..", "inst", "scripts", "agentr-cli.R"), mustWork = TRUE)
   }
   cli <- paste(readLines(cli_path, warn = FALSE), collapse = "\n")
 
@@ -327,4 +327,15 @@ test_that("CLI wrapper exposes help text and supported commands", {
   expect_false(grepl("pos = 1", cli, fixed = TRUE))
   expect_true(grepl("--graph-layout", cli, fixed = TRUE))
   expect_true(grepl("--edge-style", cli, fixed = TRUE))
+})
+
+test_that("CLI wrapper help runs through Rscript from the installed scripts path", {
+  cli_path <- system.file("scripts", "agentr-cli.R", package = "agentr")
+  if (!nzchar(cli_path)) {
+    cli_path <- normalizePath(file.path("..", "..", "inst", "scripts", "agentr-cli.R"), mustWork = TRUE)
+  }
+  env <- new.env(parent = globalenv())
+  source(cli_path, local = env)
+  expect_output(env$main(c("--help")), "agentr CLI")
+  expect_output(env$main(c("build-revision-prompt", "--help")), "build-revision-prompt")
 })

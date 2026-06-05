@@ -2,8 +2,9 @@
 
 `agentr` is an R package for the cognitive and human-interaction core of intelligent-agent scaffolding. It represents agent state, preserves a lightweight affective layer, supports human-in-the-loop scaffolding, and centers agent-spec design with workflow specifications kept as a nested planning artifact.
 
-Version `0.2.7.1` adds standalone Graphviz renderers for memory schemas and
-workflow-node input/output schema shapes.
+Version `0.2.7.2` adds the workspace CLI move to `inst/scripts/`, task-local
+preview rendering helpers, and memory/knowledge graph rendering in the review
+page.
 `agentr` can package workflow graphs, memory schemas, narrative knowledge,
 graph knowledge, proposal states, and structured feedback schema into one
 offline review page while remaining the core reasoning and scaffolding layer,
@@ -188,7 +189,7 @@ apply_node_detail_message(
 )
 ```
 
-The CLI wrapper in `inst/cli/agentr-cli.R` exposes the same lifecycle for shell use while remaining a scaffolding utility, not an execution engine. See [docs/workspace_cli_lifecycle.md](docs/workspace_cli_lifecycle.md).
+The CLI wrapper in `inst/scripts/agentr-cli.R` exposes the same lifecycle for shell use while remaining a scaffolding utility, not an execution engine. See [docs/workspace_cli_lifecycle.md](docs/workspace_cli_lifecycle.md).
 
 ## Agent Design And Workflow Elicitation
 

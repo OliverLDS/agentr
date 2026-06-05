@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.7.2
+
+Released: 2026-06-05
+
+- Moved the workspace CLI wrapper to `inst/scripts/agentr-cli.R` and kept the same `-h`/`--help` parser semantics.
+- Added task-local preview helpers: `render_task_preview()` and `render_task_previews()`.
+- Extended the standalone design review page to render memory-schema and knowledge graphs in addition to the workflow graph.
+- Preserved the package-shipped coding-assistant guides and updated downstream documentation to the new script location.
+
 ## agentr 0.2.7.1
 
 Released: 2026-06-05

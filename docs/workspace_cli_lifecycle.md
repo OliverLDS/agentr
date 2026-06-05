@@ -115,30 +115,30 @@ build_workspace_implementation_prompt(workspace, language = "R")
 The installed script lives at:
 
 ```text
-inst/cli/agentr-cli.R
+inst/scripts/agentr-cli.R
 ```
 
 It is a thin shell-facing wrapper around the exported R functions.
 
 ```sh
-Rscript inst/cli/agentr-cli.R --help
-Rscript inst/cli/agentr-cli.R init --workspace my_agent_design --comment "Generic review workspace"
-Rscript inst/cli/agentr-cli.R build-initial-prompt --workspace my_agent_design --target workflow --comment task.txt
-Rscript inst/cli/agentr-cli.R apply-initial-message --workspace my_agent_design --target workflow --message responses/workflow_initial.json
-Rscript inst/cli/agentr-cli.R build-revision-prompt --workspace my_agent_design --target knowledge --comment feedback.txt
-Rscript inst/cli/agentr-cli.R apply-revision-message --workspace my_agent_design --target knowledge --message responses/knowledge_revision.json
-Rscript inst/cli/agentr-cli.R build-revision-prompt --workspace my_agent_design --target workflow --node-id node_interpret --comment node_feedback.txt
-Rscript inst/cli/agentr-cli.R apply-node-detail-message --workspace my_agent_design --node-id node_interpret --message responses/node_interpret_detail.json
-Rscript inst/cli/agentr-cli.R list-proposals --workspace my_agent_design --type knowledge
-Rscript inst/cli/agentr-cli.R approve-proposal --workspace my_agent_design --type knowledge --proposal-id ki_proposal_1
-Rscript inst/cli/agentr-cli.R export-review --workspace my_agent_design --graph-layout process --edge-style orthogonal
-Rscript inst/cli/agentr-cli.R build-handoff --workspace my_agent_design
+Rscript inst/scripts/agentr-cli.R --help
+Rscript inst/scripts/agentr-cli.R init --workspace my_agent_design --comment "Generic review workspace"
+Rscript inst/scripts/agentr-cli.R build-initial-prompt --workspace my_agent_design --target workflow --comment task.txt
+Rscript inst/scripts/agentr-cli.R apply-initial-message --workspace my_agent_design --target workflow --message responses/workflow_initial.json
+Rscript inst/scripts/agentr-cli.R build-revision-prompt --workspace my_agent_design --target knowledge --comment feedback.txt
+Rscript inst/scripts/agentr-cli.R apply-revision-message --workspace my_agent_design --target knowledge --message responses/knowledge_revision.json
+Rscript inst/scripts/agentr-cli.R build-revision-prompt --workspace my_agent_design --target workflow --node-id node_interpret --comment node_feedback.txt
+Rscript inst/scripts/agentr-cli.R apply-node-detail-message --workspace my_agent_design --node-id node_interpret --message responses/node_interpret_detail.json
+Rscript inst/scripts/agentr-cli.R list-proposals --workspace my_agent_design --type knowledge
+Rscript inst/scripts/agentr-cli.R approve-proposal --workspace my_agent_design --type knowledge --proposal-id ki_proposal_1
+Rscript inst/scripts/agentr-cli.R export-review --workspace my_agent_design --graph-layout process --edge-style orthogonal
+Rscript inst/scripts/agentr-cli.R build-handoff --workspace my_agent_design
 ```
 
 Every command supports `--help` after the command name:
 
 ```sh
-Rscript inst/cli/agentr-cli.R build-revision-prompt --help
+Rscript inst/scripts/agentr-cli.R build-revision-prompt --help
 ```
 
 ## Proposal Boundaries
