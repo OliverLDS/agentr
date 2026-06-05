@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.7.6
+
+Released: 2026-06-05
+
+- Improved review HTML layout for memory, narrative-knowledge, and graph-knowledge mini-graphs.
+- Removed the synthetic narrative `knowledge_spec` hub from fallback knowledge maps so dense knowledge items no longer crowd behind one root node.
+- Added edge-lane fanout, larger node spacing, and relation-label backgrounds in review mini-graphs to reduce node, edge, and edge-label overlap.
+
 ## agentr 0.2.7.5
 
 Released: 2026-06-05
