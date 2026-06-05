@@ -52,13 +52,13 @@ Start with:
 - Optional node labels: diagnostic color/ontology labels for understanding workflow nodes.
 
 The current built-in node-label ontology uses `RWM`, `PG`, `AE`, `LA`, and
-`IAC`, following the five-module vocabulary in Lamo Castrillo, Gidey, Lenz, and
-Knoll (2025).^[Lamo Castrillo, Victor de, Habtom Kahsay Gidey, Alexander Lenz,
-and Alois Knoll. 2025. "Fundamentals of Building Autonomous LLM Agents."
-https://arxiv.org/abs/2510.09244v1.] These labels are not required for runtime
+`IAC`, following the five-module vocabulary from [Lamo Castrillo et al.
+(2025)][castrillo2025]. These labels are not required for runtime
 execution. They are diagnostic annotations for graph coloring, human review,
 and capability discussion. Future labeling ontologies can coexist with the same
 workflow specs.
+
+[castrillo2025]: https://arxiv.org/abs/2510.09244v1
 
 ## Spec Formats
 

@@ -9,7 +9,7 @@ SubsystemSpec
 SubsystemSpec
 }
 \details{
-Optional diagnostic inventory of subsystem/capability labels.
+Sparse diagnostic inventory of the selected agent subsystems.
 }
 \section{Methods}{
 
