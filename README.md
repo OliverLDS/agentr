@@ -35,9 +35,14 @@ needed.
 Start with:
 
 - [Coding Assistant Scaffolding](docs/coding_assistant_scaffolding.md)
-- [Task Spec Inference Guide](inst/guides/coding_assistant_task_spec_inference.md)
-- [Task Code Construction Guide](inst/guides/coding_assistant_task_code_construction.md)
-- [Node Script Construction Guide](inst/guides/coding_assistant_node_script_construction.md)
+- [Full-Stack Task Spec Inference Guide](inst/guides/full_stack_task_spec_inference.md)
+- [Workflow-Only Task Spec Inference Guide](inst/guides/workflow_only_task_spec_inference.md)
+- [WorkflowSpec Inference Guide](inst/guides/spec_inference/workflow_spec.md)
+- [MemorySpec Inference Guide](inst/guides/spec_inference/memory_spec.md)
+- [KnowledgeSpec Inference Guide](inst/guides/spec_inference/knowledge_spec.md)
+- [KnowledgeGraphSpec Inference Guide](inst/guides/spec_inference/knowledge_graph_spec.md)
+- [Task Code Construction Guide](inst/guides/code_construction/task_code_construction.md)
+- [Node Script Construction Guide](inst/guides/code_construction/node_script_construction.md)
 
 ## What agentr Standardizes
 

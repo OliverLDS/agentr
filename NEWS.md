@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.7.5
+
+Released: 2026-06-05
+
+- Reorganized package-shipped coding-assistant guides under `inst/guides/` into wrapper, spec-inference, and code-construction sections.
+- Renamed the full project inference wrapper to `full_stack_task_spec_inference.md`.
+- Added `workflow_only_task_spec_inference.md` for simpler tasks that only need `workflow_spec.yaml`.
+- Split spec-specific inference guidance into `spec_inference/workflow_spec.md`, `memory_spec.md`, `knowledge_spec.md`, and `knowledge_graph_spec.md`.
+- Moved code construction guidance under `code_construction/`.
+
 ## agentr 0.2.7.4
 
 Released: 2026-06-05

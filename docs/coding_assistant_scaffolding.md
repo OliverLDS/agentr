@@ -83,10 +83,19 @@ For additional inspection snippets, see [R Function Examples](r_function_example
 
 The package ships coding-assistant guidance under `inst/guides/`:
 
-- `coding_assistant_task_spec_inference.md`
-- `coding_assistant_task_code_construction.md`
-- `coding_assistant_node_script_construction.md`
+- `full_stack_task_spec_inference.md`
+- `workflow_only_task_spec_inference.md`
+- `spec_inference/workflow_spec.md`
+- `spec_inference/memory_spec.md`
+- `spec_inference/knowledge_spec.md`
+- `spec_inference/knowledge_graph_spec.md`
+- `code_construction/task_code_construction.md`
+- `code_construction/node_script_construction.md`
 
-These guides define how a coding assistant should infer descriptive specs from
-code and how approved specs can guide downstream task code. They are part of
-the scaffolding method, not a runtime engine.
+The full-stack task spec inference guide is a wrapper for whole-project
+inference. The workflow-only wrapper is for simpler tasks that need only
+`workflow_spec.yaml`. The workflow, memory, knowledge, and knowledge-graph
+guides can also be used alone when the user asks the assistant to infer one
+spec type. These guides define how a coding assistant should infer descriptive
+specs from code and how approved specs can guide downstream task code. They
+are part of the scaffolding method, not a runtime engine.

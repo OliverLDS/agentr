@@ -12,7 +12,7 @@ Use this guide when the user already has a task-level or node-level
 refactored.
 
 For the general contract for writing one standardized executable node script,
-see [coding_assistant_node_script_construction.md](coding_assistant_node_script_construction.md).
+see [node_script_construction.md](node_script_construction.md).
 This task guide focuses on orchestration, task layout, and how node scripts are
 assembled into a workflow implementation.
 
