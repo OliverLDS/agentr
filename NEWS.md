@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.7.7
+
+Released: 2026-06-06
+
+- Removed the unused first-class `KnowledgeGraphSpec` surface and its dedicated proposal/message lifecycle.
+- Reframed graph structure as a representation shape embedded in `KnowledgeSpec` or `MemorySpec`, rather than a standalone top-level spec.
+- Updated task-local discovery and coding-assistant guidance so projects use `workflow_spec.yaml`, optional `memory_spec.yaml`, and optional `knowledge_spec.yaml`; graph-shaped content now belongs under `graph:` inside knowledge or memory specs.
+- Preserved graph rendering helpers for `KnowledgeSpec`, `MemorySpec`, and plain `list(nodes, edges)` graph representations.
+
 ## agentr 0.2.7.6
 
 Released: 2026-06-05

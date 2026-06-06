@@ -40,7 +40,7 @@ commented on, and converted back into structured feedback.
 
 \item{\code{narrative_knowledge}}{Narrative knowledge section.}
 
-\item{\code{graph_knowledge}}{Graph-knowledge section.}
+\item{\code{graph_knowledge}}{Graph-shaped knowledge section.}
 
 \item{\code{proposal_states}}{Proposal-state snapshots.}
 
@@ -98,7 +98,7 @@ Create a design-review data bundle.
 
 \item{\code{narrative_knowledge}}{Narrative knowledge section.}
 
-\item{\code{graph_knowledge}}{Graph-knowledge section.}
+\item{\code{graph_knowledge}}{Graph-shaped knowledge section.}
 
 \item{\code{proposal_states}}{Proposal-state snapshots.}
 

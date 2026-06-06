@@ -51,7 +51,6 @@ tasks/<task_id>/docs/
   workflow_spec.yaml
   memory_spec.yaml
   knowledge_spec.yaml
-  knowledge_graph_spec.yaml
   review.html
   inference_notes.md
 ```
@@ -88,14 +87,15 @@ The package ships coding-assistant guidance under `inst/guides/`:
 - `spec_inference/workflow_spec.md`
 - `spec_inference/memory_spec.md`
 - `spec_inference/knowledge_spec.md`
-- `spec_inference/knowledge_graph_spec.md`
 - `code_construction/task_code_construction.md`
 - `code_construction/node_script_construction.md`
 
 The full-stack task spec inference guide is a wrapper for whole-project
 inference. The workflow-only wrapper is for simpler tasks that need only
-`workflow_spec.yaml`. The workflow, memory, knowledge, and knowledge-graph
-guides can also be used alone when the user asks the assistant to infer one
-spec type. These guides define how a coding assistant should infer descriptive
+`workflow_spec.yaml`. The workflow, memory, and knowledge guides can also be
+used alone when the user asks the assistant to infer one spec type. Graph-shaped
+knowledge or memory belongs under `graph:` inside `knowledge_spec.yaml` or
+`memory_spec.yaml`; see [Graph Representations](graph_representations.md).
+These guides define how a coding assistant should infer descriptive
 specs from code and how approved specs can guide downstream task code. They
 are part of the scaffolding method, not a runtime engine.

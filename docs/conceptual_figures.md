@@ -8,7 +8,7 @@ renderers whenever possible. This keeps diagrams aligned with the actual object
 schema and review UI:
 
 - use `render_workflow_graphviz()` for workflow graphs
-- use `render_knowledge_graphviz()` for first-class graph knowledge or narrative knowledge projections
+- use `render_knowledge_graphviz()` for graph-shaped knowledge or memory
 - use `render_memory_schema_graphviz()` for memory schemas
 - use `render_schema_shape_graphviz()` for input and output schema shapes
 - use `export_design_review_html()` for integrated task review pages
@@ -19,5 +19,5 @@ useful for R-native helpers or cache artifacts. See [Spec Formats](spec_formats.
 and [Design Review Layer](design_review_layer.md).
 
 If a future manuscript needs static SVGs, generate them from representative
-`WorkflowSpec`, `KnowledgeSpec`, `KnowledgeGraphSpec`, or `MemorySpec` examples
+`WorkflowSpec`, `KnowledgeSpec`, or `MemorySpec` examples
 instead of maintaining separate hand-authored Mermaid diagrams.

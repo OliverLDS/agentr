@@ -23,7 +23,6 @@ task_spec_paths <- function(task_dir, docs_dir = "docs") {
     workflow = file.path(docs_dir, "workflow_spec.yaml"),
     memory = file.path(docs_dir, "memory_spec.yaml"),
     knowledge = file.path(docs_dir, "knowledge_spec.yaml"),
-    knowledge_graph = file.path(docs_dir, "knowledge_graph_spec.yaml"),
     review = file.path(docs_dir, "review.html"),
     inference_notes = file.path(docs_dir, "inference_notes.md")
   )
@@ -39,7 +38,7 @@ task_spec_paths <- function(task_dir, docs_dir = "docs") {
 #' @export
 discover_task_specs <- function(task_dir, docs_dir = "docs") {
   paths <- task_spec_paths(task_dir, docs_dir = docs_dir)
-  types <- c("workflow", "memory", "knowledge", "knowledge_graph")
+  types <- c("workflow", "memory", "knowledge")
   spec_paths <- unlist(paths[types], use.names = TRUE)
   data.frame(
     type = names(spec_paths),
@@ -80,7 +79,6 @@ load_task_specs <- function(task_dir, docs_dir = "docs", missing = c("null", "er
     workflow = NULL,
     memory = NULL,
     knowledge = NULL,
-    knowledge_graph = NULL,
     paths = paths,
     manifest = manifest
   )
@@ -98,8 +96,9 @@ load_task_specs <- function(task_dir, docs_dir = "docs", missing = c("null", "er
 #' Render one task-local design-review preview
 #'
 #' Loads conventional task-local YAML specs and renders `docs/review.html`.
-#' When present, memory, narrative knowledge, and graph knowledge specs are
-#' included alongside the workflow graph.
+#' When present, memory and narrative knowledge specs are included alongside the
+#' workflow graph. Graph-shaped knowledge is read from `knowledge_spec.yaml`
+#' when present.
 #'
 #' @param task_dir Task root directory.
 #' @param docs_dir Documentation/spec directory relative to `task_dir`, or an
@@ -162,7 +161,6 @@ render_task_preview <- function(
     title = title,
     memory_spec = specs$memory,
     knowledge_spec = specs$knowledge,
-    graph_spec = specs$knowledge_graph,
     graph_layout = graph_layout,
     edge_style = edge_style,
     node_color_theme = node_color_theme,
@@ -247,7 +245,7 @@ render_task_previews <- function(
 #' @param docs_dir Documentation/spec directory relative to `task_dir`, or an
 #'   absolute path.
 #' @param require Character vector of spec types that must exist. Supported
-#'   values are `workflow`, `memory`, `knowledge`, and `knowledge_graph`.
+#'   values are `workflow`, `memory`, and `knowledge`.
 #' @param stop_on_error Whether to stop when required or present specs are
 #'   invalid.
 #'
@@ -312,8 +310,7 @@ validate_task_specs <- function(
   list(
     workflow = load_workflow_spec_yaml,
     memory = load_memory_spec_yaml,
-    knowledge = load_knowledge_spec_yaml,
-    knowledge_graph = load_knowledge_graph_spec_yaml
+    knowledge = load_knowledge_spec_yaml
   )
 }
 

@@ -13,7 +13,7 @@ is not a runtime execution engine.
 - [Workflow Spec](workflow_spec.md)
 - [MemorySpec](memory_spec.md)
 - [KnowledgeSpec Lifecycle](knowledge_spec_lifecycle.md)
-- [Knowledge Graph Spec](knowledge_graph_spec.md)
+- [Graph Representations](graph_representations.md)
 - [Spec Formats](spec_formats.md)
 - [R Function Examples](r_function_examples.md)
 

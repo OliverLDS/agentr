@@ -18,7 +18,7 @@ validate_task_specs(
 absolute path.}
 
 \item{require}{Character vector of spec types that must exist. Supported
-values are \code{workflow}, \code{memory}, \code{knowledge}, and \code{knowledge_graph}.}
+values are \code{workflow}, \code{memory}, and \code{knowledge}.}
 
 \item{stop_on_error}{Whether to stop when required or present specs are
 invalid.}

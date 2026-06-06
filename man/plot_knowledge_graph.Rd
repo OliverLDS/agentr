@@ -2,7 +2,7 @@
 % Please edit documentation in R/knowledge_graph.R
 \name{plot_knowledge_graph}
 \alias{plot_knowledge_graph}
-\title{Plot a knowledge graph with DiagrammeR}
+\title{Plot a graph-shaped knowledge or memory representation}
 \usage{
 plot_knowledge_graph(
   x,
@@ -13,7 +13,7 @@ plot_knowledge_graph(
 )
 }
 \arguments{
-\item{x}{A knowledge-graph specification or a \code{\link{KnowledgeSpec}} object.}
+\item{x}{A \code{\link{KnowledgeSpec}}, \code{\link{MemorySpec}}, or graph representation list.}
 
 \item{rankdir}{Graphviz rank direction, for example \code{"TB"} or \code{"LR"}.}
 
@@ -27,8 +27,5 @@ plot_knowledge_graph(
 A \code{DiagrammeR} graph object.
 }
 \description{
-Returns an interactive DiagrammeR graph for human inspection of a
-\code{KnowledgeSpec} or \code{agentr_knowledge_graph_spec}. Use
-\code{render_knowledge_graphviz(..., as = "dot")} when a plain text artifact is
-easier to inspect or test.
+Plot a graph-shaped knowledge or memory representation
 }

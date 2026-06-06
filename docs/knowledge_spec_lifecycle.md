@@ -17,7 +17,7 @@ But it often does not capture the domain knowledge that makes those steps reliab
 - exceptions that should override the default rule
 - evaluation criteria that distinguish a good output from a weak one
 
-`KnowledgeSpec` is the package surface for that curated knowledge layer. It can hold narrative knowledge items, first-class graph knowledge, and future references to external vector knowledge.
+`KnowledgeSpec` is the package surface for that curated knowledge layer. It can hold narrative knowledge items, optional graph-shaped knowledge, and future references to external vector knowledge.
 
 ## Why Workflow Alone Is Insufficient
 
@@ -51,17 +51,11 @@ ReAct --implements_part_of--> observe-decide-act
 ReAct --lacks_explicitly--> commitment mechanism
 ```
 
-In `agentr`, `knowledge_graph_from_spec()` creates a projection graph from narrative knowledge items. A curated `agentr_knowledge_graph_spec` stores graph knowledge directly and can be embedded in `KnowledgeSpec`.
-
-Graph knowledge has its own proposal lifecycle through `KnowledgeGraphProposal` and `KnowledgeGraphProposalState`. This makes graph extraction reviewable before graph relationships become active knowledge.
-
-The constrained message helpers are:
-
-- `build_knowledge_graph_extraction_prompt()`
-- `build_knowledge_graph_revision_prompt()`
-- `parse_knowledge_graph_message()`
-- `preview_knowledge_graph_message()`
-- `apply_knowledge_graph_message()`
+In `agentr`, graph is a representation shape, not a separate first-class spec.
+Use `KnowledgeSpec$graph` when developer-supplied knowledge is naturally
+expressed as nodes and typed relationships. Use `MemorySpec$graph` when
+graph-shaped data is acquired or updated by agent actions. See
+[Graph Representations](graph_representations.md).
 
 ## Curation Lifecycle
 
@@ -134,8 +128,8 @@ These are not only facts. They are practitioner knowledge candidates that need n
 
 ## Design Review Layer
 
-Approved and proposed knowledge can be inspected through the standalone design review layer. `build_design_review_data()` includes narrative knowledge and graph knowledge sections, while `export_design_review_html()` renders them alongside workflow and memory schema.
+Approved and proposed knowledge can be inspected through the standalone design review layer. `build_design_review_data()` includes narrative knowledge and graph-shaped knowledge sections, while `export_design_review_html()` renders them alongside workflow and memory schema.
 
 Feedback exported from the browser remains structured data. It must pass `parse_design_feedback_json()` and `validate_design_feedback()` before it is routed back into scaffolding or proposal state.
 
-For task-local editable artifacts, prefer `docs/knowledge_spec.yaml`. Use JSON for interchange and RDS for R-native persistence or cache artifacts. See [Spec Formats](spec_formats.md) and [Knowledge Graph Spec](knowledge_graph_spec.md).
+For task-local editable artifacts, prefer `docs/knowledge_spec.yaml`. Use JSON for interchange and RDS for R-native persistence or cache artifacts. See [Spec Formats](spec_formats.md) and [Graph Representations](graph_representations.md).

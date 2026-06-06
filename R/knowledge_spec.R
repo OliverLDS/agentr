@@ -93,15 +93,16 @@ validate_knowledge_item <- function(item) {
 #' KnowledgeSpec
 #'
 #' Curated domain and epistemic knowledge used to guide agent behavior.
-#' `items` stores narrative knowledge items, `graph` stores first-class graph
-#' knowledge, and `vector_refs` reserves references to external vector stores.
+#' `items` stores narrative knowledge items, `graph` stores an optional
+#' graph-shaped representation, and `vector_refs` reserves references to
+#' external vector stores.
 #'
 #' @field items Named list of narrative knowledge items.
-#' @field graph Optional `agentr_knowledge_graph_spec`.
+#' @field graph Optional graph representation list with `nodes` and `edges`.
 #' @field vector_refs List of external vector-knowledge references.
 #' @field metadata Free-form metadata list.
 #' @param items List of narrative knowledge items.
-#' @param graph Optional `agentr_knowledge_graph_spec`.
+#' @param graph Optional graph representation list with `nodes` and `edges`.
 #' @param vector_refs List of external vector-knowledge references.
 #' @param metadata Free-form metadata list.
 #' @param item Knowledge item used by `$add_item()`.
@@ -132,7 +133,7 @@ KnowledgeSpec <- R6::R6Class(
     #' Create a knowledge specification.
     initialize = function(items = list(), graph = NULL, vector_refs = list(), metadata = list()) {
       self$items <- list()
-      self$graph <- .coerce_knowledge_graph_or_null(graph)
+      self$graph <- .coerce_graph_representation_or_null(graph)
       self$vector_refs <- if (is.null(vector_refs)) list() else vector_refs
       self$metadata <- metadata
       if (length(items)) {
@@ -194,9 +195,7 @@ KnowledgeSpec <- R6::R6Class(
       for (item in self$items) {
         validate_knowledge_item(item)
       }
-      if (!is.null(self$graph)) {
-        validate_knowledge_graph_spec(self$graph)
-      }
+      self$graph <- .coerce_graph_representation_or_null(self$graph)
       .validate_metadata_list(self$vector_refs, "vector_refs")
       invisible(self)
     },
@@ -207,7 +206,7 @@ KnowledgeSpec <- R6::R6Class(
       self$validate()
       list(
         items = unname(self$items),
-        graph = if (is.null(self$graph)) NULL else .knowledge_graph_spec_to_list(self$graph),
+        graph = self$graph,
         vector_refs = self$vector_refs,
         metadata = self$metadata
       )
@@ -219,27 +218,13 @@ KnowledgeSpec <- R6::R6Class(
       self$validate()
       cat("<KnowledgeSpec>\n")
       cat("Narrative items:", length(self$items), "\n")
-      cat("Graph nodes:", if (is.null(self$graph)) 0L else nrow(self$graph$nodes), "\n")
+      graph_nodes <- if (is.null(self$graph)) 0L else length(self$graph$nodes)
+      cat("Graph nodes:", graph_nodes, "\n")
       cat("Vector refs:", length(self$vector_refs), "\n")
       invisible(self)
     }
   )
 )
-
-#' @keywords internal
-.coerce_knowledge_graph_or_null <- function(graph) {
-  if (is.null(graph)) {
-    return(NULL)
-  }
-  if (inherits(graph, "agentr_knowledge_graph_spec")) {
-    validate_knowledge_graph_spec(graph)
-    return(graph)
-  }
-  if (is.list(graph) && all(c("nodes", "edges", "metadata") %in% names(graph))) {
-    return(.knowledge_graph_spec_from_list(graph))
-  }
-  stop("`graph` must be `NULL` or an `agentr_knowledge_graph_spec`.", call. = FALSE)
-}
 
 #' Validate a knowledge specification
 #'

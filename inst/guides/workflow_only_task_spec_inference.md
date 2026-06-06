@@ -2,7 +2,7 @@
 
 Use this wrapper when the user asks a coding assistant to infer only the
 workflow for a task. This is appropriate for simple tasks where persistent
-memory, narrative knowledge, or graph knowledge is not needed.
+memory or knowledge is not needed.
 
 The only required output is:
 
@@ -33,7 +33,8 @@ Do not infer:
 
 - `memory_spec.yaml`
 - `knowledge_spec.yaml`
-- `knowledge_graph_spec.yaml`
+- graph-shaped knowledge or memory; if needed, store it under `graph:` inside
+  `knowledge_spec.yaml` or `memory_spec.yaml`
 - implementation code
 - new runtime behavior not present in the task
 

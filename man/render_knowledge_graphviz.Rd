@@ -2,7 +2,7 @@
 % Please edit documentation in R/knowledge_graph.R
 \name{render_knowledge_graphviz}
 \alias{render_knowledge_graphviz}
-\title{Render a knowledge graph as Graphviz DOT, DiagrammeR, or SVG}
+\title{Render a graph representation as Graphviz DOT, DiagrammeR, or SVG}
 \usage{
 render_knowledge_graphviz(
   x,
@@ -14,7 +14,7 @@ render_knowledge_graphviz(
 )
 }
 \arguments{
-\item{x}{A knowledge-graph specification or a \code{\link{KnowledgeSpec}} object.}
+\item{x}{A \code{\link{KnowledgeSpec}}, \code{\link{MemorySpec}}, or graph representation list.}
 
 \item{rankdir}{Graphviz rank direction, for example \code{"TB"} or \code{"LR"}.}
 
@@ -31,21 +31,7 @@ exported \code{"svg"} text.}
 A Graphviz DOT string, \code{DiagrammeR} graph object, or SVG string.
 }
 \description{
-This helper renders first-class graph knowledge or projection graphs derived
-from narrative knowledge. It mirrors the workflow graph rendering path, but
-the nodes and edges represent concepts, knowledge items, conditions,
-exceptions, typed relations, and conflicts.
-}
-\examples{
-ks <- KnowledgeSpec$new(items = list(list(
-  id = "ki_yoy_macro_001",
-  type = "heuristic",
-  raw_statement = "Use YoY when monthly macro data is noisy.",
-  normalized_statement = "Use YoY transformations for noisy monthly macro data.",
-  domain = "macro_analysis",
-  review = list(status = "approved")
-)))
-
-dot <- render_knowledge_graphviz(ks, as = "dot")
-cat(dot)
+This helper renders graph-shaped knowledge or memory. It accepts a
+\code{\link{KnowledgeSpec}}, \code{\link{MemorySpec}}, or plain \code{list(nodes, edges, metadata)}
+graph representation. It does not require or create a separate graph spec.
 }

@@ -9,7 +9,7 @@ Agent designs combine several artifact types:
 - workflow nodes, edges, gates, ownership, and implementation hints;
 - memory schema for context, semantic, episodic, and procedural memory;
 - narrative knowledge items, rules, exceptions, and heuristics;
-- graph knowledge as nodes and typed relationships;
+- graph-shaped knowledge as nodes and typed relationships;
 - proposal states that show what is approved, pending, rejected, or superseded.
 
 Reviewing those artifacts only as R lists is possible but awkward. `DesignReviewSpec` packages the same objects into a portable inspection artifact with these sections:
@@ -40,7 +40,7 @@ The page shows:
 - a draggable boundary between the graph and supporting panels;
 - horizontal scrolling when the workflow graph is wider than its panel;
 - selectable default and subsystem-color themes;
-- narrative and graph knowledge;
+- narrative knowledge and graph-shaped knowledge;
 - memory, state, interface, and autonomy schema;
 - a structured feedback panel.
 

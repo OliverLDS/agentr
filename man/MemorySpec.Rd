@@ -11,13 +11,13 @@ MemorySpec
 \details{
 First-class memory schema for an agent design. \code{MemorySpec} records which
 memory fields exist, what type of memory they represent, how they persist
-across cold-start runs, and how they are expected to update. It complements
-legacy \code{state_spec} lists rather than replacing them abruptly.
+across cold-start runs, and how they are expected to update. It can also
+carry an optional graph-shaped representation of memory relationships.
 }
 \section{Methods}{
 
 \describe{
-\item{\verb{$initialize(fields = list(), metadata = list())}}{Create a memory specification.}
+\item{\verb{$initialize(fields = list(), graph = NULL, metadata = list())}}{Create a memory specification.}
 \item{\verb{$add_field(field)}}{Add one memory field.}
 \item{\verb{$get_field(id)}}{Return one memory field by id.}
 \item{\verb{$list_fields(memory_type = NULL, persistence = NULL)}}{Return memory fields, optionally filtered.}
@@ -31,6 +31,8 @@ legacy \code{state_spec} lists rather than replacing them abruptly.
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
 \item{\code{fields}}{Named list of memory field records.}
+
+\item{\code{graph}}{Optional graph representation list with \code{nodes} and \code{edges}.}
 
 \item{\code{metadata}}{Free-form metadata list.}
 }
@@ -55,13 +57,15 @@ legacy \code{state_spec} lists rather than replacing them abruptly.
 \subsection{Method \code{new()}}{
 Create a memory specification.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MemorySpec$new(fields = list(), metadata = list())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MemorySpec$new(fields = list(), graph = NULL, metadata = list())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{fields}}{List of memory field records.}
+
+\item{\code{graph}}{Optional graph representation list with \code{nodes} and \code{edges}.}
 
 \item{\code{metadata}}{Free-form metadata list.}
 }

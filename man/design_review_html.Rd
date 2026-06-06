@@ -24,7 +24,7 @@ design_review_html(
 
 \item{include_workflow}{Whether to render workflow graph information.}
 
-\item{include_knowledge}{Whether to render narrative and graph knowledge.}
+\item{include_knowledge}{Whether to render narrative and graph-shaped knowledge.}
 
 \item{include_memory_schema}{Whether to render memory/state/interface schema.}
 

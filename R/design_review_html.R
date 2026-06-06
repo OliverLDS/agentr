@@ -26,7 +26,7 @@
 #' @param x A [`DesignReviewSpec`] or any input accepted by
 #'   [build_design_review_data()].
 #' @param include_workflow Whether to render workflow graph information.
-#' @param include_knowledge Whether to render narrative and graph knowledge.
+#' @param include_knowledge Whether to render narrative and graph-shaped knowledge.
 #' @param include_memory_schema Whether to render memory/state/interface schema.
 #' @param include_feedback_panel Whether to include the structured feedback
 #'   form and JSON export controls.

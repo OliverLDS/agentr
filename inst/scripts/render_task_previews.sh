@@ -31,7 +31,7 @@ Options:
 Role:
   Re-render task-local review HTML files from editable YAML specs. The script
   loads workflow_spec.yaml plus optional memory_spec.yaml, knowledge_spec.yaml,
-  and knowledge_graph_spec.yaml when present. It does not execute task code.
+  and knowledge_spec.yaml when present. It does not execute task code.
 USAGE
 }
 

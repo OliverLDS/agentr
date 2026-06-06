@@ -22,8 +22,7 @@ agentr_workspace_paths <- function(workspace) {
     scaffolder_state = file.path(workspace, "proposal_states", "scaffolder_state.rds"),
     workflow_state = file.path(workspace, "proposal_states", "workflow_state.rds"),
     memory_state = file.path(workspace, "proposal_states", "memory_state.rds"),
-    knowledge_state = file.path(workspace, "proposal_states", "knowledge_state.rds"),
-    knowledge_graph_state = file.path(workspace, "proposal_states", "knowledge_graph_state.rds")
+    knowledge_state = file.path(workspace, "proposal_states", "knowledge_state.rds")
   )
 }
 

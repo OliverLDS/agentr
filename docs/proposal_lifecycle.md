@@ -104,19 +104,15 @@ Use:
 - `preview_knowledge_message()`
 - `apply_knowledge_message()`
 
-### Graph-knowledge proposals
+### Graph-shaped knowledge and memory
 
-`KnowledgeGraphProposal` and `KnowledgeGraphProposalState` manage candidate
-graph nodes and typed relationships as first-class knowledge. Use:
+Graph is a representation shape inside `KnowledgeSpec` or `MemorySpec`, not a
+separate proposal lifecycle. Use knowledge proposals for developer-supplied
+graph-shaped knowledge and memory proposals for graph-shaped memory.
 
-- `build_knowledge_graph_extraction_prompt()`
-- `build_knowledge_graph_revision_prompt()`
-- `preview_knowledge_graph_message()`
-- `apply_knowledge_graph_message()`
-
-Memory, narrative-knowledge, and graph-knowledge proposals use the same core
-statuses as workflow proposals: `pending`, `under_discussion`, `approved`,
-`superseded`, and `rejected`.
+Memory and narrative-knowledge proposals use the same core statuses as workflow
+proposals: `pending`, `under_discussion`, `approved`, `superseded`, and
+`rejected`.
 
 ## 3. Implementation And Extraction Handoff
 

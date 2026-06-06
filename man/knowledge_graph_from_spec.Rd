@@ -2,53 +2,18 @@
 % Please edit documentation in R/knowledge_graph.R
 \name{knowledge_graph_from_spec}
 \alias{knowledge_graph_from_spec}
-\title{Build a projection graph from narrative KnowledgeSpec items}
+\title{Build a graph representation from a knowledge or memory spec}
 \usage{
-knowledge_graph_from_spec(
-  x,
-  include_domains = TRUE,
-  include_conditions = TRUE,
-  include_exceptions = TRUE,
-  include_structure = TRUE,
-  include_conflicts = TRUE
-)
+knowledge_graph_from_spec(x)
 }
 \arguments{
-\item{x}{A \code{\link{KnowledgeSpec}} object.}
-
-\item{include_domains}{Whether to include domain nodes.}
-
-\item{include_conditions}{Whether to include condition nodes.}
-
-\item{include_exceptions}{Whether to include exception nodes.}
-
-\item{include_structure}{Whether to include structure-derived concept nodes.}
-
-\item{include_conflicts}{Whether to include conflict edges when present.}
+\item{x}{A \code{\link{KnowledgeSpec}}, \code{\link{MemorySpec}}, or graph representation list.}
 }
 \value{
-An \code{agentr_knowledge_graph_spec}.
+A list with graph-ready \code{nodes}, \code{edges}, and \code{metadata}.
 }
 \description{
-Converts approved or draft knowledge items into a graph-ready structure with
-nodes for knowledge items, domains, conditions, exceptions, and
-structure-derived concepts. This creates a projection graph from narrative
-knowledge; curated graph knowledge can be authored directly with
-\code{new_knowledge_graph_spec()}, \code{add_knowledge_graph_node()}, and
-\code{add_knowledge_graph_edge()}.
-}
-\examples{
-ks <- KnowledgeSpec$new(items = list(list(
-  id = "ki_yoy_macro_001",
-  type = "heuristic",
-  raw_statement = "Use YoY when monthly macro data is noisy.",
-  normalized_statement = "Use YoY transformations for noisy monthly macro data.",
-  domain = "macro_analysis",
-  conditions = c("monthly macro data"),
-  exceptions = c("short-term shock timing"),
-  review = list(status = "approved")
-)))
-
-kg <- knowledge_graph_from_spec(ks)
-knowledge_graph_data(kg)
+This is a compatibility-oriented alias for \code{\link[=knowledge_graph_data]{knowledge_graph_data()}}. It no
+longer returns a separate \code{KnowledgeGraphSpec}; graph is now a representation
+shape embedded in knowledge or memory specs.
 }

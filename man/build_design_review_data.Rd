@@ -13,7 +13,6 @@ build_design_review_data(
   workflow_state = NULL,
   knowledge_state = NULL,
   memory_state = NULL,
-  graph_state = NULL,
   proposal_states = list(),
   review_id = .design_review_id(),
   metadata = list()
@@ -32,7 +31,7 @@ build_design_review_data(
 \item{knowledge_spec}{Optional \code{\link{KnowledgeSpec}} overriding knowledge
 inferred from \code{x}.}
 
-\item{graph_spec}{Optional \code{agentr_knowledge_graph_spec} overriding graph
+\item{graph_spec}{Optional plain graph representation overriding graph
 knowledge inferred from \code{knowledge_spec}.}
 
 \item{workflow_state}{Optional \code{\link{WorkflowProposalState}}.}
@@ -40,8 +39,6 @@ knowledge inferred from \code{knowledge_spec}.}
 \item{knowledge_state}{Optional \code{\link{KnowledgeProposalState}}.}
 
 \item{memory_state}{Optional \code{\link{MemoryProposalState}}.}
-
-\item{graph_state}{Optional \code{\link{KnowledgeGraphProposalState}}.}
 
 \item{proposal_states}{Additional named proposal-state snapshots.}
 

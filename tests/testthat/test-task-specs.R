@@ -33,9 +33,9 @@ test_that("task-local spec helpers discover, load, and validate YAML specs", {
       persistence = "session"
     )
   ))
-  graph <- new_knowledge_graph_spec(
-    nodes = knowledge_graph_node("act_r", "ACT-R", node_type = "concept", memory_type = "semantic"),
-    edges = knowledge_graph_edge(character(), character()),
+  graph <- list(
+    nodes = list(list(id = "act_r", label = "ACT-R", node_type = "concept", memory_type = "semantic")),
+    edges = list(),
     metadata = list(graph_mode = "curated")
   )
   knowledge <- KnowledgeSpec$new(
@@ -53,10 +53,9 @@ test_that("task-local spec helpers discover, load, and validate YAML specs", {
   save_workflow_spec_yaml(workflow, paths$workflow)
   save_memory_spec_yaml(memory, paths$memory)
   save_knowledge_spec_yaml(knowledge, paths$knowledge)
-  save_knowledge_graph_spec_yaml(graph, paths$knowledge_graph)
 
   manifest <- discover_task_specs(task_dir)
-  expect_equal(manifest$type, c("workflow", "memory", "knowledge", "knowledge_graph"))
+  expect_equal(manifest$type, c("workflow", "memory", "knowledge"))
   expect_true(all(manifest$exists))
 
   loaded <- load_task_specs(task_dir)
@@ -64,11 +63,10 @@ test_that("task-local spec helpers discover, load, and validate YAML specs", {
   expect_s3_class(loaded$workflow, "agentr_workflow_spec")
   expect_s3_class(loaded$memory, "MemorySpec")
   expect_s3_class(loaded$knowledge, "KnowledgeSpec")
-  expect_s3_class(loaded$knowledge_graph, "agentr_knowledge_graph_spec")
 
   result <- validate_task_specs(task_dir, require = c("workflow", "memory"), stop_on_error = TRUE)
   expect_true(all(result$valid))
-  expect_equal(result$message, rep("valid", 4L))
+  expect_equal(result$message, rep("valid", 3L))
 })
 
 test_that("task-local validation reports missing optional and required specs", {
@@ -78,7 +76,7 @@ test_that("task-local validation reports missing optional and required specs", {
   result <- validate_task_specs(task_dir)
   expect_false(any(result$exists))
   expect_false(any(result$valid))
-  expect_equal(result$message, rep("missing optional spec", 4L))
+  expect_equal(result$message, rep("missing optional spec", 3L))
 
   required <- validate_task_specs(task_dir, require = "workflow")
   expect_equal(required$message[required$type == "workflow"], "missing required spec")
@@ -115,12 +113,12 @@ test_that("render_task_preview includes optional memory, knowledge, and graph sp
       persistence = "jsonl_trace"
     )
   ))
-  graph <- new_knowledge_graph_spec(
-    nodes = rbind(
-      knowledge_graph_node("review_rule", "Review rule", node_type = "concept", memory_type = "semantic"),
-      knowledge_graph_node("human_review", "Human review", node_type = "criterion", memory_type = "semantic")
+  graph <- list(
+    nodes = list(
+      list(id = "review_rule", label = "Review rule", node_type = "concept", memory_type = "semantic"),
+      list(id = "human_review", label = "Human review", node_type = "criterion", memory_type = "semantic")
     ),
-    edges = knowledge_graph_edge("review_rule", "human_review", relation = "requires", relation_type = "requires"),
+    edges = list(list(from = "review_rule", to = "human_review", relation = "requires", relation_type = "requires")),
     metadata = list(graph_mode = "curated")
   )
   knowledge <- KnowledgeSpec$new(
@@ -138,7 +136,6 @@ test_that("render_task_preview includes optional memory, knowledge, and graph sp
   save_workflow_spec_yaml(workflow, paths$workflow)
   save_memory_spec_yaml(memory, paths$memory)
   save_knowledge_spec_yaml(knowledge, paths$knowledge)
-  save_knowledge_graph_spec_yaml(graph, paths$knowledge_graph)
 
   out <- render_task_preview(task_dir, graph_layout = "process", edge_style = "orthogonal")
   expect_true(file.exists(out))

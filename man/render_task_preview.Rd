@@ -44,6 +44,7 @@ Invisibly returns the normalized output HTML path.
 }
 \description{
 Loads conventional task-local YAML specs and renders \code{docs/review.html}.
-When present, memory, narrative knowledge, and graph knowledge specs are
-included alongside the workflow graph.
+When present, memory and narrative knowledge specs are included alongside the
+workflow graph. Graph-shaped knowledge is read from \code{knowledge_spec.yaml}
+when present.
 }

@@ -13,7 +13,6 @@ Spec guides:
 - [WorkflowSpec inference](spec_inference/workflow_spec.md)
 - [MemorySpec inference](spec_inference/memory_spec.md)
 - [KnowledgeSpec inference](spec_inference/knowledge_spec.md)
-- [KnowledgeGraphSpec inference](spec_inference/knowledge_graph_spec.md)
 
 For package-level framing, see `../../docs/coding_assistant_scaffolding.md`.
 
@@ -32,7 +31,6 @@ tasks/<task_id>/
 |   |-- workflow_spec.yaml
 |   |-- memory_spec.yaml
 |   |-- knowledge_spec.yaml
-|   |-- knowledge_graph_spec.yaml
 |   |-- review.html
 |   `-- inference_notes.md
 |-- nodes/
@@ -115,9 +113,9 @@ Infer narrative `KnowledgeSpec` only when the task contains reusable domain
 knowledge, rules, exceptions, evaluation criteria, or style preferences. See
 [KnowledgeSpec inference](spec_inference/knowledge_spec.md).
 
-Infer first-class `KnowledgeGraphSpec` only when explicit entity-relation
-knowledge is useful to inspect as nodes and edges. See
-[KnowledgeGraphSpec inference](spec_inference/knowledge_graph_spec.md).
+When explicit entity-relation knowledge or memory is useful, store it as a
+`graph:` representation inside `knowledge_spec.yaml` or `memory_spec.yaml`.
+Do not create a separate `knowledge_graph_spec.yaml`.
 
 ## File Naming Conventions
 
@@ -129,7 +127,6 @@ tasks/<task_id>/docs/
 |-- workflow_spec.yaml
 |-- memory_spec.yaml
 |-- knowledge_spec.yaml
-|-- knowledge_graph_spec.yaml
 |-- review.html
 `-- inference_notes.md
 ```
@@ -139,7 +136,6 @@ Use these names unless the workspace already has a stronger convention:
 - `tasks/<task_id>/docs/workflow_spec.yaml`
 - `tasks/<task_id>/docs/memory_spec.yaml`
 - `tasks/<task_id>/docs/knowledge_spec.yaml`
-- `tasks/<task_id>/docs/knowledge_graph_spec.yaml`
 - `tasks/<task_id>/docs/review.html`
 - `tasks/<task_id>/docs/inference_notes.md`
 - `tasks/<task_id>/nodes/<subworkflow_node_id>/docs/workflow_spec.yaml`
@@ -172,7 +168,7 @@ regeneration. When behavior is uncertain, write the uncertainty to
 
 Prefer the package helper when rendering task-local specs. It loads
 `workflow_spec.yaml` plus optional `memory_spec.yaml`, `knowledge_spec.yaml`,
-and `knowledge_graph_spec.yaml` when present:
+when present:
 
 ```r
 library(agentr)

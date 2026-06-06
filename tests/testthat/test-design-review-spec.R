@@ -51,25 +51,20 @@ test_that("build_design_review_data includes proposal-state snapshots", {
   workflow_state <- WorkflowProposalState$new(approved_workflow = spec$workflow)
   memory_state <- MemoryProposalState$new(approved_memory_spec = spec$memory_spec)
   knowledge_state <- KnowledgeProposalState$new(approved_knowledge_spec = spec$knowledge_spec)
-  graph_state <- KnowledgeGraphProposalState$new(
-    approved_graph = knowledge_graph_from_spec(spec$knowledge_spec)
-  )
 
   review <- build_design_review_data(
     spec,
     workflow_state = workflow_state,
     memory_state = memory_state,
-    knowledge_state = knowledge_state,
-    graph_state = graph_state
+    knowledge_state = knowledge_state
   )
   bundle <- review$to_list()
 
   expect_true(is.list(bundle$proposal_states$workflow))
   expect_true(is.list(bundle$proposal_states$memory))
   expect_true(is.list(bundle$proposal_states$knowledge))
-  expect_true(is.list(bundle$proposal_states$graph))
+  expect_null(bundle$proposal_states$graph)
   expect_equal(length(bundle$proposal_states$memory$approved_memory_spec$fields), 4L)
-  expect_gt(length(bundle$proposal_states$graph$approved_graph$nodes), 0L)
 })
 
 test_that("design feedback helpers validate and parse structured feedback", {

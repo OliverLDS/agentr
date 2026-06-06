@@ -70,36 +70,24 @@ kg <- knowledge_graph_from_spec(knowledge)
 knowledge_svg <- render_knowledge_graphviz(kg, as = "svg")
 ```
 
-Use first-class graph knowledge when relationships are part of the design,
-rather than merely a projection from narrative knowledge:
+Use graph-shaped knowledge when relationships are part of the design, rather
+than merely a projection from narrative knowledge:
 
 ```r
-kg <- new_knowledge_graph_spec(metadata = list(graph_mode = "curated"))
-kg <- add_knowledge_graph_node(
-  kg,
-  id = "act_r",
-  label = "ACT-R",
-  node_type = "concept",
-  memory_type = "semantic",
-  review = list(status = "approved")
-)
-kg <- add_knowledge_graph_node(
-  kg,
-  id = "cognitive_architecture",
-  label = "cognitive architecture",
-  node_type = "concept",
-  memory_type = "semantic"
-)
-kg <- add_knowledge_graph_edge(
-  kg,
-  from = "act_r",
-  to = "cognitive_architecture",
-  relation = "is_a",
-  relation_type = "is_a",
-  memory_type = "semantic"
+knowledge <- KnowledgeSpec$new(
+  graph = list(
+    nodes = list(
+      list(id = "act_r", label = "ACT-R", node_type = "concept", memory_type = "semantic"),
+      list(id = "cognitive_architecture", label = "cognitive architecture", node_type = "concept", memory_type = "semantic")
+    ),
+    edges = list(
+      list(from = "act_r", to = "cognitive_architecture", relation = "is_a")
+    ),
+    metadata = list(source = "coding_assistant_inference")
+  )
 )
 
-render_knowledge_graphviz(kg, as = "svg")
+render_knowledge_graphviz(knowledge, as = "svg")
 ```
 
 ## Proposal-State Loop

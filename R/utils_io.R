@@ -100,13 +100,10 @@ save_agent <- function(agent, file_path) {
     "SubsystemSpec",
     "MemorySpec",
     "KnowledgeSpec",
-    "agentr_knowledge_graph_spec",
     "KnowledgeProposal",
     "KnowledgeProposalState",
     "MemoryProposal",
     "MemoryProposalState",
-    "KnowledgeGraphProposal",
-    "KnowledgeGraphProposalState",
     "DesignReviewSpec",
     "AgentScaffoldState",
     "IntelligentAgent"
@@ -191,112 +188,6 @@ load_subsystem_spec <- function(file_path) {
     stop("Loaded object is not a `SubsystemSpec`.", call. = FALSE)
   }
   spec$validate()
-  spec
-}
-
-#' Save a knowledge graph specification to a file
-#'
-#' Saves an `agentr_knowledge_graph_spec` object to a specified `.rds`,
-#' `.json`, or `.yaml` file.
-#'
-#' @param spec An `agentr_knowledge_graph_spec` object.
-#' @param file_path File path where the object should be saved.
-#' @param format File format, either `rds`, `json`, or `yaml`.
-#'
-#' @return Invisibly returns `TRUE`.
-#' @export
-save_knowledge_graph_spec <- function(spec, file_path, format = c("rds", "json", "yaml")) {
-  validate_knowledge_graph_spec(spec)
-  format <- .spec_file_format(file_path, format)
-  spec_list <- .knowledge_graph_spec_to_list(spec)
-  if (identical(format, "json")) {
-    .safe_save_json(.preserve_spec_arrays(spec_list), file_path)
-  } else if (identical(format, "yaml")) {
-    .safe_save_yaml(spec_list, file_path)
-  } else {
-    .safe_save_rds(spec, file_path)
-  }
-  invisible(TRUE)
-}
-
-#' Load a knowledge graph specification from a file
-#'
-#' Loads a saved `agentr_knowledge_graph_spec` object from an `.rds`, `.json`,
-#' or `.yaml` file.
-#'
-#' @param file_path File path from which to load the object.
-#' @param format File format, either `rds`, `json`, or `yaml`.
-#'
-#' @return An `agentr_knowledge_graph_spec` object.
-#' @export
-load_knowledge_graph_spec <- function(file_path, format = c("rds", "json", "yaml")) {
-  if (!file.exists(file_path)) {
-    stop("File does not exist: ", file_path, call. = FALSE)
-  }
-  format <- .spec_file_format(file_path, format)
-  if (identical(format, "json")) {
-    return(load_knowledge_graph_spec_json(file_path))
-  }
-  if (identical(format, "yaml")) {
-    return(load_knowledge_graph_spec_yaml(file_path))
-  }
-  spec <- .safe_read_rds(file_path)
-  if (!inherits(spec, "agentr_knowledge_graph_spec")) {
-    stop("Loaded object is not an `agentr_knowledge_graph_spec`.", call. = FALSE)
-  }
-  validate_knowledge_graph_spec(spec)
-  spec
-}
-
-#' Save a knowledge graph specification as JSON
-#'
-#' @param spec An `agentr_knowledge_graph_spec` object.
-#' @param file_path File path where the JSON should be saved.
-#'
-#' @return Invisibly returns `TRUE`.
-#' @export
-save_knowledge_graph_spec_json <- function(spec, file_path) {
-  save_knowledge_graph_spec(spec, file_path, format = "json")
-}
-
-#' Save a knowledge graph specification as YAML
-#'
-#' @param spec An `agentr_knowledge_graph_spec` object.
-#' @param file_path File path where the YAML should be saved.
-#'
-#' @return Invisibly returns `TRUE`.
-#' @export
-save_knowledge_graph_spec_yaml <- function(spec, file_path) {
-  save_knowledge_graph_spec(spec, file_path, format = "yaml")
-}
-
-#' Load a knowledge graph specification from JSON
-#'
-#' @param file_path File path from which to load the JSON.
-#'
-#' @return An `agentr_knowledge_graph_spec` object.
-#' @export
-load_knowledge_graph_spec_json <- function(file_path) {
-  if (!file.exists(file_path)) {
-    stop("File does not exist: ", file_path, call. = FALSE)
-  }
-  spec <- .knowledge_graph_spec_from_list(load_json_file(file_path, simplifyVector = FALSE))
-  validate_knowledge_graph_spec(spec)
-  spec
-}
-
-#' Load a knowledge graph specification from YAML
-#'
-#' @param file_path File path from which to load the YAML.
-#'
-#' @return An `agentr_knowledge_graph_spec` object.
-#' @export
-load_knowledge_graph_spec_yaml <- function(file_path) {
-  if (!file.exists(file_path)) {
-    stop("File does not exist: ", file_path, call. = FALSE)
-  }
-  spec <- .knowledge_graph_spec_from_list(load_yaml_file(file_path))
-  validate_knowledge_graph_spec(spec)
   spec
 }
 
@@ -427,13 +318,10 @@ load_agent <- function(file_path) {
     "SubsystemSpec",
     "MemorySpec",
     "KnowledgeSpec",
-    "agentr_knowledge_graph_spec",
     "KnowledgeProposal",
     "KnowledgeProposalState",
     "MemoryProposal",
     "MemoryProposalState",
-    "KnowledgeGraphProposal",
-    "KnowledgeGraphProposalState",
     "DesignReviewSpec",
     "AgentScaffoldState",
     "IntelligentAgent"

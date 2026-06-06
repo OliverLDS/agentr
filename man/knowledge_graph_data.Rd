@@ -2,17 +2,19 @@
 % Please edit documentation in R/knowledge_graph.R
 \name{knowledge_graph_data}
 \alias{knowledge_graph_data}
-\title{Convert a knowledge-graph specification into graph-ready data}
+\title{Build graph data from knowledge, memory, or a graph representation}
 \usage{
 knowledge_graph_data(x)
 }
 \arguments{
-\item{x}{A knowledge-graph specification or a \code{\link{KnowledgeSpec}} object.}
+\item{x}{A \code{\link{KnowledgeSpec}}, \code{\link{MemorySpec}}, or plain graph list with
+\code{nodes} and \code{edges}.}
 }
 \value{
-A list with \code{vertices} and \code{edges} data frames.
+A list with \code{nodes}, \code{edges}, and \code{metadata}.
 }
 \description{
-Returns styled vertex and edge tables suitable for external graph renderers
-or the package's Graphviz rendering helpers.
+\code{agentr} treats graph structure as a representation shape rather than as a
+separate first-class spec. This helper returns graph-ready node and edge data
+from a \code{\link{KnowledgeSpec}}, \code{\link{MemorySpec}}, or plain \code{list(nodes, edges, metadata)} graph representation.
 }

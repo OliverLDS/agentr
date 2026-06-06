@@ -20,12 +20,9 @@
 | `MemorySpec` | Context, semantic, episodic, and procedural memory schema |
 | `KnowledgeProposal` | Proposal object for one knowledge item |
 | `KnowledgeProposalState` | Approved knowledge plus knowledge proposal history |
-| `agentr_knowledge_graph_spec` | Knowledge-graph specification object |
 | `MemoryProposal` | Proposal object for candidate memory schema |
 | `MemoryProposalState` | Approved memory schema plus proposal history |
-| `KnowledgeGraphProposal` | Proposal object for candidate graph knowledge |
-| `KnowledgeGraphProposalState` | Approved graph knowledge plus proposal history |
-| `DesignReviewSpec` | Review-layer data bundle for workflow, memory, knowledge, graph, proposal, and feedback sections |
+| `DesignReviewSpec` | Review-layer data bundle for workflow, memory, knowledge, graph-shaped representation, proposal, and feedback sections |
 | `AgentScaffoldState` | Approved agent-design state container |
 | `IntelligentAgent` | Runtime-oriented container around an `AgentSpec` |
 | `Scaffolder` | Human-in-the-loop intelligent-agent scaffolding interface |
@@ -68,10 +65,10 @@
 | `schema_shape_graph_data()` | Export graph-ready node and edge tables for a workflow-node input/output schema |
 | `render_schema_shape_graphviz()` | Render a workflow-node input/output schema as Graphviz DOT, DiagrammeR, or SVG |
 | `task_spec_paths()` | Return conventional task-local spec paths |
-| `discover_task_specs()` | Discover task-local workflow, memory, knowledge, and graph YAML specs |
+| `discover_task_specs()` | Discover task-local workflow, memory, and knowledge YAML specs |
 | `load_task_specs()` | Load existing task-local YAML specs |
 | `validate_task_specs()` | Validate existing or required task-local YAML specs |
-| `render_task_preview()` | Render one task-local review HTML file from workflow, memory, knowledge, and graph YAML specs |
+| `render_task_preview()` | Render one task-local review HTML file from workflow, memory, and knowledge YAML specs |
 | `render_task_previews()` | Render review HTML files for all discovered task-local workflow specs under a workspace |
 
 ## Memory Helpers
@@ -89,25 +86,17 @@
 | `render_memory_schema_graphviz()` | Render a memory schema as Graphviz DOT, DiagrammeR, or SVG |
 | `memory_action_methods()` | List constrained memory-schema message actions |
 
-## Knowledge And Graph Helpers
+## Knowledge And Graph-Representation Helpers
 
 | Function | Purpose |
 | --- | --- |
 | `validate_knowledge_item()` | Validate one narrative knowledge item |
 | `validate_knowledge_spec()` | Validate a curated knowledge specification |
 | `validate_knowledge_proposal()` | Validate a narrative-knowledge proposal |
-| `knowledge_graph_node()` | Create a knowledge-graph node record |
-| `knowledge_graph_edge()` | Create a knowledge-graph edge record |
-| `new_knowledge_graph_spec()` | Build a knowledge-graph specification object |
-| `add_knowledge_graph_node()` | Add a first-class graph-knowledge node |
-| `add_knowledge_graph_edge()` | Add a first-class graph-knowledge edge |
-| `validate_knowledge_graph_spec()` | Validate knowledge-graph structure |
-| `knowledge_graph_from_spec()` | Build a projection graph from narrative `KnowledgeSpec` items |
-| `knowledge_graph_data()` | Export graph-ready node and edge tables for a knowledge graph |
-| `render_knowledge_graphviz()` | Render a knowledge graph as Graphviz DOT, DiagrammeR, or SVG |
-| `plot_knowledge_graph()` | Plot a knowledge graph with DiagrammeR |
-| `validate_knowledge_graph_proposal()` | Validate a graph-knowledge proposal |
-| `knowledge_graph_action_methods()` | List constrained graph-knowledge message actions |
+| `knowledge_graph_from_spec()` | Build graph-ready data from `KnowledgeSpec`, `MemorySpec`, or graph-shaped lists |
+| `knowledge_graph_data()` | Export graph-ready node and edge tables for graph-shaped knowledge or memory |
+| `render_knowledge_graphviz()` | Render graph-shaped knowledge or memory as Graphviz DOT, DiagrammeR, or SVG |
+| `plot_knowledge_graph()` | Plot graph-shaped knowledge or memory with DiagrammeR |
 
 ## LLM Scaffolding Bridge
 
@@ -136,17 +125,12 @@
 | `build_knowledge_design_prompt()` | Build a prompt focused on knowledge proposals and review |
 | `build_memory_schema_prompt()` | Build a prompt for initial memory schema proposals |
 | `build_memory_revision_prompt()` | Build a prompt for revising memory schema proposals |
-| `build_knowledge_graph_extraction_prompt()` | Build a prompt for graph-knowledge extraction |
-| `build_knowledge_graph_revision_prompt()` | Build a prompt for revising graph-knowledge proposals |
 | `parse_knowledge_message()` | Parse constrained knowledge-action JSON |
 | `preview_knowledge_message()` | Preview knowledge actions without mutating state |
 | `apply_knowledge_message()` | Apply constrained knowledge actions to a knowledge-proposal state |
 | `parse_memory_message()` | Parse constrained memory-schema action JSON |
 | `preview_memory_message()` | Preview memory-schema actions without mutating state |
 | `apply_memory_message()` | Apply constrained memory-schema actions to a memory-proposal state |
-| `parse_knowledge_graph_message()` | Parse constrained graph-knowledge action JSON |
-| `preview_knowledge_graph_message()` | Preview graph-knowledge actions without mutating state |
-| `apply_knowledge_graph_message()` | Apply constrained graph-knowledge actions to a graph-proposal state |
 
 ## Design Review
 
@@ -226,12 +210,6 @@
 | `load_knowledge_spec()` | Load a `KnowledgeSpec` explicitly from RDS, JSON, or YAML |
 | `load_knowledge_spec_json()` | Load a `KnowledgeSpec` explicitly from JSON |
 | `load_knowledge_spec_yaml()` | Load a `KnowledgeSpec` explicitly from YAML |
-| `save_knowledge_graph_spec()` | Save an `agentr_knowledge_graph_spec` explicitly as RDS, JSON, or YAML |
-| `save_knowledge_graph_spec_json()` | Save an `agentr_knowledge_graph_spec` explicitly as JSON |
-| `save_knowledge_graph_spec_yaml()` | Save an `agentr_knowledge_graph_spec` explicitly as YAML |
-| `load_knowledge_graph_spec()` | Load an `agentr_knowledge_graph_spec` explicitly from RDS, JSON, or YAML |
-| `load_knowledge_graph_spec_json()` | Load an `agentr_knowledge_graph_spec` explicitly from JSON |
-| `load_knowledge_graph_spec_yaml()` | Load an `agentr_knowledge_graph_spec` explicitly from YAML |
 | `save_knowledge_proposal()` | Save a `KnowledgeProposal` explicitly |
 | `load_knowledge_proposal()` | Load a `KnowledgeProposal` explicitly |
 | `load_agent()` | Load a supported `agentr` object |

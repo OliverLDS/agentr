@@ -107,7 +107,7 @@ Do not add memory fields for:
 - intermediate files that are recreated and never reused
 - implementation details that have no review value
 - domain knowledge that belongs in `KnowledgeSpec`
-- entity-relation knowledge that belongs in `KnowledgeGraphSpec`
+- developer-supplied entity-relation knowledge that belongs in `KnowledgeSpec$graph`
 
 ## Review Notes
 

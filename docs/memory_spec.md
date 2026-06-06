@@ -119,7 +119,8 @@ For example:
 
 - a `KnowledgeSpec` item may say `ACT-R is a cognitive architecture`;
 - a `MemorySpec` semantic field may say approved concept definitions are stored under `agent_concepts`;
-- graph knowledge can represent `ACT-R --is_a--> cognitive architecture`.
+- graph-shaped memory can represent relationships among remembered events,
+  entities, or state transitions.
 
 ## Review HTML
 

@@ -40,7 +40,6 @@ Start with:
 - [WorkflowSpec Inference Guide](inst/guides/spec_inference/workflow_spec.md)
 - [MemorySpec Inference Guide](inst/guides/spec_inference/memory_spec.md)
 - [KnowledgeSpec Inference Guide](inst/guides/spec_inference/knowledge_spec.md)
-- [KnowledgeGraphSpec Inference Guide](inst/guides/spec_inference/knowledge_graph_spec.md)
 - [Task Code Construction Guide](inst/guides/code_construction/task_code_construction.md)
 - [Node Script Construction Guide](inst/guides/code_construction/node_script_construction.md)
 
@@ -50,10 +49,10 @@ Start with:
 
 - `WorkflowSpec`: procedural structure, nodes, edges, gates, branches, schemas, nested workflows, and implementation hints.
 - `MemorySpec`: context, semantic, episodic, and procedural memory schema.
-- `KnowledgeSpec`: narrative knowledge, rules, heuristics, exceptions, and first-class graph knowledge.
+- `KnowledgeSpec`: developer-supplied narrative knowledge, rules, heuristics, exceptions, and optional graph-shaped knowledge.
 - `AgentSpec`: approved higher-level design bundle.
 - `DesignReviewSpec`: browser-review data bundle with workflow, memory, knowledge, proposals, and feedback schema.
-- Proposal states: explicit review loops for workflow, agent, memory, narrative knowledge, and graph knowledge.
+- Proposal states: explicit review loops for workflow, agent, memory, and knowledge.
 - Optional node labels: diagnostic color/ontology labels for understanding workflow nodes.
 
 The current built-in node-label ontology uses `RWM`, `PG`, `AE`, `LA`, and
@@ -80,7 +79,6 @@ tasks/<task_id>/docs/
   workflow_spec.yaml
   memory_spec.yaml
   knowledge_spec.yaml
-  knowledge_graph_spec.yaml
   review.html
   inference_notes.md
 ```
@@ -99,7 +97,7 @@ See [Spec Formats](docs/spec_formats.md).
 
 See [Design Review Layer](docs/design_review_layer.md),
 [Workflow Spec](docs/workflow_spec.md), [MemorySpec](docs/memory_spec.md), and
-[Knowledge Graph Spec](docs/knowledge_graph_spec.md).
+[Graph Representations](docs/graph_representations.md).
 
 ## Documentation
 
@@ -111,7 +109,7 @@ Key pages:
 - [Workflow Spec](docs/workflow_spec.md)
 - [MemorySpec](docs/memory_spec.md)
 - [KnowledgeSpec Lifecycle](docs/knowledge_spec_lifecycle.md)
-- [Knowledge Graph Spec](docs/knowledge_graph_spec.md)
+- [Graph Representations](docs/graph_representations.md)
 - [Proposal Lifecycle](docs/proposal_lifecycle.md)
 - [Workspace CLI Lifecycle](docs/workspace_cli_lifecycle.md)
 - [R Function Examples](docs/r_function_examples.md)

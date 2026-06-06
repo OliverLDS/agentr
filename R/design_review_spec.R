@@ -180,7 +180,7 @@
   if (is.null(graph_spec)) {
     return(list(nodes = list(), edges = list(), metadata = list(), counts = list(nodes = 0L, edges = 0L)))
   }
-  graph_spec <- .as_knowledge_graph_spec_object(graph_spec)
+  graph_spec <- .graph_data_from_representation(graph_spec)
   list(
     nodes = .design_df_records(graph_spec$nodes),
     edges = .design_df_records(graph_spec$edges),
@@ -201,9 +201,6 @@
     return(.design_json_ready(x$as_list()))
   }
   if (inherits(x, "MemoryProposalState")) {
-    return(.design_json_ready(x$as_list()))
-  }
-  if (inherits(x, "KnowledgeGraphProposalState")) {
     return(.design_json_ready(x$as_list()))
   }
   if (inherits(x, "AgentScaffoldState")) {
@@ -241,8 +238,8 @@
 #'
 #' Feedback items are the machine-readable output expected from a future
 #' JS/HTML review layer. They are intentionally structured rather than free
-#' text so they can be routed into workflow, memory, knowledge, or graph
-#' revision prompts.
+#' text so they can be routed into workflow, memory, or knowledge revision
+#' prompts.
 #'
 #' @param target Review target, such as `"workflow_node"`, `"memory_schema"`,
 #'   `"knowledge_item"`, or `"graph_edge"`.
@@ -475,7 +472,7 @@ new_design_review_spec <- function(...) {
 #' @field workflow_graph Workflow graph section.
 #' @field memory_schema Memory schema section.
 #' @field narrative_knowledge Narrative knowledge section.
-#' @field graph_knowledge Graph-knowledge section.
+#' @field graph_knowledge Graph-shaped knowledge section.
 #' @field proposal_states Proposal-state snapshots.
 #' @field feedback_schema Structured feedback schema.
 #' @field metadata Free-form metadata.
@@ -486,7 +483,7 @@ new_design_review_spec <- function(...) {
 #' @param workflow_graph Workflow graph section.
 #' @param memory_schema Memory schema section.
 #' @param narrative_knowledge Narrative knowledge section.
-#' @param graph_knowledge Graph-knowledge section.
+#' @param graph_knowledge Graph-shaped knowledge section.
 #' @param proposal_states Proposal-state snapshots.
 #' @param feedback_schema Structured feedback schema.
 #' @param metadata Free-form metadata.
@@ -663,12 +660,11 @@ validate_design_review_spec <- function(x) {
 #'   `x`.
 #' @param knowledge_spec Optional [`KnowledgeSpec`] overriding knowledge
 #'   inferred from `x`.
-#' @param graph_spec Optional `agentr_knowledge_graph_spec` overriding graph
+#' @param graph_spec Optional plain graph representation overriding graph
 #'   knowledge inferred from `knowledge_spec`.
 #' @param workflow_state Optional [`WorkflowProposalState`].
 #' @param knowledge_state Optional [`KnowledgeProposalState`].
 #' @param memory_state Optional [`MemoryProposalState`].
-#' @param graph_state Optional [`KnowledgeGraphProposalState`].
 #' @param proposal_states Additional named proposal-state snapshots.
 #' @param review_id Optional review bundle id.
 #' @param metadata Additional metadata list.
@@ -684,7 +680,6 @@ build_design_review_data <- function(
   workflow_state = NULL,
   knowledge_state = NULL,
   memory_state = NULL,
-  graph_state = NULL,
   proposal_states = list(),
   review_id = .design_review_id(),
   metadata = list()
@@ -760,7 +755,7 @@ build_design_review_data <- function(
     workflow = .proposal_state_snapshot(workflow_state),
     knowledge = .proposal_state_snapshot(knowledge_state),
     memory = .proposal_state_snapshot(memory_state),
-    graph = .proposal_state_snapshot(graph_state)
+    graph = NULL
   )
   if (length(proposal_states)) {
     for (name in names(proposal_states)) {

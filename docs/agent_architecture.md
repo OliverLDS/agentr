@@ -111,10 +111,9 @@ Agent-design proposals now sit alongside workflow proposals inside the scaffolde
 - agent-spec proposals preserve candidate agent designs before approval
 - linked approval can promote both the workflow and the higher-level agent design together
 
-Memory-schema and graph-knowledge proposals now follow the same proposal lifecycle outside the main `Scaffolder` facade:
+Memory-schema and knowledge proposals follow proposal lifecycles outside the main `Scaffolder` facade:
 
 - memory proposals preserve candidate `MemorySpec` schemas before approval
-- graph proposals preserve candidate `agentr_knowledge_graph_spec` relationships before approval
 - constrained message handlers keep model-suggested changes inspectable before they become active specs
 
 ## Agent Output
@@ -137,7 +136,7 @@ Memory-schema and graph-knowledge proposals now follow the same proposal lifecyc
 - `implementation_targets`
 - `metadata`
 
-`KnowledgeSpec` can now contain narrative items, first-class graph knowledge, and future vector-reference metadata. `MemorySpec` is the preferred structured schema for context, semantic, episodic, and procedural memory. `state_spec` remains available for backward-compatible loose-list state descriptions.
+`KnowledgeSpec` can contain narrative items, optional graph-shaped knowledge, and future vector-reference metadata. `MemorySpec` is the preferred structured schema for context, semantic, episodic, and procedural memory, and it can also carry optional graph-shaped memory. `state_spec` remains available for backward-compatible loose-list state descriptions.
 
 `SubsystemSpec` is not direct runtime logic. It stores optional diagnostic
 labels for capability coverage, graph coloring, and review. A valid agent
@@ -180,7 +179,7 @@ workflow-first compatibility remains intact while agent designs can still mark
 which actor or ontology label applies to each node. Those labels can be edited
 incrementally rather than only replaced wholesale.
 
-`DesignReviewSpec` and the standalone HTML helpers add a review boundary for human inspection. The browser artifact renders workflow graph data, memory schema, narrative knowledge, graph knowledge, proposal states, and structured feedback schema without turning `agentr` into a runtime execution layer.
+`DesignReviewSpec` and the standalone HTML helpers add a review boundary for human inspection. The browser artifact renders workflow graph data, memory schema, narrative knowledge, graph-shaped knowledge, proposal states, and structured feedback schema without turning `agentr` into a runtime execution layer.
 
 For human-maintained task specifications, YAML is the preferred editable source. JSON remains useful for machine interchange and RDS remains useful for R-native persistence or cache artifacts. See [Spec Formats](spec_formats.md).
 

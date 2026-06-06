@@ -152,12 +152,14 @@ validate_memory_field <- function(x) {
 #'
 #' First-class memory schema for an agent design. `MemorySpec` records which
 #' memory fields exist, what type of memory they represent, how they persist
-#' across cold-start runs, and how they are expected to update. It complements
-#' legacy `state_spec` lists rather than replacing them abruptly.
+#' across cold-start runs, and how they are expected to update. It can also
+#' carry an optional graph-shaped representation of memory relationships.
 #'
 #' @field fields Named list of memory field records.
+#' @field graph Optional graph representation list with `nodes` and `edges`.
 #' @field metadata Free-form metadata list.
 #' @param fields List of memory field records.
+#' @param graph Optional graph representation list with `nodes` and `edges`.
 #' @param metadata Free-form metadata list.
 #' @param field Memory field record used by `$add_field()`.
 #' @param id Memory field id used by `$get_field()`.
@@ -166,7 +168,7 @@ validate_memory_field <- function(x) {
 #' @param ... Unused print arguments.
 #' @section Methods:
 #' \describe{
-#'   \item{`$initialize(fields = list(), metadata = list())`}{Create a memory specification.}
+#'   \item{`$initialize(fields = list(), graph = NULL, metadata = list())`}{Create a memory specification.}
 #'   \item{`$add_field(field)`}{Add one memory field.}
 #'   \item{`$get_field(id)`}{Return one memory field by id.}
 #'   \item{`$list_fields(memory_type = NULL, persistence = NULL)`}{Return memory fields, optionally filtered.}
@@ -179,12 +181,14 @@ MemorySpec <- R6::R6Class(
   classname = "MemorySpec",
   public = list(
     fields = NULL,
+    graph = NULL,
     metadata = NULL,
 
     #' @description
     #' Create a memory specification.
-    initialize = function(fields = list(), metadata = list()) {
+    initialize = function(fields = list(), graph = NULL, metadata = list()) {
       self$fields <- list()
+      self$graph <- .coerce_graph_representation_or_null(graph)
       self$metadata <- if (is.null(metadata)) list() else metadata
       if (length(fields)) {
         for (field in fields) {
@@ -249,6 +253,7 @@ MemorySpec <- R6::R6Class(
           stop("MemorySpec field names must match unique field ids.", call. = FALSE)
         }
       }
+      self$graph <- .coerce_graph_representation_or_null(self$graph)
       .validate_metadata_list(self$metadata)
       invisible(self)
     },
@@ -259,6 +264,7 @@ MemorySpec <- R6::R6Class(
       self$validate()
       list(
         fields = self$fields,
+        graph = self$graph,
         metadata = self$metadata
       )
     },
@@ -269,6 +275,7 @@ MemorySpec <- R6::R6Class(
       self$validate()
       cat("<MemorySpec>\n")
       cat("Fields:", length(self$fields), "\n")
+      cat("Graph nodes:", if (is.null(self$graph)) 0L else length(self$graph$nodes), "\n")
       if (length(self$fields)) {
         types <- table(vapply(self$fields, function(field) field$memory_type, character(1)))
         cat(
@@ -303,6 +310,7 @@ validate_memory_spec <- function(x) {
   }
   MemorySpec$new(
     fields = x$fields,
+    graph = x$graph,
     metadata = x$metadata
   )
 }

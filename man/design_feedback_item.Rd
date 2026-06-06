@@ -58,6 +58,6 @@ A validated design-feedback item list.
 \description{
 Feedback items are the machine-readable output expected from a future
 JS/HTML review layer. They are intentionally structured rather than free
-text so they can be routed into workflow, memory, knowledge, or graph
-revision prompts.
+text so they can be routed into workflow, memory, or knowledge revision
+prompts.
 }

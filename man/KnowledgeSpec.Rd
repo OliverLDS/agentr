@@ -10,8 +10,9 @@ KnowledgeSpec
 }
 \details{
 Curated domain and epistemic knowledge used to guide agent behavior.
-\code{items} stores narrative knowledge items, \code{graph} stores first-class graph
-knowledge, and \code{vector_refs} reserves references to external vector stores.
+\code{items} stores narrative knowledge items, \code{graph} stores an optional
+graph-shaped representation, and \code{vector_refs} reserves references to
+external vector stores.
 }
 \section{Methods}{
 
@@ -31,7 +32,7 @@ knowledge, and \code{vector_refs} reserves references to external vector stores.
 \describe{
 \item{\code{items}}{Named list of narrative knowledge items.}
 
-\item{\code{graph}}{Optional \code{agentr_knowledge_graph_spec}.}
+\item{\code{graph}}{Optional graph representation list with \code{nodes} and \code{edges}.}
 
 \item{\code{vector_refs}}{List of external vector-knowledge references.}
 
@@ -71,7 +72,7 @@ Create a knowledge specification.
 \describe{
 \item{\code{items}}{List of narrative knowledge items.}
 
-\item{\code{graph}}{Optional \code{agentr_knowledge_graph_spec}.}
+\item{\code{graph}}{Optional graph representation list with \code{nodes} and \code{edges}.}
 
 \item{\code{vector_refs}}{List of external vector-knowledge references.}
 

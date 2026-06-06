@@ -93,7 +93,8 @@ should still keep `raw_statement`.
 Use narrative `KnowledgeSpec` for prose rules, heuristics, exceptions, and
 criteria.
 
-Use `KnowledgeGraphSpec` for explicit entity-relation structures such as:
+Use `KnowledgeSpec$graph` for explicit developer-supplied entity-relation
+structures such as:
 
 ```text
 ACT-R --is_a--> cognitive architecture
@@ -101,10 +102,8 @@ BDI --has_component--> Belief
 ReAct --implements_part_of--> observe-decide-act
 ```
 
-When both are useful, save both:
-
-- `knowledge_spec.yaml` for prose rules and criteria
-- `knowledge_graph_spec.yaml` for explicit entity-relation structures
+When both are useful, keep them in the same `knowledge_spec.yaml`: narrative
+items under `items:` and graph-shaped relationships under `graph:`.
 
 ## What Not To Infer
 
