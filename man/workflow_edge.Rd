@@ -20,7 +20,9 @@ workflow_edge(
 
 \item{to}{Target node id.}
 
-\item{relation}{Edge relation label.}
+\item{relation}{Edge relation label. Common relations include
+\code{depends_on}, \code{branch}, \code{exclusive_branch}, \code{reads}, \code{writes}, \code{updates},
+\code{prompts_with}, \code{validates_against}, and \code{produces}.}
 
 \item{confidence}{Optional edge confidence score between 0 and 1.}
 

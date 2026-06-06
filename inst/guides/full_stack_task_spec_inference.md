@@ -105,13 +105,20 @@ Always consider `WorkflowSpec` when the task has identifiable steps,
 dependencies, branches, gates, or subworkflows. See
 [WorkflowSpec inference](spec_inference/workflow_spec.md).
 
-Infer `MemorySpec` only when the task uses persistent state or clearly depends
-on state carried across runs. See
+Infer `MemorySpec` only when the workflow contains memory/data nodes, memory
+references, persistent state updates, or clear code evidence that state carried
+across runs shapes behavior. See
 [MemorySpec inference](spec_inference/memory_spec.md).
 
-Infer narrative `KnowledgeSpec` only when the task contains reusable domain
-knowledge, rules, exceptions, evaluation criteria, or style preferences. See
+Infer narrative `KnowledgeSpec` only when the workflow contains knowledge/data
+nodes, `knowledge_refs`, prompt retrieval of rules or examples, or clear code
+evidence that reusable developer-supplied knowledge shapes behavior. See
 [KnowledgeSpec inference](spec_inference/knowledge_spec.md).
+
+Do not infer `memory_spec.yaml` or `knowledge_spec.yaml` merely because the
+task could theoretically use memory or knowledge. The workflow must show a
+resource node, reference, retrieval path, update path, or validation dependency
+that makes the spec behavior-shaping.
 
 When explicit entity-relation knowledge or memory is useful, store it as a
 `graph:` representation inside `knowledge_spec.yaml` or `memory_spec.yaml`.

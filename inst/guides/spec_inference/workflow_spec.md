@@ -33,9 +33,14 @@ metadata:
 nodes:
   - id: stable_node_id
     label: Human-readable node label
+    node_kind: action
     human_required: false
     owner: script
     automation_status: rule_assisted
+    source_path: null
+    retrieval_mode: null
+    persistence: null
+    linked_spec_ids: []
     rule_spec: null
     implementation_hint: "Source file or observed behavior."
     input_schema: {}
@@ -61,6 +66,12 @@ edges:
 | --- | --- |
 | Script invocation or named stage | `workflow_node(id, label, implementation_hint)` |
 | Sequential script calls | `workflow_edge(from, to)` |
+| Knowledge, memory, file, API, schema, or data resource used by an action | A resource node with `node_kind` set to `knowledge`, `memory`, `file`, `api`, `schema`, or `data` |
+| Action reads a resource | Resource-to-action edge with `relation: reads` |
+| Action writes or updates a resource | Action-to-resource edge with `relation: writes` or `relation: updates` |
+| Action injects resource content into an LLM prompt | Resource-to-action edge with `relation: prompts_with` |
+| Action validates output against a schema resource | Schema-to-action edge with `relation: validates_against` |
+| Action produces a durable artifact | Action-to-resource edge with `relation: produces` |
 | Conditional branch | Edge `condition`, `branch_group`, and `mutually_exclusive`; use `rule_spec` for node-level routing rules |
 | Loop over inputs | Node label/rule describing iteration, not duplicated nodes per item |
 | JSON output from a node | `output_schema` |
@@ -72,6 +83,11 @@ edges:
 
 Current `agentr` workflow nodes support these richer fields:
 
+- `node_kind`
+- `source_path`
+- `retrieval_mode`
+- `persistence`
+- `linked_spec_ids`
 - `input_schema`
 - `output_schema`
 - `subworkflow_ref`
@@ -99,6 +115,61 @@ workflow_node(
 
 Use one workflow node per conceptual step. Do not create a node for every shell
 line unless each line is a distinct reviewable unit.
+
+## Data And Resource Nodes
+
+Use `node_kind = "action"` for steps that do work. Use these resource node
+kinds when the workflow explicitly depends on external or persistent data:
+
+- `knowledge`: developer-curated facts, rules, heuristics, exceptions, style
+  preferences, or other static domain knowledge.
+- `memory`: state gained through previous agent actions or prior runs.
+- `file`: a concrete local file or generated artifact.
+- `api`: an external service surface or API response source.
+- `schema`: a validation or shape contract used by workflow actions.
+- `data`: a generic dataset or resource that does not fit the more specific
+  kinds.
+
+Resource nodes are not human gates. Do not set `human_required = TRUE` merely
+because a resource is manually editable or outside the local runtime.
+
+When useful, add:
+
+- `source_path`: path, URI, or symbolic source.
+- `retrieval_mode`: for example `load_yaml`, `read_jsonl`, `semantic_lookup`,
+  `vector_search`, `api_fetch`, or `manual_copy`.
+- `persistence`: for example `static`, `task_local`, `append_only`,
+  `cross_run`, or `external`.
+- `linked_spec_ids`: ids or paths for linked `KnowledgeSpec`, `MemorySpec`,
+  schema, interface, or state specs.
+
+Prefer explicit data/resource nodes when a knowledge or memory object is
+retrieved into a prompt, validates an output, or is updated by the task. Do not
+infer standalone `knowledge_spec.yaml` or `memory_spec.yaml` if the workflow
+does not contain corresponding resource nodes, `knowledge_refs`, memory
+references, or clear code evidence that those resources shape behavior.
+
+Example:
+
+```yaml
+nodes:
+  - id: article_style_rules
+    label: Article style rules
+    node_kind: knowledge
+    human_required: false
+    source_path: docs/knowledge_spec.yaml
+    retrieval_mode: yaml_lookup
+    persistence: static
+    linked_spec_ids: [knowledge_spec.yaml]
+  - id: build_article_prompt
+    label: Build article prompt
+    node_kind: action
+    human_required: false
+edges:
+  - from: article_style_rules
+    to: build_article_prompt
+    relation: prompts_with
+```
 
 ## Human Gates
 

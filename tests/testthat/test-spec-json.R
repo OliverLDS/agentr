@@ -67,6 +67,64 @@ test_that("workflow specs round-trip through JSON", {
   expect_equal(scalar$nodes$input_schema[[1]]$required, "source")
 })
 
+test_that("workflow specs preserve data node metadata through JSON", {
+  path <- tempfile(fileext = ".json")
+  on.exit(unlink(path), add = TRUE)
+
+  workflow <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node(
+        id = "knowledge_rules",
+        label = "Article style knowledge",
+        node_kind = "knowledge",
+        human_required = FALSE,
+        source_path = "docs/knowledge_spec.yaml",
+        retrieval_mode = "yaml_lookup",
+        persistence = "static",
+        linked_spec_ids = c("knowledge_spec.yaml", "ki_style_rules")
+      ),
+      workflow_node(
+        id = "build_prompt",
+        label = "Build prompt",
+        human_required = FALSE
+      )
+    ),
+    edges = workflow_edge("knowledge_rules", "build_prompt", relation = "prompts_with"),
+    task = "Data node metadata"
+  )
+
+  save_workflow_spec(workflow, path)
+  loaded <- load_workflow_spec(path)
+
+  expect_equal(loaded$nodes$node_kind[[1]], "knowledge")
+  expect_equal(loaded$nodes$source_path[[1]], "docs/knowledge_spec.yaml")
+  expect_equal(loaded$nodes$retrieval_mode[[1]], "yaml_lookup")
+  expect_equal(loaded$nodes$persistence[[1]], "static")
+  expect_equal(loaded$nodes$linked_spec_ids[[1]], c("knowledge_spec.yaml", "ki_style_rules"))
+  expect_equal(loaded$edges$relation[[1]], "prompts_with")
+  saved_json <- paste(readLines(path, warn = FALSE), collapse = "")
+  expect_true(grepl('"linked_spec_ids":\\s*\\["knowledge_spec.yaml"', saved_json))
+})
+
+test_that("workflow specs reject unsupported node kinds", {
+  workflow <- new_workflow_spec(
+    nodes = workflow_node("knowledge_rules", "Knowledge rules", node_kind = "knowledge", human_required = FALSE),
+    edges = .empty_workflow_edges()
+  )
+
+  expect_equal(workflow$nodes$node_kind[[1]], "knowledge")
+
+  invalid <- workflow
+  invalid$nodes$node_kind[[1]] <- "runtime_executor"
+  expect_error(validate_workflow_spec(invalid), "node_kind")
+})
+
+test_that("workflow data nodes default away from human gates", {
+  node <- workflow_node("memory_state", "Memory state", node_kind = "memory")
+
+  expect_false(node$human_required[[1]])
+})
+
 test_that("memory specs round-trip through JSON", {
   path <- tempfile(fileext = ".json")
   on.exit(unlink(path), add = TRUE)

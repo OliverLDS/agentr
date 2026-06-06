@@ -10,12 +10,19 @@
 #' @param review_status Node-level review status.
 #' @param review_notes Optional node-level review notes.
 #' @param review_confidence Optional confidence attached to the latest review.
+#' @param node_kind Optional workflow node kind. Supported values are
+#'   `action`, `knowledge`, `memory`, `file`, `api`, `schema`, and `data`.
 #' @param owner Optional current owner for the node.
 #' @param automation_status Optional current automation status for the node.
 #' @param human_owned_reason Optional explanation for why the node remains human-owned.
 #' @param target_automation_status Optional target automation status for the node.
 #' @param trace_required Optional logical flag indicating whether decision traces should be collected.
 #' @param knowledge_refs Optional character vector of referenced knowledge-item ids.
+#' @param source_path Optional path, URI, or symbolic source for data/resource nodes.
+#' @param retrieval_mode Optional retrieval mode for data/resource nodes.
+#' @param persistence Optional persistence description for data/resource nodes.
+#' @param linked_spec_ids Optional character vector of linked knowledge, memory,
+#'   schema, or interface spec ids.
 #' @param subworkflow_ref Optional identifier or path for a nested workflow.
 #' @param input_schema Optional structured input schema for the node.
 #' @param output_schema Optional structured output schema for the node.
@@ -35,17 +42,25 @@ workflow_node <- function(
   review_status = "pending",
   review_notes = NA_character_,
   review_confidence = NA_real_,
+  node_kind = "action",
   owner = NA_character_,
   automation_status = NA_character_,
   human_owned_reason = NA_character_,
   target_automation_status = NA_character_,
   trace_required = NA,
   knowledge_refs = character(),
+  source_path = NA_character_,
+  retrieval_mode = NA_character_,
+  persistence = NA_character_,
+  linked_spec_ids = character(),
   subworkflow_ref = NA_character_,
   input_schema = list(),
   output_schema = list(),
   nested_workflow = NULL
 ) {
+  if (missing(human_required) && any(as.character(node_kind) != "action")) {
+    human_required <- FALSE
+  }
   out <- data.frame(
     id = as.character(id),
     label = as.character(label),
@@ -57,15 +72,20 @@ workflow_node <- function(
     review_status = as.character(review_status),
     review_notes = as.character(review_notes),
     review_confidence = as.numeric(review_confidence),
+    node_kind = as.character(node_kind),
     owner = as.character(owner),
     automation_status = as.character(automation_status),
     human_owned_reason = as.character(human_owned_reason),
     target_automation_status = as.character(target_automation_status),
     trace_required = as.logical(trace_required),
+    source_path = as.character(source_path),
+    retrieval_mode = as.character(retrieval_mode),
+    persistence = as.character(persistence),
     subworkflow_ref = as.character(subworkflow_ref),
     stringsAsFactors = FALSE
   )
   out$knowledge_refs <- I(replicate(nrow(out), as.character(knowledge_refs), simplify = FALSE))
+  out$linked_spec_ids <- I(replicate(nrow(out), as.character(linked_spec_ids), simplify = FALSE))
   out$input_schema <- I(replicate(nrow(out), input_schema, simplify = FALSE))
   out$output_schema <- I(replicate(nrow(out), output_schema, simplify = FALSE))
   out$nested_workflow <- I(replicate(nrow(out), nested_workflow, simplify = FALSE))
@@ -76,7 +96,9 @@ workflow_node <- function(
 #'
 #' @param from Source node id.
 #' @param to Target node id.
-#' @param relation Edge relation label.
+#' @param relation Edge relation label. Common relations include
+#'   `depends_on`, `branch`, `exclusive_branch`, `reads`, `writes`, `updates`,
+#'   `prompts_with`, `validates_against`, and `produces`.
 #' @param confidence Optional edge confidence score between 0 and 1.
 #' @param notes Optional edge notes.
 #' @param condition Optional branch or transition condition.
@@ -127,15 +149,20 @@ workflow_edge <- function(
     review_status = character(),
     review_notes = character(),
     review_confidence = numeric(),
+    node_kind = character(),
     owner = character(),
     automation_status = character(),
     human_owned_reason = character(),
     target_automation_status = character(),
     trace_required = logical(),
+    source_path = character(),
+    retrieval_mode = character(),
+    persistence = character(),
     subworkflow_ref = character(),
     stringsAsFactors = FALSE
   )
   out$knowledge_refs <- I(list())
+  out$linked_spec_ids <- I(list())
   out$input_schema <- I(list())
   out$output_schema <- I(list())
   out$nested_workflow <- I(list())
@@ -180,12 +207,17 @@ workflow_edge <- function(
     review_status = nodes$review_status[[i]],
     review_notes = nodes$review_notes[[i]],
     review_confidence = nodes$review_confidence[[i]],
+    node_kind = nodes$node_kind[[i]],
     owner = nodes$owner[[i]],
     automation_status = nodes$automation_status[[i]],
     human_owned_reason = nodes$human_owned_reason[[i]],
     target_automation_status = nodes$target_automation_status[[i]],
     trace_required = nodes$trace_required[[i]],
     knowledge_refs = nodes$knowledge_refs[[i]],
+    source_path = nodes$source_path[[i]],
+    retrieval_mode = nodes$retrieval_mode[[i]],
+    persistence = nodes$persistence[[i]],
+    linked_spec_ids = nodes$linked_spec_ids[[i]],
     subworkflow_ref = nodes$subworkflow_ref[[i]],
     input_schema = nodes$input_schema[[i]],
     output_schema = nodes$output_schema[[i]],
@@ -272,7 +304,12 @@ new_workflow_spec <- function(
     "human_owned_reason",
     "target_automation_status",
     "trace_required",
+    "node_kind",
     "knowledge_refs",
+    "source_path",
+    "retrieval_mode",
+    "persistence",
+    "linked_spec_ids",
     "subworkflow_ref",
     "input_schema",
     "output_schema",
@@ -298,6 +335,11 @@ new_workflow_spec <- function(
 }
 
 #' @keywords internal
+.workflow_node_kind_values <- function() {
+  c("action", "knowledge", "memory", "file", "api", "schema", "data")
+}
+
+#' @keywords internal
 .normalize_workflow_nodes_df <- function(nodes) {
   if (!is.data.frame(nodes)) {
     stop("Workflow spec `nodes` must be a data frame.", call. = FALSE)
@@ -318,6 +360,18 @@ new_workflow_spec <- function(
   if (!"trace_required" %in% names(nodes)) {
     nodes$trace_required <- NA
   }
+  if (!"node_kind" %in% names(nodes)) {
+    nodes$node_kind <- "action"
+  }
+  if (!"source_path" %in% names(nodes)) {
+    nodes$source_path <- NA_character_
+  }
+  if (!"retrieval_mode" %in% names(nodes)) {
+    nodes$retrieval_mode <- NA_character_
+  }
+  if (!"persistence" %in% names(nodes)) {
+    nodes$persistence <- NA_character_
+  }
   if (!"subworkflow_ref" %in% names(nodes)) {
     nodes$subworkflow_ref <- NA_character_
   }
@@ -327,6 +381,18 @@ new_workflow_spec <- function(
     nodes$knowledge_refs <- I(lapply(nodes$knowledge_refs, as.character))
   } else {
     nodes$knowledge_refs <- I(lapply(nodes$knowledge_refs, function(x) {
+      if (is.null(x)) {
+        return(character())
+      }
+      as.character(unlist(x, use.names = FALSE))
+    }))
+  }
+  if (!"linked_spec_ids" %in% names(nodes)) {
+    nodes$linked_spec_ids <- I(replicate(nrow(nodes), character(), simplify = FALSE))
+  } else if (!is.list(nodes$linked_spec_ids)) {
+    nodes$linked_spec_ids <- I(lapply(nodes$linked_spec_ids, as.character))
+  } else {
+    nodes$linked_spec_ids <- I(lapply(nodes$linked_spec_ids, function(x) {
       if (is.null(x)) {
         return(character())
       }
@@ -433,6 +499,15 @@ validate_workflow_spec <- function(x, knowledge_spec = NULL, warn_missing_knowle
       stop("Workflow node `owner` must use supported values.", call. = FALSE)
     }
   }
+  if (any(!is.na(x$nodes$node_kind) & nzchar(x$nodes$node_kind))) {
+    invalid_kind <- setdiff(
+      unique(x$nodes$node_kind[!is.na(x$nodes$node_kind) & nzchar(x$nodes$node_kind)]),
+      .workflow_node_kind_values()
+    )
+    if (length(invalid_kind)) {
+      stop("Workflow node `node_kind` must use supported values.", call. = FALSE)
+    }
+  }
   for (field in c("automation_status", "target_automation_status")) {
     values <- x$nodes[[field]]
     if (any(!is.na(values) & nzchar(values))) {
@@ -454,10 +529,20 @@ validate_workflow_spec <- function(x, knowledge_spec = NULL, warn_missing_knowle
   if (length(x$nodes$knowledge_refs) != nrow(x$nodes)) {
     stop("Workflow node `knowledge_refs` must align row-wise with workflow nodes.", call. = FALSE)
   }
+  if (!is.list(x$nodes$linked_spec_ids)) {
+    stop("Workflow node `linked_spec_ids` must be a list-column of character vectors.", call. = FALSE)
+  }
+  if (length(x$nodes$linked_spec_ids) != nrow(x$nodes)) {
+    stop("Workflow node `linked_spec_ids` must align row-wise with workflow nodes.", call. = FALSE)
+  }
   for (i in seq_len(nrow(x$nodes))) {
     refs <- x$nodes$knowledge_refs[[i]]
     if (!is.character(refs)) {
       stop("Each workflow node `knowledge_refs` entry must be a character vector.", call. = FALSE)
+    }
+    linked <- x$nodes$linked_spec_ids[[i]]
+    if (!is.character(linked)) {
+      stop("Each workflow node `linked_spec_ids` entry must be a character vector.", call. = FALSE)
     }
   }
   for (field in c("input_schema", "output_schema", "nested_workflow")) {
@@ -573,12 +658,17 @@ print.agentr_workflow_spec <- function(x, ...) {
       review_status = item$review_status %||% "pending",
       review_notes = item$review_notes %||% NA_character_,
       review_confidence = item$review_confidence %||% NA_real_,
+      node_kind = item$node_kind %||% "action",
       owner = item$owner %||% NA_character_,
       automation_status = item$automation_status %||% NA_character_,
       human_owned_reason = item$human_owned_reason %||% NA_character_,
       target_automation_status = item$target_automation_status %||% NA_character_,
       trace_required = item$trace_required %||% NA,
       knowledge_refs = item$knowledge_refs %||% character(),
+      source_path = item$source_path %||% NA_character_,
+      retrieval_mode = item$retrieval_mode %||% NA_character_,
+      persistence = item$persistence %||% NA_character_,
+      linked_spec_ids = item$linked_spec_ids %||% character(),
       subworkflow_ref = item$subworkflow_ref %||% NA_character_,
       input_schema = item$input_schema %||% list(),
       output_schema = item$output_schema %||% list(),

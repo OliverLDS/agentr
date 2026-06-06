@@ -30,11 +30,49 @@ test_that("design_review_html returns standalone review page", {
   expect_true(grepl("svg{display:block;max-width:none}", html, fixed = TRUE))
   expect_true(grepl("const maxEdgeX=edges.length?", html, fixed = TRUE))
   expect_true(grepl("const viewRight=Math.max", html, fixed = TRUE))
-  expect_true(grepl("Graph nodes represent the reviewed task workflow, including external scripts and external LLM steps.", html, fixed = TRUE))
+  expect_true(grepl("Graph nodes represent the reviewed task workflow, including action nodes, resource/data nodes", html, fixed = TRUE))
   expect_true(grepl("Deterministic automation", html, fixed = TRUE))
   expect_true(grepl("External stochastic LLM", html, fixed = TRUE))
   expect_false(grepl("https://", html, fixed = TRUE))
   expect_false(grepl("http://", html, fixed = TRUE))
+})
+
+test_that("design_review_html uses packaged renderer assets", {
+  spec <- .test_complete_agent_spec()
+  html <- design_review_html(spec, title = "Asset review")
+
+  expect_true(file.exists(system.file("review", "design_review.js", package = "agentr", mustWork = FALSE)) ||
+    file.exists(file.path("inst", "review", "design_review.js")))
+  expect_true(grepl("function drawWorkflowGraph", html, fixed = TRUE))
+  expect_true(grepl("function nodeKind", html, fixed = TRUE))
+})
+
+test_that("design_review_html supports workflow data nodes", {
+  workflow <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node(
+        id = "knowledge_rules",
+        label = "Article style rules",
+        node_kind = "knowledge",
+        human_required = FALSE,
+        source_path = "docs/knowledge_spec.yaml",
+        retrieval_mode = "yaml_lookup",
+        persistence = "static",
+        linked_spec_ids = "knowledge_spec.yaml"
+      ),
+      workflow_node("build_prompt", "Build prompt", human_required = FALSE)
+    ),
+    edges = workflow_edge("knowledge_rules", "build_prompt", relation = "prompts_with"),
+    task = "Data node review"
+  )
+
+  html <- design_review_html(workflow, title = "Data node review", graph_layout = "process")
+
+  expect_true(grepl('"node_kind":"knowledge"', html, fixed = TRUE))
+  expect_true(grepl("Knowledge data", html, fixed = TRUE))
+  expect_true(grepl("Source path", html, fixed = TRUE))
+  expect_true(grepl("prompts_with", html, fixed = TRUE))
+  expect_true(grepl("positionResourceNodes", html, fixed = TRUE))
 })
 
 test_that("design_review_html supports subsystem-based node color theme", {
@@ -82,7 +120,7 @@ test_that("design_review_html inherits default categories from nested descendant
   expect_true(grepl("categoryPriority", html, fixed = TRUE))
   expect_true(grepl("effectiveWorkflowCategory", html, fixed = TRUE))
   expect_true(grepl("Category", html, fixed = TRUE))
-  expect_true(grepl("Parent nodes with nested workflows inherit the most restrictive descendant category in the default theme.", html, fixed = TRUE))
+  expect_true(grepl("action nodes, resource/data nodes", html, fixed = TRUE))
 })
 
 test_that("design_review_html renders branch edge metadata visibly", {

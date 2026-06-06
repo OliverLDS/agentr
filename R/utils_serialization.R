@@ -125,7 +125,7 @@ load_json_file <- function(path, simplifyVector = TRUE) {
   item_names <- names(x)
   for (i in seq_along(x)) {
     name <- item_names[[i]]
-    if (name %in% c("knowledge_refs", "required")) {
+    if (name %in% c("knowledge_refs", "linked_spec_ids", "required")) {
       x[i] <- list(.as_json_array(x[[i]]))
     } else {
       x[i] <- list(.preserve_spec_arrays(x[[i]]))
@@ -145,7 +145,7 @@ load_json_file <- function(path, simplifyVector = TRUE) {
   item_names <- names(x)
   for (i in seq_along(x)) {
     name <- item_names[[i]]
-    if (name %in% c("knowledge_refs", "required")) {
+    if (name %in% c("knowledge_refs", "linked_spec_ids", "required")) {
       if (is.null(x[[i]])) {
         x[i] <- list(character())
       } else {

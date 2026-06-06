@@ -15,12 +15,17 @@ workflow_node(
   review_status = "pending",
   review_notes = NA_character_,
   review_confidence = NA_real_,
+  node_kind = "action",
   owner = NA_character_,
   automation_status = NA_character_,
   human_owned_reason = NA_character_,
   target_automation_status = NA_character_,
   trace_required = NA,
   knowledge_refs = character(),
+  source_path = NA_character_,
+  retrieval_mode = NA_character_,
+  persistence = NA_character_,
+  linked_spec_ids = character(),
   subworkflow_ref = NA_character_,
   input_schema = list(),
   output_schema = list(),
@@ -48,6 +53,9 @@ workflow_node(
 
 \item{review_confidence}{Optional confidence attached to the latest review.}
 
+\item{node_kind}{Optional workflow node kind. Supported values are
+\code{action}, \code{knowledge}, \code{memory}, \code{file}, \code{api}, \code{schema}, and \code{data}.}
+
 \item{owner}{Optional current owner for the node.}
 
 \item{automation_status}{Optional current automation status for the node.}
@@ -59,6 +67,15 @@ workflow_node(
 \item{trace_required}{Optional logical flag indicating whether decision traces should be collected.}
 
 \item{knowledge_refs}{Optional character vector of referenced knowledge-item ids.}
+
+\item{source_path}{Optional path, URI, or symbolic source for data/resource nodes.}
+
+\item{retrieval_mode}{Optional retrieval mode for data/resource nodes.}
+
+\item{persistence}{Optional persistence description for data/resource nodes.}
+
+\item{linked_spec_ids}{Optional character vector of linked knowledge, memory,
+schema, or interface spec ids.}
 
 \item{subworkflow_ref}{Optional identifier or path for a nested workflow.}
 

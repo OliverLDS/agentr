@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.7.8
+
+Released: 2026-06-06
+
+- Added workflow data/resource node metadata with `node_kind` values for action, knowledge, memory, file, API, schema, and generic data nodes.
+- Added resource-oriented workflow edge semantics for reads, writes, updates, prompt injection, schema validation, and produced artifacts.
+- Updated design review HTML so process-layout workflows place resource nodes in a resource lane, color them separately, label resource edges, and expose source/retrieval/persistence/spec-link metadata in the detail inspector.
+- Moved the standalone review renderer JavaScript and CSS into package assets under `inst/review/` while preserving the public `design_review_html()` and `export_design_review_html()` R APIs.
+- Updated coding-assistant inference guidance so `KnowledgeSpec` and `MemorySpec` are inferred only when workflow resource nodes, references, retrieval paths, update paths, or validation dependencies make them behavior-shaping.
+
 ## agentr 0.2.7.7
 
 Released: 2026-06-06
