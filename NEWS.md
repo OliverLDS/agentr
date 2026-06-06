@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.7.9
+
+Released: 2026-06-06
+
+- Updated design review HTML so the main workflow graph shows action nodes only, keeping knowledge, memory, file, API, schema, and other resource nodes out of the action-flow diagram.
+- Added a contextual "Knowledge, memory, and resource schema" panel that shows only resources linked to the selected action node through resource edges or spec references.
+- Restored subworkflow badges for workflow nodes that use either embedded nested workflows or `subworkflow_ref` links.
+
 ## agentr 0.2.7.8
 
 Released: 2026-06-06
