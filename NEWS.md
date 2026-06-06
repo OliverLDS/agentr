@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.7.11
+
+Released: 2026-06-06
+
+- Reordered the design review side panel so linked knowledge, memory, and resources appear above the detail inspector.
+- Extended subworkflow modals with their own resource context, detail inspector, and structured feedback controls.
+- Scoped subworkflow node, edge, and resource clicks to the modal inspector while preserving the shared feedback JSON export.
+
 ## agentr 0.2.7.10
 
 Released: 2026-06-06
