@@ -149,6 +149,40 @@ test_that("render_task_preview includes optional memory, knowledge, and graph sp
   expect_true(grepl("\"nodes\":[{\"id\":\"review_rule\"", html, fixed = TRUE))
 })
 
+test_that("render_task_preview embeds subworkflow_ref child specs for standalone review", {
+  task_dir <- file.path(tempdir(), paste0("agentr_subworkflow_preview_", Sys.getpid()))
+  child_dir <- file.path(task_dir, "nodes", "node_child", "docs")
+  dir.create(file.path(task_dir, "docs"), recursive = TRUE, showWarnings = FALSE)
+  dir.create(child_dir, recursive = TRUE, showWarnings = FALSE)
+
+  child <- new_workflow_spec(
+    nodes = workflow_node("child_step", "Child workflow step", human_required = FALSE),
+    edges = .empty_workflow_edges(),
+    task = "Child task"
+  )
+  parent <- new_workflow_spec(
+    nodes = workflow_node(
+      "node_child",
+      "Parent node with child workflow",
+      human_required = FALSE,
+      subworkflow_ref = "nodes/node_child/docs/workflow_spec.yaml"
+    ),
+    edges = .empty_workflow_edges(),
+    task = "Parent task"
+  )
+
+  save_workflow_spec_yaml(parent, task_spec_paths(task_dir)$workflow)
+  save_workflow_spec_yaml(child, file.path(child_dir, "workflow_spec.yaml"))
+
+  out <- render_task_preview(task_dir)
+  html <- paste(readLines(out, warn = FALSE), collapse = "\n")
+
+  expect_true(grepl('"subworkflow_ref":"nodes/node_child/docs/workflow_spec.yaml"', html, fixed = TRUE))
+  expect_true(grepl('"nested_workflow":{"nodes":[{"id":"child_step"', html, fixed = TRUE))
+  expect_true(grepl("Child workflow step", html, fixed = TRUE))
+  expect_true(grepl("openSubworkflowModal", html, fixed = TRUE))
+})
+
 test_that("render_task_previews renders all discovered task-local workflows", {
   root <- file.path(tempdir(), paste0("agentr_preview_root_", Sys.getpid()))
   task_a <- file.path(root, "tasks", "task_a")

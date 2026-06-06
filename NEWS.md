@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.7.10
+
+Released: 2026-06-06
+
+- Changed design review HTML so clicking a subworkflow badge opens the child workflow in an in-page modal instead of reserving permanent main-page space for task previews.
+- Updated `render_task_preview()` to resolve task-local `subworkflow_ref` paths and embed child workflow specs into the standalone review bundle when available.
+- Clarified workflow/task-family guidance so `subworkflow_ref` is the preferred editable source and `nested_workflow` is review-bundle data.
+
 ## agentr 0.2.7.9
 
 Released: 2026-06-06

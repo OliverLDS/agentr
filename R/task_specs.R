@@ -154,6 +154,11 @@ render_task_preview <- function(
       basename(normalizePath(task_dir, mustWork = FALSE))
     }
   }
+  specs$workflow <- .embed_task_subworkflow_refs(
+    specs$workflow,
+    task_dir = task_dir,
+    docs_dir = docs_dir
+  )
 
   export_design_review_html(
     specs$workflow,
@@ -166,6 +171,54 @@ render_task_preview <- function(
     node_color_theme = node_color_theme,
     ...
   )
+}
+
+#' @keywords internal
+.embed_task_subworkflow_refs <- function(workflow, task_dir, docs_dir = "docs") {
+  if (is.null(workflow) || !"subworkflow_ref" %in% names(workflow$nodes)) {
+    return(workflow)
+  }
+  nodes <- workflow$nodes
+  nested <- nodes$nested_workflow
+  docs_path <- path.expand(as.character(docs_dir)[1])
+  if (!.is_absolute_path(docs_path)) {
+    docs_path <- file.path(task_dir, docs_path)
+  }
+  for (i in seq_len(nrow(nodes))) {
+    ref <- nodes$subworkflow_ref[[i]]
+    if (is.na(ref) || !nzchar(ref)) {
+      next
+    }
+    existing <- nested[[i]]
+    if (!is.null(existing) && inherits(existing, "agentr_workflow_spec")) {
+      next
+    }
+    ref_path <- .resolve_task_subworkflow_ref(ref, task_dir = task_dir, docs_path = docs_path)
+    if (is.null(ref_path)) {
+      next
+    }
+    nested[[i]] <- load_workflow_spec(ref_path)
+  }
+  nodes$nested_workflow <- I(nested)
+  workflow$nodes <- nodes
+  validate_workflow_spec(workflow)
+  workflow
+}
+
+#' @keywords internal
+.resolve_task_subworkflow_ref <- function(ref, task_dir, docs_path) {
+  ref <- path.expand(as.character(ref)[1])
+  candidates <- if (.is_absolute_path(ref)) {
+    ref
+  } else {
+    c(file.path(task_dir, ref), file.path(docs_path, ref))
+  }
+  existing <- candidates[file.exists(candidates)]
+  if (length(existing)) {
+    normalizePath(existing[[1]], mustWork = TRUE)
+  } else {
+    NULL
+  }
 }
 
 #' Render task-local design-review previews under a workspace

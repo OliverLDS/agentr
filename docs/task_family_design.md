@@ -2,9 +2,10 @@
 
 `agentr` can represent a related set of tasks as a task family without turning
 the package into a runtime orchestrator. A task family is a normal workflow spec
-whose root nodes are child tasks. Each child task can point to a lower-level
-workflow through `subworkflow_ref` and can optionally embed that workflow as
-`nested_workflow` for review HTML.
+whose root nodes are child tasks. Each child task should point to a lower-level
+workflow through `subworkflow_ref`. Task-local review rendering can resolve
+that reference and embed the child workflow into the standalone HTML review
+bundle.
 
 This is useful when one workspace contains a coherent design space rather than
 one narrow task. For example, a research-publication workspace may contain one
@@ -22,8 +23,9 @@ tasks; the detailed procedural logic stays inside each child workflow.
 - Use `task_tags` to support review filtering and grouping.
 - Use `subworkflow_ref` for stable task-local file references such as
   `tasks/<task_id>/nodes/<subworkflow_node_id>/docs/workflow_spec.yaml`.
-- Use `nested_workflow` when a standalone HTML review should include the child
-  workflow chart on the same page.
+- Treat `nested_workflow` as review-bundle data. Prefer generating it from
+  `subworkflow_ref` during `render_task_preview()` rather than maintaining it
+  manually in editable YAML.
 - Keep generated editable specs and previews under each task or subworkflow
   node's `docs/` folder.
 - Prefer at most two task levels: root task and node-folder subworkflow. If

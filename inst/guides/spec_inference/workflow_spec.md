@@ -249,9 +249,11 @@ workflow spec path:
 nodes/<subworkflow_node_id>/docs/workflow_spec.yaml
 ```
 
-Use `nested_workflow` only when the coding assistant has loaded the child spec
-and is preparing a combined parent preview HTML. The file reference remains the
-durable link; the embedded workflow is a convenience for review rendering.
+Do not manually maintain `nested_workflow` in editable task specs unless the
+user explicitly asks for a self-contained bundle. The file reference remains
+the durable link. `agentr::render_task_preview()` can resolve task-local
+`subworkflow_ref` paths and embed the child workflow into the standalone review
+HTML at render time.
 
 Keep the abstraction level consistent across parent and child specs. A parent
 node should represent the reviewable conceptual step, and the child spec should

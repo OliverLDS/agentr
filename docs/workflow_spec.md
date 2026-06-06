@@ -49,9 +49,14 @@ as:
 tasks/<task_id>/nodes/<subworkflow_node_id>/docs/workflow_spec.yaml
 ```
 
-Use `nested_workflow` when a combined review HTML file should embed the child
-workflow. Nested nodes receive a lightweight badge in the graph and their
-local chart can be inspected from the detail panel.
+`render_task_preview()` resolves task-local `subworkflow_ref` paths when the
+referenced child spec exists and embeds the child workflow into the standalone
+review bundle. Use `nested_workflow` only for already-combined review bundles
+or programmatic fixtures, not as the preferred editable source.
+
+Subworkflow nodes receive a lightweight badge in the graph. Clicking the badge
+opens the embedded child workflow in a modal. If the referenced child workflow
+was not embedded, the modal shows the unresolved reference path.
 
 ## Editable YAML
 
