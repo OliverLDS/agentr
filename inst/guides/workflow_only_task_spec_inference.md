@@ -61,6 +61,8 @@ Before finishing, check:
 - real human gates use `human_required: true`
 - external scripts, AutoGUI steps, and external LLM steps are not mislabeled as
   human gates
+- status, mode, checkpoint, or error markers that are not executable task code
+  use `node_kind: status`
 - branch metadata appears only on real conditional fan-out edges
 - optional guards inside sequential steps stay in node rules, implementation
   hints, review notes, or edge notes, not in `edge.condition`

@@ -16,6 +16,7 @@ Create nodes with `workflow_node()`. Important fields include:
 - `owner`
 - `automation_status`
 - `knowledge_refs`
+- `node_kind`
 - `input_schema` and `output_schema`
 - `subworkflow_ref` and `nested_workflow`
 
@@ -26,6 +27,12 @@ human gates merely because they execute outside the local R process.
 External LLM steps should remain visible as first-class nodes. A GUI-backed
 step may be labeled `ChatGPT`; another implementation may use a different chat
 UI or an API-backed model node.
+
+Use `node_kind = "status"` for visible status, mode, checkpoint, or error
+markers that affect workflow review but are not executable actions and are not
+knowledge or memory resources. Status nodes stay in the workflow graph and can
+connect to recovery or manual-review actions without drawing failure edges from
+every possible upstream action.
 
 ## Edges And Branches
 

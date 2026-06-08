@@ -86,6 +86,30 @@ test_that("design_review_html supports workflow data nodes", {
   expect_true(grepl("workflowActionEdges", html, fixed = TRUE))
 })
 
+test_that("design_review_html supports status nodes and separated edge ports", {
+  workflow <- new_workflow_spec(
+    nodes = rbind(
+      workflow_node("manual_recovery", "Manual recovery prompt", human_required = TRUE),
+      workflow_node("failure_status", "Failure status", node_kind = "status"),
+      workflow_node("record_completion", "Record completion", human_required = FALSE),
+      workflow_node("reload_next", "Reload next item", human_required = FALSE)
+    ),
+    edges = rbind(
+      workflow_edge("manual_recovery", "record_completion", relation = "error_handling"),
+      workflow_edge("record_completion", "reload_next", relation = "loop")
+    ),
+    task = "Status and edge ports"
+  )
+
+  html <- design_review_html(workflow, title = "Status and edge ports", graph_layout = "process", edge_style = "orthogonal")
+
+  expect_true(grepl('"node_kind":"status"', html, fixed = TRUE))
+  expect_true(grepl("Status marker", html, fixed = TRUE))
+  expect_true(grepl("function assignEdgePorts", html, fixed = TRUE))
+  expect_true(grepl("_sourcePortRatio", html, fixed = TRUE))
+  expect_true(grepl("stroke-dasharray='5 4'", html, fixed = TRUE))
+})
+
 test_that("design_review_html supports subsystem-based node color theme", {
   spec <- .test_complete_agent_spec()
   html <- design_review_html(spec, node_color_theme = "subsystems")
@@ -344,9 +368,9 @@ test_that("design_review_html supports process layout for loop workflows", {
   expect_true(grepl("hasBackwardEdges", html, fixed = TRUE))
   expect_true(grepl("_processBranch", html, fixed = TRUE))
   expect_true(grepl("_processIndex", html, fixed = TRUE))
-  expect_true(grepl("sameProcessColumn", html, fixed = TRUE))
-  expect_true(grepl("const startX=sameProcessColumn?a._x", html, fixed = TRUE))
-  expect_true(grepl("const endX=sameProcessColumn?b._x", html, fixed = TRUE))
+  expect_true(grepl("assignEdgePorts", html, fixed = TRUE))
+  expect_true(grepl("feedback&&Math.abs(a._x-b._x)<2", html, fixed = TRUE))
+  expect_true(grepl("source:'left',target:'left'", html, fixed = TRUE))
   expect_true(grepl("railX", html, fixed = TRUE))
   expect_true(grepl('"graph_layout":"process"', html, fixed = TRUE))
 })
@@ -402,9 +426,9 @@ test_that("design_review_html process layout places branch targets in decision b
   expect_true(grepl("_feedbackRailX", html, fixed = TRUE))
   expect_true(grepl("edgeLabelPosition(a,b,e)", html, fixed = TRUE))
   expect_true(grepl("isBranchEdge(e)&&b._processBranch&&!e._branchRejoin", html, fixed = TRUE))
-  expect_true(grepl("const startX=left?a._x:a._x+nodeW", html, fixed = TRUE))
-  expect_true(grepl("const endX=b._x+nodeW/2", html, fixed = TRUE))
-  expect_true(grepl("const endY=b._y", html, fixed = TRUE))
+  expect_true(grepl("target:'top'", html, fixed = TRUE))
+  expect_true(grepl("edgeAnchorSides", html, fixed = TRUE))
+  expect_true(grepl("sidePoint", html, fixed = TRUE))
   expect_true(grepl("e._branchRejoin", html, fixed = TRUE))
   expect_true(grepl("edgePath(a,b,opt.nodeW,config.edge_style,i,e)", html, fixed = TRUE))
   expect_true(grepl('"condition":"source_count == 1"', html, fixed = TRUE))

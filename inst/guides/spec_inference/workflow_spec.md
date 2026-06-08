@@ -66,6 +66,7 @@ edges:
 | --- | --- |
 | Script invocation or named stage | `workflow_node(id, label, implementation_hint)` |
 | Sequential script calls | `workflow_edge(from, to)` |
+| Status, mode, error, or checkpoint marker that affects control flow but does not itself run task code | `node_kind: status` |
 | Knowledge, memory, file, API, schema, or data resource used by an action | A resource node with `node_kind` set to `knowledge`, `memory`, `file`, `api`, `schema`, or `data` |
 | Action reads a resource | Resource-to-action edge with `relation: reads` |
 | Action writes or updates a resource | Action-to-resource edge with `relation: writes` or `relation: updates` |
@@ -117,10 +118,19 @@ workflow_node(
 Use one workflow node per conceptual step. Do not create a node for every shell
 line unless each line is a distinct reviewable unit.
 
-## Data And Resource Nodes
+## Status, Data, And Resource Nodes
 
-Use `node_kind = "action"` for steps that do work. Use these resource node
-kinds when the workflow explicitly depends on external or persistent data:
+Use `node_kind = "action"` for steps that do work.
+
+Use `node_kind = "status"` for visible control-state markers such as failure
+states, checkpoint states, cached/not-cached states, or mode states when the
+state affects review of the workflow but is not itself executable code,
+developer-imported knowledge, or agent memory. A status node may point to a
+manual recovery/review node without drawing failure edges from every upstream
+node that could theoretically fail.
+
+Use these resource node kinds when the workflow explicitly depends on external
+or persistent data:
 
 - `knowledge`: developer-curated facts, rules, heuristics, exceptions, style
   preferences, or other static domain knowledge.

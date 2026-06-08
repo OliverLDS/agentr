@@ -54,7 +54,8 @@ workflow_node(
 \item{review_confidence}{Optional confidence attached to the latest review.}
 
 \item{node_kind}{Optional workflow node kind. Supported values are
-\code{action}, \code{knowledge}, \code{memory}, \code{file}, \code{api}, \code{schema}, and \code{data}.}
+\code{action}, \code{status}, \code{knowledge}, \code{memory}, \code{file}, \code{api}, \code{schema}, and
+\code{data}.}
 
 \item{owner}{Optional current owner for the node.}
 

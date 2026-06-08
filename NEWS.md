@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.7.13
+
+Released: 2026-06-08
+
+- Added `node_kind = "status"` for workflow-visible status, mode, checkpoint, and error markers that are not executable actions or resource nodes.
+- Updated design review HTML so status nodes remain visible in workflow graphs with a lightweight dashed marker style.
+- Improved orthogonal workflow edge routing by assigning separate side ports when multiple edges touch the same side of a node.
+- Updated coding-assistant WorkflowSpec inference guidance to use status nodes for failure or recovery states without drawing every possible upstream failure edge.
+
 ## agentr 0.2.7.12
 
 Released: 2026-06-08

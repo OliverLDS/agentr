@@ -125,6 +125,19 @@ test_that("workflow data nodes default away from human gates", {
   expect_false(node$human_required[[1]])
 })
 
+test_that("workflow status nodes validate as process-visible markers", {
+  node <- workflow_node("failure_status", "Failure detected", node_kind = "status")
+  workflow <- new_workflow_spec(
+    nodes = node,
+    edges = .empty_workflow_edges(),
+    task = "Status marker"
+  )
+
+  expect_equal(workflow$nodes$node_kind[[1]], "status")
+  expect_false(workflow$nodes$human_required[[1]])
+  expect_no_error(validate_workflow_spec(workflow))
+})
+
 test_that("memory specs round-trip through JSON", {
   path <- tempfile(fileext = ".json")
   on.exit(unlink(path), add = TRUE)

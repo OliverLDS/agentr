@@ -11,7 +11,8 @@
 #' @param review_notes Optional node-level review notes.
 #' @param review_confidence Optional confidence attached to the latest review.
 #' @param node_kind Optional workflow node kind. Supported values are
-#'   `action`, `knowledge`, `memory`, `file`, `api`, `schema`, and `data`.
+#'   `action`, `status`, `knowledge`, `memory`, `file`, `api`, `schema`, and
+#'   `data`.
 #' @param owner Optional current owner for the node.
 #' @param automation_status Optional current automation status for the node.
 #' @param human_owned_reason Optional explanation for why the node remains human-owned.
@@ -336,7 +337,7 @@ new_workflow_spec <- function(
 
 #' @keywords internal
 .workflow_node_kind_values <- function() {
-  c("action", "knowledge", "memory", "file", "api", "schema", "data")
+  c("action", "status", "knowledge", "memory", "file", "api", "schema", "data")
 }
 
 #' @keywords internal
