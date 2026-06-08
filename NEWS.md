@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.7.12
+
+Released: 2026-06-08
+
+- Tightened WorkflowSpec inference guidance so branch metadata is reserved for real conditional fan-out edges.
+- Clarified that guarded sequential steps should record guards on nodes or edge notes, not in `edge.condition`.
+- Updated workflow-only inference validation and public WorkflowSpec docs to prevent condition-only sequential edges from being rendered as branches.
+
 ## agentr 0.2.7.11
 
 Released: 2026-06-06

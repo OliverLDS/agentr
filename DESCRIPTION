@@ -1,7 +1,7 @@
 Package: agentr
 Type: Package
 Title: Specification and Review Scaffolding for Agentic Workflows in R
-Version: 0.2.7.11
+Version: 0.2.7.12
 Authors@R: 
     person(given = "Oliver", 
            family = "Zhou",

@@ -30,7 +30,8 @@ UI or an API-backed model node.
 ## Edges And Branches
 
 Create edges with `workflow_edge()`. Core fields include `from`, `to`,
-`relation`, `confidence`, and `notes`. Conditional branches may also use:
+`relation`, `confidence`, and `notes`. Real conditional fan-out edges may also
+use:
 
 - `condition`
 - `branch_group`
@@ -38,7 +39,11 @@ Create edges with `workflow_edge()`. Core fields include `from`, `to`,
 
 These fields are preserved by serialization and the HTML review renderer so
 exclusive branch paths remain visible rather than collapsing into ordinary
-sequential edges.
+sequential edges. Do not use `condition` for an internal guard on an otherwise
+sequential step, such as "first iteration only" or "if cache exists". Put that
+guard in the target node's `rule_spec`, `implementation_hint`, `review_notes`,
+or in edge `notes`; otherwise the review renderer will treat the edge as
+branch-like metadata.
 
 ## Nested Workflows
 

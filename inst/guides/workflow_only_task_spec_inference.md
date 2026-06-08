@@ -61,8 +61,9 @@ Before finishing, check:
 - real human gates use `human_required: true`
 - external scripts, AutoGUI steps, and external LLM steps are not mislabeled as
   human gates
-- branch edges preserve `condition`, `branch_group`, and
-  `mutually_exclusive` when present
+- branch metadata appears only on real conditional fan-out edges
+- optional guards inside sequential steps stay in node rules, implementation
+  hints, review notes, or edge notes, not in `edge.condition`
 - subworkflow nodes use `subworkflow_ref` for durable child links
 
 Warn if node scripts or orchestrators violate the code-construction guidance,

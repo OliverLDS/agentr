@@ -72,7 +72,8 @@ edges:
 | Action injects resource content into an LLM prompt | Resource-to-action edge with `relation: prompts_with` |
 | Action validates output against a schema resource | Schema-to-action edge with `relation: validates_against` |
 | Action produces a durable artifact | Action-to-resource edge with `relation: produces` |
-| Conditional branch | Edge `condition`, `branch_group`, and `mutually_exclusive`; use `rule_spec` for node-level routing rules |
+| Real conditional fan-out | Edge `condition`, `branch_group`, and `mutually_exclusive`; use `rule_spec` for node-level routing rules |
+| Optional guard inside a sequential step | Keep the sequential edge unconditioned; put the guard in the guarded node's `rule_spec`, `implementation_hint`, `review_notes`, or edge `notes` |
 | Loop over inputs | Node label/rule describing iteration, not duplicated nodes per item |
 | JSON output from a node | `output_schema` |
 | CLI args, files, or environment variables | `input_schema` |
@@ -211,7 +212,9 @@ contract.
 
 ## Branches And Loops
 
-Use branch metadata when the code has real conditional fan-out:
+Use branch metadata only when the code has real conditional fan-out: one source
+node routes to two or more alternative successor nodes, and those successors
+represent distinct possible paths.
 
 ```yaml
 edges:
@@ -235,6 +238,16 @@ node `B` when `B` is already the reviewed conceptual step. In that case, infer
 the simpler workflow shape `A -> B -> C` and describe the guard in `B`'s
 `rule_spec`, `implementation_hint`, or edge notes rather than adding a separate
 skip edge that bypasses `B`.
+
+Do not put a guard such as "first iteration only", "if cache exists", or
+"only when extended mode is active" into `edge.condition` when the edge is still
+part of the ordinary sequential spine. In `agentr` review HTML, `condition`,
+`branch_group`, and `mutually_exclusive` are branch-visualization metadata. A
+condition-only sequential edge will look like a branch even if there is no
+alternate successor in the spec. For guarded sequential steps, keep
+`edge.condition: null`, keep `branch_group: null`, keep
+`mutually_exclusive: false`, and record the guard on the node or in plain edge
+`notes`.
 
 Use a loop edge only when the workflow actually cycles across runs or repeated
 items. For a loop over input records, describe iteration in the node label or
