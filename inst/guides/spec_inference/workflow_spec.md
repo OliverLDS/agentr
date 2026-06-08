@@ -129,6 +129,19 @@ developer-imported knowledge, or agent memory. A status node may point to a
 manual recovery/review node without drawing failure edges from every upstream
 node that could theoretically fail.
 
+Prefer a status node when the code or docs expose a concrete state variable,
+flag, sentinel file, checkpoint, mode, or error status. You may also introduce a
+synthetic status node when it improves review clarity, especially when many
+possible upstream actions conceptually converge into the same recovery,
+fallback, or manual-review gate. Mark synthetic status nodes clearly in
+`review_notes`, for example: "Synthetic review marker; not a concrete runtime
+step."
+
+Do not introduce a status node merely because a human gate, script, or LLM step
+exists. If a single human gate already clearly represents the behavior and a
+status marker would not reduce visual clutter or clarify state, keep the simpler
+action-only workflow.
+
 Use these resource node kinds when the workflow explicitly depends on external
 or persistent data:
 
@@ -258,6 +271,11 @@ alternate successor in the spec. For guarded sequential steps, keep
 `edge.condition: null`, keep `branch_group: null`, keep
 `mutually_exclusive: false`, and record the guard on the node or in plain edge
 `notes`.
+
+Retry or fallback self-edges are usually not branch fan-out. Prefer
+`relation: retry` or `relation: fallback`, keep branch metadata empty, and put
+the retry/fallback trigger in edge `notes` or the target node's `rule_spec`
+unless the code truly routes to multiple alternative successor nodes.
 
 Use a loop edge only when the workflow actually cycles across runs or repeated
 items. For a loop over input records, describe iteration in the node label or

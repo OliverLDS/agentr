@@ -34,6 +34,10 @@ knowledge or memory resources. Status nodes stay in the workflow graph and can
 connect to recovery or manual-review actions without drawing failure edges from
 every possible upstream action.
 
+Status nodes may be concrete runtime states or synthetic review markers. If a
+status node is synthetic, say so in `review_notes`. Do not add one when a single
+human gate or action node already makes the behavior clear.
+
 ## Edges And Branches
 
 Create edges with `workflow_edge()`. Core fields include `from`, `to`,
@@ -51,6 +55,10 @@ sequential step, such as "first iteration only" or "if cache exists". Put that
 guard in the target node's `rule_spec`, `implementation_hint`, `review_notes`,
 or in edge `notes`; otherwise the review renderer will treat the edge as
 branch-like metadata.
+
+Retry or fallback self-edges should normally use `relation = "retry"` or
+`relation = "fallback"` with branch metadata left empty unless the code truly
+fans out to multiple alternative successor nodes.
 
 ## Nested Workflows
 

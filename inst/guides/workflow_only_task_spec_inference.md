@@ -63,9 +63,12 @@ Before finishing, check:
   human gates
 - status, mode, checkpoint, or error markers that are not executable task code
   use `node_kind: status`
+- synthetic status nodes, if used for review clarity, say so in `review_notes`
 - branch metadata appears only on real conditional fan-out edges
 - optional guards inside sequential steps stay in node rules, implementation
   hints, review notes, or edge notes, not in `edge.condition`
+- retry or fallback self-edges avoid branch metadata unless there is real
+  conditional fan-out
 - subworkflow nodes use `subworkflow_ref` for durable child links
 
 Warn if node scripts or orchestrators violate the code-construction guidance,
