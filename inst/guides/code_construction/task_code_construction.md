@@ -46,6 +46,21 @@ the shared node-script guide referenced above.
 
 ## Task Code Shape
 
+At the workspace root, keep this boundary explicit:
+
+- `memory/`: durable learned or accumulated state produced or updated by the
+  virtual agent across runs; writable by agent workflows when the task
+  contract allows it.
+- `knowledge/`: human-authored imported domain knowledge, rules, references,
+  and workspace-level configuration; treated as curated input, not
+  agent-writable runtime state.
+
+Within each task folder:
+
+- `state/` and `cache/` are task-level writable memory areas.
+- agent workflows may write into `state/` and `cache/` when the task contract
+  allows it.
+
 Prefer this structure:
 
 ```text
@@ -139,12 +154,12 @@ is a real multi-field contract that justifies the extra layer.
 Use task-local paths, task-local `state/`, and task-local `cache/` unless the
 spec explicitly says otherwise.
 
-If workspace-level path memory exists in `memory/agent_paths.json`, load it in
-the root orchestrator and export the needed environment variables to node
-scripts.
+If workspace-level path configuration exists in `knowledge/agent_paths.json`,
+load it in the root orchestrator and export the needed environment variables to
+node scripts.
 
-When a task depends on path memory, make the required keys explicit in the task
-docs and memory spec. Typical examples are:
+When a task depends on workspace path configuration, make the required keys
+explicit in the task docs and related specs. Typical examples are:
 
 - agent/workspace roots such as `zelina_agent_dir`
 - task roots such as `<task_id>_task_dir`
@@ -152,17 +167,17 @@ docs and memory spec. Typical examples are:
 - project URLs or similar runtime endpoints when the workflow depends on a
   specific external thread, project page, or target surface
 
-Treat `memory/agent_paths.json` as configuration that the root orchestrator
+Treat `knowledge/agent_paths.json` as configuration that the root orchestrator
 resolves once at startup. Node scripts should receive resolved values through
-arguments or exported environment variables rather than reopening path memory
-themselves.
+arguments or exported environment variables rather than reopening that
+configuration themselves.
 
 Do not create a shared path-helper package just to solve path loading.
 
 When a node writes a task-local trace or state artifact, make that output path
 optional when practical and default it under the task's `state/` or `cache/`
-tree. Treat missing workspace paths as a configuration error, not as a reason
-to hardcode a fallback package root inside the node.
+tree. Treat missing workspace path configuration as a configuration error, not
+as a reason to hardcode a fallback package root inside the node.
 
 Prefer shell-native parsing for simple orchestrator control flow. In shell
 orchestrators, use direct `jq` or equivalent shell-native extraction for simple
@@ -288,7 +303,7 @@ When implementing a task from spec, use this order:
 2. Create or update the root task orchestrator.
 3. Create or update executable node scripts.
 4. Create or update node-folder subworkflow scripts where needed.
-5. Wire environment variables and path memory handling.
+5. Wire environment variables and workspace path configuration handling.
 6. Write or refresh task-local docs if the task shape changed.
 7. Validate shell syntax and script parsers.
 8. Validate JSON outputs for nodes that claim JSON contracts.
@@ -305,7 +320,7 @@ Before considering the task implementation complete, validate at least:
 - parser or syntax checks for every `*.R` or other executable script
 - `-h/--help` behavior for every executable entrypoint
 - JSON output shape for nodes that promise JSON
-- path export behavior when `memory/agent_paths.json` is used
+- path export behavior when `knowledge/agent_paths.json` is used
 
 If a workflow has side effects such as git push, email send, browser UI control,
 or external publication, do not run the full workflow unless that side effect is

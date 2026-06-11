@@ -161,15 +161,17 @@ Preserve existing task specs and docs unless the user explicitly asks for
 regeneration. When behavior is uncertain, write the uncertainty to
 `docs/inference_notes.md` instead of silently overwriting existing artifacts.
 
-## Path Memory Guidance
+## Workspace Path Configuration
 
-- Load task-root path constants from `memory/agent_paths.json` when the task
+- Load task-root path constants from `knowledge/agent_paths.json` when the task
   workspace provides it.
 - Prefer the root `zsh` orchestrator to export those paths into environment
   variables for node scripts.
 - Pass paths through environment variables or CLI args.
 - Do not create a shared path-helper package just to load task paths.
 - Do not resurrect `shared_scripts` only for path loading.
+- Do not treat `knowledge/agent_paths.json` as `MemorySpec`; it is curated
+  workspace configuration, not agent-written memory.
 
 ## Rendering Preview HTML
 

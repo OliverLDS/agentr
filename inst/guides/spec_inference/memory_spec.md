@@ -20,7 +20,6 @@ Good evidence:
 - State folders that prevent repeated work.
 - Caches used as inputs to later runs.
 - Human decisions or review traces that should be reused.
-- Workspace path memory such as `memory/agent_paths.json`.
 
 Do not infer `MemorySpec` just because a task has local variables.
 Runtime-local variables are not persistent memory unless the task saves or
@@ -86,17 +85,15 @@ Include:
 - `update_rule`: how the task updates the memory when visible
 - `review`: start with `status: pending` unless already approved
 
-## Path Memory
+## Workspace Path Configuration
 
-When a workspace provides `memory/agent_paths.json`, treat it as semantic or
-context memory depending on its use:
+Do not treat `knowledge/agent_paths.json` as `MemorySpec`. It is workspace
+configuration stored under curated `knowledge/`, not agent-written memory.
 
-- use `semantic` when it defines stable workspace paths
-- use `context` when values change per run
-
-Do not create a shared path-helper package only to load path memory. Prefer the
-root `zsh` orchestrator to read `memory/agent_paths.json`, export environment
-variables, and pass paths to node scripts.
+When a workspace provides `knowledge/agent_paths.json`, record it in task docs
+or workflow/resource notes only when it materially shapes task behavior. Prefer
+the root `zsh` orchestrator to read `knowledge/agent_paths.json`, export
+environment variables, and pass paths to node scripts.
 
 ## What Not To Infer
 
