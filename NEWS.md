@@ -1,5 +1,14 @@
 # agentr news
 
+## agentr 0.2.8
+
+Released: 2026-06-16
+
+- Added coding-assistant guidance for optional affective state inference in companion, tutoring, coaching, persona, and long-running relationship-oriented agents.
+- Documented local affective-state shapes such as `memory/affective_state.yaml` and task-local `state/affective_state.yaml`, including dimensions, bounds, inertia, decay, event triggers, and human-review rules.
+- Updated task code-construction guidance so affective updates use deterministic validation, bounded update and decay, optional LLM signal estimation, and no direct LLM overwrite of canonical affective state.
+- Linked affective-state inference from the full-stack task-spec wrapper while keeping it explicitly optional for most task agents.
+
 ## agentr 0.2.7.13
 
 Released: 2026-06-08

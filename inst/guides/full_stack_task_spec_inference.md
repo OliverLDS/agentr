@@ -13,6 +13,7 @@ Spec guides:
 - [WorkflowSpec inference](spec_inference/workflow_spec.md)
 - [MemorySpec inference](spec_inference/memory_spec.md)
 - [KnowledgeSpec inference](spec_inference/knowledge_spec.md)
+- [Affective state inference](spec_inference/affective_spec.md)
 
 For package-level framing, see `../../docs/coding_assistant_scaffolding.md`.
 
@@ -115,10 +116,21 @@ nodes, `knowledge_refs`, prompt retrieval of rules or examples, or clear code
 evidence that reusable developer-supplied knowledge shapes behavior. See
 [KnowledgeSpec inference](spec_inference/knowledge_spec.md).
 
+Infer affective state only for companion, tutoring, coaching, persona,
+relationship-oriented, or other long-running agents where durable affective
+continuity shapes behavior. See
+[Affective state inference](spec_inference/affective_spec.md). Most task agents
+do not need affective state.
+
 Do not infer `memory_spec.yaml` or `knowledge_spec.yaml` merely because the
 task could theoretically use memory or knowledge. The workflow must show a
 resource node, reference, retrieval path, update path, or validation dependency
 that makes the spec behavior-shaping.
+
+Do not infer affective state merely because the task uses an LLM or has a
+friendly tone. The workflow or docs must show persistent persona, relational
+state, affective dimensions, or an update path that makes affect
+behavior-shaping.
 
 When explicit entity-relation knowledge or memory is useful, store it as a
 `graph:` representation inside `knowledge_spec.yaml` or `memory_spec.yaml`.

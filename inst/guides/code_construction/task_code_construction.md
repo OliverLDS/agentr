@@ -195,7 +195,48 @@ the script should make that side effect obvious in:
 - its task docs
 - its `implementation_hint` in the spec
 
-### 4. Use debug logs for traceability
+### 4. Implement affective state only when specified
+
+Most task agents do not need affective state. Implement it only when the
+approved specs or user request describe a companion, tutor, coach, persona,
+relationship-oriented, or long-running agent whose behavior depends on durable
+affective continuity.
+
+Use workspace-level memory when affective state belongs to the virtual agent
+across tasks:
+
+```text
+memory/affective_state.yaml
+```
+
+Use task-local state when affective state belongs only to one task:
+
+```text
+tasks/<task_id>/state/affective_state.yaml
+```
+
+The local shape should define explicit dimensions such as `valence`, `arousal`,
+`dominance`, `trust`, `attachment`, `frustration`, `confidence`, or
+project-specific dimensions. Each dimension should have a value, bounds, and a
+short description. The state should also define update rules for inertia,
+decay, bounds, event triggers, and human-review requirements.
+
+Keep affective updates explicit:
+
+- use deterministic helper code for bounded update, decay, and clamping
+- allow an optional LLM prompt to estimate affective signal from interaction
+  text
+- treat the LLM estimate as input data, not as authority to write state
+- validate dimensions, bounds, provenance, and review requirements before
+  writing `affective_state.yaml`
+- require human review for schema changes, inertia changes, or large
+  persistent affective updates when the spec says so
+
+Do not let an LLM directly overwrite canonical affective state. A deterministic
+node should read the prior state, validate the proposed signal, apply inertia
+and decay, clamp values to bounds, write the new state, and emit JSON.
+
+### 5. Use debug logs for traceability
 
 Emit concise debug logs for major workflow transitions when they help with
 reruns and diagnosis. Keep them short, stable, and node-oriented. Prefer logs
@@ -217,7 +258,7 @@ JSON, validate not only that the payload parses, but also that it is the
 expected object for that step, such as matching the expected `ref_id` or other
 task-defining identifier.
 
-### 5. Separate local code from external node calls
+### 6. Separate local code from external node calls
 
 When a spec node belongs to another package, the task code should call that
 package’s executable node script instead of reimplementing the step locally.
