@@ -1,3 +1,11 @@
-^\\.r-local-lib($|/)
-^agentr\\.Rcheck($|/)
-^R/\\.Rhistory$
+^[.]r-local-lib($|/)
+^[.]github($|/)
+^agentr[.]Rcheck($|/)
+^(.*/)?[.]Rhistory$
+^(.*/)?[.]DS_Store$
+^.*[.]tar[.]gz$
+^docs($|/)
+^examples($|/)
+^scripts($|/)
+^cran-comments[.]md$
+^CRAN-SUBMISSION$

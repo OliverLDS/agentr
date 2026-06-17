@@ -1,6 +1,9 @@
 test_that("function index names every exported package object", {
   exports <- getNamespaceExports("agentr")
-  index <- paste(readLines(test_path("..", "..", "docs", "function_index.md")), collapse = "\n")
+  index_path <- test_path("..", "..", "docs", "function_index.md")
+  skip_if_not(file.exists(index_path), "docs/function_index.md is not included in built-package checks")
+
+  index <- paste(readLines(index_path), collapse = "\n")
 
   missing <- exports[!vapply(
     exports,
