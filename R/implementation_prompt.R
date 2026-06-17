@@ -485,7 +485,7 @@ build_article_workflow_extraction_prompt <- function(
   extraction_mode = "both",
   format = "json",
   target_agent = "reasoning_model",
-  extraction_goal = "Infer workflow specification(s) from article-described agentic AI application case(s), consistent with agentr.",
+  extraction_goal = "Infer agentr workflow specs from article-described application cases.",
   constraints = character(),
   extra_context = list()
 ) {

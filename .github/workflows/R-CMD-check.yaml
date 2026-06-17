@@ -1,6 +1,6 @@
 name: R-CMD-check
 
-on:
+"on":
   push:
     branches: [main]
   pull_request:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  R-CMD-check:
+  r-cmd-check:
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
     runs-on: ${{ matrix.config.os }}
 
@@ -46,4 +46,4 @@ jobs:
 
       - uses: r-lib/actions/check-r-package@v2
         with:
-          args: 'c("--as-cran")'
+          args: 'c("--no-manual", "--as-cran")'
