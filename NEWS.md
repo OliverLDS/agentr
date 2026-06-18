@@ -1,5 +1,15 @@
 # agentr news
 
+## agentr 0.2.8.1
+
+Released: 2026-06-18
+
+- Prepared CRAN-oriented packaging infrastructure without changing package APIs.
+- Added a GitHub Actions `R CMD check --no-manual --as-cran` matrix for macOS, Windows, Ubuntu, and Ubuntu R-devel.
+- Updated source-build ignores so repository-only docs, examples, CI files, build artifacts, and local metadata are excluded from CRAN tarballs.
+- Removed a tracked `.DS_Store` artifact and made the function-index documentation test safe for built-package checks.
+- Shortened one generated Rd usage default to avoid PDF manual line-width notes.
+
 ## agentr 0.2.8
 
 Released: 2026-06-16
