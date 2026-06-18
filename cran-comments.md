@@ -13,7 +13,6 @@
 
 ## Checks still required before CRAN submission
 
-- Confirm the GitHub Actions `R CMD check --no-manual --as-cran` matrix passes on version 0.2.8.1.
 - Run PDF manual checks in an environment with LaTeX and `qpdf`.
 
 The local R 4.2.3 environment does not have a full CRAN submission toolchain: network-based incoming
