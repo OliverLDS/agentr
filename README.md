@@ -34,14 +34,14 @@ needed.
 
 Start with:
 
-- [Coding Assistant Scaffolding](docs/coding_assistant_scaffolding.md)
-- [Full-Stack Task Spec Inference Guide](inst/guides/full_stack_task_spec_inference.md)
-- [Workflow-Only Task Spec Inference Guide](inst/guides/workflow_only_task_spec_inference.md)
-- [WorkflowSpec Inference Guide](inst/guides/spec_inference/workflow_spec.md)
-- [MemorySpec Inference Guide](inst/guides/spec_inference/memory_spec.md)
-- [KnowledgeSpec Inference Guide](inst/guides/spec_inference/knowledge_spec.md)
-- [Task Code Construction Guide](inst/guides/code_construction/task_code_construction.md)
-- [Node Script Construction Guide](inst/guides/code_construction/node_script_construction.md)
+- [Coding Assistant Scaffolding](https://github.com/OliverLDS/agentr/blob/main/docs/coding_assistant_scaffolding.md)
+- [Full-Stack Task Spec Inference Guide](https://github.com/OliverLDS/agentr/blob/main/inst/guides/full_stack_task_spec_inference.md)
+- [Workflow-Only Task Spec Inference Guide](https://github.com/OliverLDS/agentr/blob/main/inst/guides/workflow_only_task_spec_inference.md)
+- [WorkflowSpec Inference Guide](https://github.com/OliverLDS/agentr/blob/main/inst/guides/spec_inference/workflow_spec.md)
+- [MemorySpec Inference Guide](https://github.com/OliverLDS/agentr/blob/main/inst/guides/spec_inference/memory_spec.md)
+- [KnowledgeSpec Inference Guide](https://github.com/OliverLDS/agentr/blob/main/inst/guides/spec_inference/knowledge_spec.md)
+- [Task Code Construction Guide](https://github.com/OliverLDS/agentr/blob/main/inst/guides/code_construction/task_code_construction.md)
+- [Node Script Construction Guide](https://github.com/OliverLDS/agentr/blob/main/inst/guides/code_construction/node_script_construction.md)
 
 ## What agentr Standardizes
 
@@ -83,7 +83,7 @@ tasks/<task_id>/docs/
   inference_notes.md
 ```
 
-See [Spec Formats](docs/spec_formats.md).
+See [Spec Formats](https://github.com/OliverLDS/agentr/blob/main/docs/spec_formats.md).
 
 ## Rendering And Review
 
@@ -95,25 +95,26 @@ See [Spec Formats](docs/spec_formats.md).
 - knowledge graphs with `render_knowledge_graphviz()`
 - integrated task review pages with `export_design_review_html()`, `render_task_preview()`, and `render_task_previews()`
 
-See [Design Review Layer](docs/design_review_layer.md),
-[Workflow Spec](docs/workflow_spec.md), [MemorySpec](docs/memory_spec.md), and
-[Graph Representations](docs/graph_representations.md).
+See [Design Review Layer](https://github.com/OliverLDS/agentr/blob/main/docs/design_review_layer.md),
+[Workflow Spec](https://github.com/OliverLDS/agentr/blob/main/docs/workflow_spec.md),
+[MemorySpec](https://github.com/OliverLDS/agentr/blob/main/docs/memory_spec.md), and
+[Graph Representations](https://github.com/OliverLDS/agentr/blob/main/docs/graph_representations.md).
 
 ## Documentation
 
-The documentation hub is [docs/index.md](docs/index.md).
+The documentation hub is [docs/index.md](https://github.com/OliverLDS/agentr/blob/main/docs/index.md).
 
 Key pages:
 
-- [Architecture](docs/agent_architecture.md)
-- [Workflow Spec](docs/workflow_spec.md)
-- [MemorySpec](docs/memory_spec.md)
-- [KnowledgeSpec Lifecycle](docs/knowledge_spec_lifecycle.md)
-- [Graph Representations](docs/graph_representations.md)
-- [Proposal Lifecycle](docs/proposal_lifecycle.md)
-- [Workspace CLI Lifecycle](docs/workspace_cli_lifecycle.md)
-- [R Function Examples](docs/r_function_examples.md)
-- [Function Index](docs/function_index.md)
+- [Architecture](https://github.com/OliverLDS/agentr/blob/main/docs/agent_architecture.md)
+- [Workflow Spec](https://github.com/OliverLDS/agentr/blob/main/docs/workflow_spec.md)
+- [MemorySpec](https://github.com/OliverLDS/agentr/blob/main/docs/memory_spec.md)
+- [KnowledgeSpec Lifecycle](https://github.com/OliverLDS/agentr/blob/main/docs/knowledge_spec_lifecycle.md)
+- [Graph Representations](https://github.com/OliverLDS/agentr/blob/main/docs/graph_representations.md)
+- [Proposal Lifecycle](https://github.com/OliverLDS/agentr/blob/main/docs/proposal_lifecycle.md)
+- [Workspace CLI Lifecycle](https://github.com/OliverLDS/agentr/blob/main/docs/workspace_cli_lifecycle.md)
+- [R Function Examples](https://github.com/OliverLDS/agentr/blob/main/docs/r_function_examples.md)
+- [Function Index](https://github.com/OliverLDS/agentr/blob/main/docs/function_index.md)
 
 ## Installation
 
@@ -138,4 +139,4 @@ render_task_preview(
 )
 ```
 
-For more snippets, see [R Function Examples](docs/r_function_examples.md).
+For more snippets, see [R Function Examples](https://github.com/OliverLDS/agentr/blob/main/docs/r_function_examples.md).

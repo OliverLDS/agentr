@@ -1,20 +1,20 @@
 Package: agentr
 Type: Package
-Title: Specification and Review Scaffolding for Agentic Workflows in R
-Version: 0.2.8.1
+Title: Specification and Review Scaffolding for AI Agent Workflows in R
+Version: 0.2.8.2
 Authors@R: 
     person(given = "Oliver", 
            family = "Zhou",
            email = "oliver.yxzhou@gmail.com",
            role = c("aut", "cre"))
 Description: 
-    Specification, review, and scaffolding helpers for agentic AI systems.
+    Specification, review, and scaffolding helpers for AI agent systems.
     The package standardizes workflow, memory, knowledge, interface, proposal,
     and review artifacts so humans and coding assistants can infer, inspect,
-    revise, and hand off agentic task designs. It intentionally excludes
-    communication backends, provider-specific LLM client code, and full runtime
-    execution engines so that design artifacts and implementation transport
-    remain cleanly separated.
+    revise, and hand off task designs. It intentionally excludes communication
+    layers, provider-specific model client code, and full runtime execution
+    engines so that design artifacts and implementation transport remain
+    cleanly separated.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)

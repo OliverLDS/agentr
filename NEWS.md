@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.8.2
+
+Released: 2026-06-19
+
+- Fixed CRAN incoming feasibility notes by replacing README relative file links with absolute GitHub links.
+- Replaced the MIT `LICENSE` file with the CRAN-required DCF license stub for `MIT + file LICENSE`.
+- Simplified DESCRIPTION title and wording to avoid incoming spell-check notes in CRAN pretests.
+
 ## agentr 0.2.8.1
 
 Released: 2026-06-18

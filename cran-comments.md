@@ -6,9 +6,9 @@
 
 ## R CMD check results
 
-- `R CMD check --no-manual agentr_0.2.8.1.tar.gz`: 0 errors, 0 warnings, 0 notes
-- `R CMD check --no-manual --as-cran agentr_0.2.8.1.tar.gz`: 0 errors, 0 warnings, 2 notes
-- `R CMD check --as-cran agentr_0.2.8.1.tar.gz`: 0 errors, 0 warnings, 2 notes
+- `R CMD check --no-manual agentr_0.2.8.2.tar.gz`: not rerun separately
+- `R CMD check --no-manual --as-cran agentr_0.2.8.2.tar.gz`: not rerun separately
+- `R CMD check --as-cran agentr_0.2.8.2.tar.gz`: 0 errors, 0 warnings, 2 notes
   in the local sandbox. The notes are from unavailable network-based CRAN/URL checks and inability
   to verify current time.
 
@@ -21,4 +21,8 @@ sandbox-dependent.
 
 ## Submission notes
 
-This is a new submission.
+This is a resubmission fixing CRAN incoming notes from version 0.2.8.1:
+
+- replaced README relative file links with absolute HTTPS links
+- replaced the MIT `LICENSE` text with the CRAN-required DCF stub for `MIT + file LICENSE`
+- simplified DESCRIPTION title/wording to avoid spell-check notes in incoming pretests
