@@ -21,9 +21,4 @@ Reads an \code{.rds} file safely by checking if a \code{.lock} file exists, indi
 that another process may be writing. Retries until the lock disappears or
 \code{max_attempts} is exceeded.
 }
-\examples{
-\dontrun{
-  data <- .safe_read_rds("my_file.rds")
-}
-}
 \keyword{internal}

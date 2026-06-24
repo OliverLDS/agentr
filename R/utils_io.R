@@ -12,10 +12,6 @@
 #' @return Invisibly returns TRUE on success.
 #' @keywords internal
 #'
-#' @examples
-#' \dontrun{
-#'   .safe_save_rds(list(a = 1, b = 2), "my_file.rds")
-#' }
 .safe_save_rds <- function(object, path, wait = 5, max_attempts = 10) {
   lockfile <- paste0(path, ".lock")
   attempts <- 0
@@ -55,10 +51,6 @@
 #' @return The deserialized R object.
 #' @keywords internal
 #'
-#' @examples
-#' \dontrun{
-#'   data <- .safe_read_rds("my_file.rds")
-#' }
 .safe_read_rds <- function(path, wait = 5, max_attempts = 10) {
   lockfile <- paste0(path, ".lock")
   attempts <- 0

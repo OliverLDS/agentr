@@ -23,9 +23,4 @@ Saves an R object to an \code{.rds} file using a simple file-based lock to preve
 concurrent writes. If the file is locked by another process, it retries until
 success or \code{max_attempts} is reached.
 }
-\examples{
-\dontrun{
-  .safe_save_rds(list(a = 1, b = 2), "my_file.rds")
-}
-}
 \keyword{internal}

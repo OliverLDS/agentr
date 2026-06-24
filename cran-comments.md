@@ -6,9 +6,9 @@
 
 ## R CMD check results
 
-- `R CMD check --no-manual agentr_0.2.8.2.tar.gz`: not rerun separately
-- `R CMD check --no-manual --as-cran agentr_0.2.8.2.tar.gz`: not rerun separately
-- `R CMD check --as-cran agentr_0.2.8.2.tar.gz`: 0 errors, 0 warnings, 2 notes
+- `R CMD check --no-manual agentr_0.2.8.3.tar.gz`: not rerun separately
+- `R CMD check --no-manual --as-cran agentr_0.2.8.3.tar.gz`: not rerun separately
+- `R CMD check --as-cran agentr_0.2.8.3.tar.gz`: 0 errors, 0 warnings, 2 notes
   in the local sandbox. The notes are from unavailable network-based CRAN/URL checks and inability
   to verify current time.
 
@@ -21,8 +21,10 @@ sandbox-dependent.
 
 ## Submission notes
 
-This is a resubmission fixing CRAN incoming notes from version 0.2.8.1:
+This is a resubmission fixing CRAN incoming notes from version 0.2.8.1 and the
+follow-up internal-example issue found during package revision:
 
 - replaced README relative file links with absolute HTTPS links
 - replaced the MIT `LICENSE` text with the CRAN-required DCF stub for `MIT + file LICENSE`
 - simplified DESCRIPTION title/wording to avoid spell-check notes in incoming pretests
+- removed examples from internal `.safe_read_rds()` and `.safe_save_rds()` help pages

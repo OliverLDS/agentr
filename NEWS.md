@@ -1,5 +1,12 @@
 # agentr news
 
+## agentr 0.2.8.3
+
+Released: 2026-06-24
+
+- Removed examples from the internal `.safe_read_rds()` and `.safe_save_rds()` help pages instead of documenting unexported functions with runnable examples.
+- Finalized the CRAN resubmission package after the internal-example cleanup.
+
 ## agentr 0.2.8.2
 
 Released: 2026-06-19
