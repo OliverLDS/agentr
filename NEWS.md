@@ -1,5 +1,13 @@
 # agentr news
 
+## agentr 0.2.8.4
+
+Released: 2026-06-30
+
+- Removed the redundant trailing "in R" from the package title for CRAN.
+- Removed the default backup directory from `backup_agent()` so write operations require an explicit user-supplied path.
+- Updated the README inspection example to write rendered review output under `tempdir()`.
+
 ## agentr 0.2.8.3
 
 Released: 2026-06-24

@@ -4,12 +4,12 @@
 \alias{backup_agent}
 \title{Backup an \code{agentr} object with a timestamped filename}
 \usage{
-backup_agent(agent, dir = "agent_backups")
+backup_agent(agent, dir)
 }
 \arguments{
 \item{agent}{An object created by \code{agentr}.}
 
-\item{dir}{Backup directory.}
+\item{dir}{Backup directory. Must be supplied explicitly.}
 }
 \value{
 Invisibly returns the backup file path.

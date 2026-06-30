@@ -1,7 +1,7 @@
 Package: agentr
 Type: Package
-Title: Specification and Review Scaffolding for AI Agent Workflows in R
-Version: 0.2.8.3
+Title: Specification and Review Scaffolding for AI Agent Workflows
+Version: 0.2.8.4
 Authors@R: 
     person(given = "Oliver", 
            family = "Zhou",

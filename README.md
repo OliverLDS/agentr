@@ -135,7 +135,7 @@ validate_task_specs("tasks/write_new_blog_article", require = "workflow")
 
 render_task_preview(
   "tasks/write_new_blog_article",
-  output_path = "tasks/write_new_blog_article/docs/review.html"
+  output_path = file.path(tempdir(), "review.html")
 )
 ```
 

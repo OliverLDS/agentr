@@ -330,11 +330,14 @@ load_agent <- function(file_path) {
 #' directory.
 #'
 #' @param agent An object created by `agentr`.
-#' @param dir Backup directory.
+#' @param dir Backup directory. Must be supplied explicitly.
 #'
 #' @return Invisibly returns the backup file path.
 #' @export
-backup_agent <- function(agent, dir = "agent_backups") {
+backup_agent <- function(agent, dir) {
+  if (missing(dir) || !nzchar(dir)) {
+    stop("`dir` must be supplied explicitly.", call. = FALSE)
+  }
   if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
   timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
   object_name <- if (!is.null(agent$name)) agent$name else class(agent)[1]
